@@ -1,0 +1,138 @@
+
+%dir prop
+
+%namespace prop
+
+%define expr ( type_never )
+
+%option type_never     { type_never } => 
+%option type_unit      { type_unit } => 
+%option type_bool      { type_bool } => 
+%option type_char      { type_char } => 
+%option type_sel       { type_sel } => 
+%option type_u64       { type_u64  } => 
+%option type_integer   { type_integer } => 
+%option type_double    { type_double } => 
+%option type_iter      { type_iter } =>
+
+%option bool_const     { bool_const } => # b : bool  
+%option char_const     { char_const } => # c : char
+%option char_range     { char_range } => # c1 : char, c2 : char 
+%option sel_const      { sel_const } => # s : usel
+
+%option ident          { ident } => # id : exactident
+
+%option tuple          { tuple } => [ sub : expr ]
+%option concat         { concat } => first : expr, second : expr 
+
+%option logical        { log_and, log_or } => [ sub : expr ]
+
+%option empty  { empty, nonempty } => 
+%option quant  { log_exists, log_forall } => sub : expr
+
+%h_incl {
+	#include "exactident.h"
+	#include "util/print.h"
+	#include "tvm/includes.h"
+	#include "usel.h"
+}
+
+
+%h_methods {
+	void print( std::ostream& ) const;
+}
+
+%cpp_back {
+   void prop::expr::print( std::ostream& out ) const
+   {
+      switch( sel( ) )
+      {
+         case type_never: 
+         case type_unit: 
+         case type_bool: 
+         case type_char: 
+         case type_sel:  
+         case type_u64: 
+         case type_iter:
+         case type_integer: 
+         case type_double:
+            out << sel( );
+            break;
+
+		case bool_const:
+		out << view_bool_const( ). b( );
+		break;
+
+		case char_const:
+		out << view_char_const( ). c( );
+		break;
+
+      case sel_const:
+         out << '?' << view_sel_const( ). s( );
+         return;
+
+      case ident:
+         out << view_ident( ). id( ); 
+         return;
+
+      case tuple:
+         {
+            auto tup = view_tuple( ); 
+            out << "tuple("; 
+            for( size_t i = 0; i != tup. size( ); ++ i )
+            {
+               if(i) 
+                  out << ", ";
+               else
+                  out << " ";
+               out << tup. sub(i);
+            }
+            out << " )"; 
+         }
+         return; 
+
+      case concat:
+         out << view_concat( ). first( ) << " @ " << view_concat( ). second( ); 
+         return; 
+
+      case log_and:
+      case log_or:
+         {
+            auto log = view_logical( );
+            out << sel( ) << "{";
+            for( size_t i = 0; i != log. size( ); ++i )
+            {
+               if(i)  
+                  out << ", ";
+               else
+                  out << " ";
+               out << log. sub(i);
+            }
+            out << " }"; 
+         }
+         return; 
+
+      case empty:
+      case nonempty:
+         out << sel( );
+         return;
+
+      case log_exists:
+      case log_forall:
+         {
+            switch( sel( ))
+            {
+            case log_exists:
+               out << "exists"; break;
+            case log_forall:
+               out << "forall"; break;
+            default:
+               out << "???"; break;
+            }
+            out << "( " << view_quant( ). sub( ) << " )";
+            return; 
+         }
+      }
+   }
+}
+

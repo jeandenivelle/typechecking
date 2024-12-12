@@ -1,0 +1,78 @@
+
+%rootdirs
+   Source = .
+   Lexing = /home/nivelle/programs
+   Tvm = /home/nivelle/programs
+   Maph = /home/nivelle/programs/maphoon2024
+   Treegen = /home/nivelle/programs/treegen2023
+   Util = /home/nivelle/programs
+
+%dir Source
+%exec typechecking
+
+%sources
+   typechecking.cpp
+   identifier.cpp
+   fieldmap.cpp
+
+%dir Source/data
+%sources
+   selector.cpp
+   tree.cpp
+
+%dir Source/prop
+%sources
+   selector.cpp
+   expr.cpp
+
+%dir Source/flowgraph
+%sources
+   selector.cpp
+   statement.cpp
+ flatterm.cpp
+
+%preproc $(Treegen)/treegen $(Source)/prop/expr.rec
+%dir Source/prop
+%in 
+   expr.rec
+%out
+   selector.h
+   selector.cpp
+   expr.h
+   expr.cpp
+
+%preproc $(Treegen)/treegen $(Source)/data/tree.rec
+%dir Source/data
+%in
+   tree.rec
+%out
+   selector.h
+   selector.cpp
+   tree.h
+   tree.cpp
+
+%preproc $(Treegen)/treegen $(Source)/flowgraph/instruction.rec
+%dir Source/flowgraph
+%in
+   instruction.rec
+%out
+   selector.h
+   selector.cpp
+   flatterm.h
+   flatterm.cpp
+   statement.h
+   statement.cpp
+
+%options
+   Wall
+   Wno-switch
+   Wno-invalid-offsetof
+   Wno-unused-function
+   pedantic-errors
+   std=c++20
+
+%includedirs
+   Lexing 
+   Util
+   Tvm 
+   Source  
