@@ -7,12 +7,12 @@ data/selector.cpp
 data/tree.h
 data/tree.cpp
 
-flowgraph/selector.h
-flowgraph/selector.cpp
-flowgraph/flatterm.h
-flowgraph/flatterm.cpp
-flowgraph/statement.h
-flowgraph/statement.cpp
+intermediate/selector.h
+intermediate/selector.cpp
+intermediate/flatterm.h
+intermediate/flatterm.cpp
+intermediate/statement.h
+intermediate/statement.cpp
 
 prop/selector.h
 prop/selector.cpp

@@ -12,6 +12,7 @@
 
 %sources
    typechecking.cpp
+   tests.cpp
    identifier.cpp
    fieldmap.cpp
 
@@ -25,11 +26,12 @@
    selector.cpp
    expr.cpp
 
-%dir Source/flowgraph
+%dir Source/intermediate
 %sources
    selector.cpp
+   flatterm.cpp
    statement.cpp
- flatterm.cpp
+   printing.cpp
 
 %preproc $(Treegen)/treegen $(Source)/prop/expr.rec
 %dir Source/prop
@@ -51,10 +53,10 @@
    tree.h
    tree.cpp
 
-%preproc $(Treegen)/treegen $(Source)/flowgraph/instruction.rec
-%dir Source/flowgraph
+%preproc $(Treegen)/treegen $(Source)/intermediate/treedefs.rec
+%dir Source/intermediate
 %in
-   instruction.rec
+   treedefs.rec
 %out
    selector.h
    selector.cpp

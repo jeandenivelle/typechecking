@@ -1,0 +1,126 @@
+
+%dir intermediate
+
+%namespace intermediate
+
+// A constant or a variable:
+
+%define flatterm ( flat_some_bool )
+
+%option var         { flat_var } => # v : variable
+%option unitconst   { flat_unitconst } => 
+%option boolconst   { flat_boolconst } => # b : bool
+%option charconst   { flat_charconst } => # c : char
+%option selconst    { flat_selconst } => # s : usel
+%option u64const    { flat_u64const } => # u : size_t 
+%option doubleconst { flat_doubleconst } => # d : double
+
+%option any_bool    { flat_some_bool } =>
+%option any_char    { flat_some_char } =>
+%option any_u64     { flat_some_u64 } =>
+%option any_double  { flat_some_double } =>
+
+%option yield       { flat_yield } => # v : variable
+
+%option unary { flat_len, flat_not, flat_neg } => # v : variable
+   // I prefer 'size' instead of 'len', but I decided to
+   // consistently use Python names everywhere.
+
+%option binary { flat_eq, flat_ne, flat_lt, flat_gt,
+                 flat_le, flat_ge,
+                 flat_add, flat_sub } => # v1 : variable, v2 : variable
+
+%option scalfield { flat_scalfield } => # v : variable, fld : size_t 
+%option repfield { flat_vectfield, flat_listfield } => 
+    # v : variable, fld : size_t, ind : variable
+
+%option scaltuple { flat_scaltuple } => [ v : variable ] 
+%option reptuple  { flat_vecttuple, flat_listtuple } => 
+      [ v : variable ], # nrrep : size_t 
+ 
+   // In the last two cases, we provide the scalar fields as initializers,
+   // and specify how many repeated fields there are. The repeated
+   // fields are initially empty. 
+
+%option call { flat_call } => func : exactident, [ v : variable ]
+   // A function returning nothing, in fact returns a unit.
+
+%h_incl {
+   #include <optional>
+   #include <vector>
+   #include <utility>
+
+   #include "variable.h"
+   #include "tvm/includes.h" 
+   #include "util/print.h"
+   #include "util/hexprint.h"
+   #include "usel.h" 
+   #include "exactident.h" 
+}
+
+%h_methods {
+   void print( std::ostream& out ) const;
+}
+
+
+%define statement ( stat_nop )
+%prefix pnt : point
+%option nop { stat_nop } => 
+
+%option assign { stat_assign } => v : variable, val : flatterm
+%option unary  { stmnt_not } => v : variable, w : variable 
+%option binary { stmnt_and, 
+                 stmnt_or, 
+                 stmnt_eq,
+                 stmnt_lt,
+                 stmnt_le,
+                 stmnt_gt,
+                 stmnt_ge  } => v : variable, w1 : variable, w2 : variable
+%option push     { stmnt_push  } => v : variable, [ w : variable ]
+%option pop      { stmnt_pop   } => # v : variable
+%option strct    { stmnt_strct } => v : variable, k : size_t, [ w : variable ]
+%option is       { stat_istrue, stat_isfalse } => # v : variable 
+%option resolve  { stat_resolve } => var : std::vector< variable >,
+                       [ prec : std::vector< prop::expr >, stat : statement ]
+   // Every prec must be a tuple whose size is var. size( ).
+
+%option update   { stat_update } => v : variable, fld : size_t, 
+                          ind : std::optional< variable >, val : variable 
+
+%option return  { stat_return } => # v : variable 
+%option intrpt  { stmnt_abort,
+                  stmnt_error  } => mssg : std::string
+
+%option compound { stat_block, stat_repeat, stat_branch } 
+       => [ stat : statement ]
+
+// %option merge  { stmnt_merge  } => [ p : programpoint ]
+
+%h_incl {
+	#include "util/print.h"
+        #include "util/indentation.h"
+        #include "util/hexprint.h"
+	#include "tvm/includes.h"
+	#include "flatterm.h"
+	#include "variable.h"
+	#include "label.h"
+        #include "point.h"
+	#include "prop/expr.h"
+}
+
+%h_before 
+{
+   bool very_equal( const std::vector< variable > & , 
+                    const std::vector< variable > & );
+
+   bool very_equal( const std::vector< prop::expr > & ,
+                    const std::vector< prop::expr > & );
+   
+}
+
+%h_methods {
+   void print( indentation ind, std::ostream& out ) const;
+   void print( std::ostream& out ) const 
+      { print( indentation(0), out ); } 
+}
+

@@ -1,13 +1,13 @@
 
 // Written by Akhmetzhan Kussainov and Hans de Nivelle
 
-#ifndef FLOWGRAPH_VARIABLE_
-#define FLOWGRAPH_VARIABLE_
+#ifndef INTERMEDIATE_VARIABLE_
+#define INTERMEDIATE_VARIABLE_
 
 #include <utility> 
 #include "util/print.h"
 
-namespace flowgraph
+namespace intermediate
 {
 
    struct variable

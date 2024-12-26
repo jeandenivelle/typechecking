@@ -42,6 +42,15 @@
 	void print( std::ostream& ) const;
 }
 
+%h_after
+{
+   // The following is needed because intermediate::statement
+   // uses vectors of property expressions:
+ 
+   bool very_equal( const std::vector< prop::expr > & ,
+                    const std::vector< prop::expr > & );
+}
+
 %cpp_back {
    void prop::expr::print( std::ostream& out ) const
    {

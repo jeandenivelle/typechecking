@@ -1,10 +1,10 @@
 
 // Written by Hans de Nivelle, Oct. 2024.
 
-#ifndef FLOWGRAPH_POINT_
-#define FLOWGRAPH_POINT_
+#ifndef INTERMEDIATE_POINT_
+#define INTERMEDIATE_POINT_
 
-namespace flowgraph
+namespace intermediate
 {
    // Uniquely identifies each point in the flow graph.
    // Points are not used as jump labels, only for collection
