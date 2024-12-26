@@ -36,14 +36,13 @@ struct fielddef
 
 class fieldmap
 {
-
    exactidentmap< fielddef > mp; 
 
 public:
    fieldmap( ) noexcept = default;
 
    bool insert( exactident id, const fielddef& def );
-      // True if insertion happened, we refuse to overwrite. 
+      // True if the insertion happened, we refuse to overwrite. 
 
    void print( std::ostream& out ) const; 
 };

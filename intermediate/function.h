@@ -4,7 +4,6 @@
 
 #include <vector>
 #include "util/print.h"
-#include "label.h"
 #include "statement.h"
 
 namespace intermediate
@@ -15,7 +14,6 @@ namespace intermediate
       prop::expr returntype;
       std::vector< prop::expr > parameters;   
          // Temporary solution.
-
 
       function( const statement& body, const prop::expr& returntype )
          : body( body ),
@@ -34,3 +32,4 @@ namespace intermediate
 }
 
 #endif
+

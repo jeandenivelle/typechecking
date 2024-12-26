@@ -41,10 +41,10 @@ void test_scalar_list( )
    dropshare(p1);
 }
 
-#if 0
-void mixing( flowgraph::body& bod )
+
+intermediate::function tests::mixing( )
 {
-   using namespace flowgraph;
+   using namespace intermediate;
 
    point p;
    statement nop = statement( stat_nop, p ++ );
@@ -63,6 +63,9 @@ void mixing( flowgraph::body& bod )
    variable beta1 = beta0. succ( );
    variable beta2 = beta1. succ( );
 
+   variable gamma0 = { 'g', 0 };
+   variable gamma1 = gamma0. succ( );
+
    variable succ = { 's', 0 };
 
    auto propSucc = prop::expr( prop::tuple, 
@@ -71,13 +74,29 @@ void mixing( flowgraph::body& bod )
 
    auto propEven = prop::expr( prop::ident, 
       exactident( identifier( ) + "even", 0 ));
- 
-   auto b1 = statement( stat_assign, p ++, alpha0, 
-      flatterm( flat_boolconst, false ) );
-   auto b2 = statement( stat_assign, p ++, alpha0, 
-      flatterm( flat_boolconst, true ) );
- 
-   statement abool = statement( stat_branch, p ++, { b1, b2 } );
+
+   std::vector< statement > res;
+      // It will be collected into a single block at the end. 
+
+   std::vector< statement > rep;
+   rep. push_back( statement( stat_assign, p ++, alpha0, 
+                             flatterm( flat_some_bool )));
+
+   rep. push_back( statement( stat_nop, p ++ ));
+   rep. push_back( statement( stat_assign, p ++, beta0, 
+                    flatterm( flat_field, m0, exactident( identifier( ) + "op", 0 ), { } )));
+
+   rep. push_back( statement( stat_assign, p ++, gamma0, 
+                             flatterm( flat_selconst, usel( "zero" ))));
+
+   rep. push_back( statement( stat_assign, p ++, gamma1, 
+                             flatterm( flat_eq, beta0, gamma0 )));
+
+   std::vector< statement > bl1;
+   bl1. push_back( statement( stat_istrue, p ++, alpha0 ));
+   bl1. push_back( statement( stat_istrue, p ++, gamma1 ));
+
+#if 0
 
    {
 #if 0
@@ -91,12 +110,7 @@ void mixing( flowgraph::body& bod )
 
       auto cond = statement( stat_branch, p ++, { c1, c2 } );
 
-      auto zero = statement( stat_assign, p ++, beta1, 
-                             flatterm( flat_selconst, usel( "zero" )));
 
-      auto cmp = statement( stat_assign, p ++, beta2, 
-                             flatterm( flat_eq, beta0, beta1 ));
-                  
       c1 = statement( stat_block, p ++,
          { statement( stat_iftrue, p ++, beta2 ),
            statement( stat_goto, p ++, label( "inc", 0 )) } );
@@ -161,12 +175,15 @@ void mixing( flowgraph::body& bod )
       bod. code. insert( { flowgraph::label( "inc", 0 ), inc } );
    }
 #endif
+#endif
+   res. push_back( statement( stat_repeat, p ++, rep. begin( ), rep. end( )));
+
+    return function( statement( stat_block, p ++, res.begin( ), res. end( )),
+                     prop::expr( prop::type_unit ));
 
 }
-#endif
 
-#if 0
-void repeated( flowgraph::body& bod )
+intermediate::function tests::repeated( )
 {
 #if 0
    flowgraph::point p;
@@ -212,13 +229,11 @@ void repeated( flowgraph::body& bod )
 #endif
 
 }
-#endif
 
 // Adjective conversion in an array:
 
 intermediate::function tests::arrayconv( )
 {
-
    using namespace intermediate; 
 
    point p;
@@ -240,7 +255,7 @@ intermediate::function tests::arrayconv( )
    auto propAllB = prop::expr( prop::log_forall, propB );
 
    std::vector< statement > res;
-      // It will be collected into a single block.
+      // It will be collected into a single block at the end. 
 
    res. push_back( statement( stat_assign, p ++, i0,  
                               flatterm( flat_u64const, (size_t) 0 )));
@@ -254,8 +269,9 @@ intermediate::function tests::arrayconv( )
 
    rep. push_back( statement( stat_isfalse, p ++, g0 ));
  
-   rep. push_back( statement( stat_assign, p ++, d0, 
-                              flatterm( flat_vectfield, x0, 0, i0 )) );
+   rep. push_back( statement( stat_resolve, p ++, { statement( stat_assign, p ++, d0, 
+                              flatterm( flat_field, x0, 
+                                  exactident( identifier( ) + "f", 0 ), i0 )) } ));
 
   
    {
@@ -265,44 +281,26 @@ intermediate::function tests::arrayconv( )
       std::vector< variable > var = { d0 };
       std::vector< prop::expr > prec = { propA };
 
-      rep. push_back( statement( stat_resolve, p ++,
-                                 var, {{ prec, call }} ));
+      rep. push_back( statement( stat_resolve, p ++, { call } ));
       
+      rep. push_back( statement( stat_update, p ++, x0, 
+                                 exactident( identifier() + "f", 0 ),
+                                 { i0 }, e0 ));
+
+      rep. push_back( statement( stat_assign, p ++, j0, 
+                              flatterm( flat_u64const, (size_t) 1 )));
+      rep. push_back( statement( stat_assign, p ++, i0, flatterm( flat_add, i0, j0 )));
+      rep. push_back( statement( stat_comment, p ++, "prepare for the next test" ));
+
+      rep. push_back( statement( stat_assign, p ++, a0, flatterm( flat_len, x0 )));
+      rep. push_back( statement( stat_assign, p ++, b0, flatterm( flat_lt, i0, a0 )));
+      rep. push_back( statement( stat_assign, p ++, g0, flatterm( flat_not, b0 )));
    }
- 
-#if 0
-   {
-      
 
-      call = statement( stat_resolve, p ++, 
-         { { precond( { { d0, propA } } ), call }} );
+   res. push_back( statement( stat_repeat, p ++, rep. begin( ), rep. end( )));
+   res. push_back( statement( stat_istrue, p ++, g0 ));  
+   res. push_back( statement( stat_resolve, p ++, { statement( stat_return, p ++, x0 ) } ));
 
-      auto p2 = statement( stat_update, p ++, x0, 0, { i0 }, e0 );
-      auto p3 = statement( stat_assign, p ++, j0, 
-                              flatterm( flat_u64const, (size_t) 1 ));
-      auto p4 = statement( stat_assign, p ++, i0, flatterm( flat_add, i0, j0 ));
-      auto p5 = statement( stat_goto, p ++, label( "cond", 0 ));
-
-      bod. code.insert( { flowgraph::label( "body", 0 ), 
-         statement( stat_block, p ++, { p1, call, p2, p3, p4, p5 } ) } );
-   }
-#endif
-      res. push_back( statement( stat_repeat, p ++, 
-                                 rep. begin( ), rep. end( )));
-
-#if 0
-#if 0
-   {
-      auto ret = statement( stat_return, p ++, x0 );
-
-      ret = statement( stat_resolve, p ++, 
-         { { precond( {{ x0, propAllB }} ), ret } } );
-
-      bod. code. insert( { flowgraph::label( "exit", 0 ), ret } );
-   }
-#endif
-      auto no = statement( stat_iffalse, p ++, g0 );
-#endif
    return function( statement( stat_block, p ++, res.begin( ), res. end( )),
                     propAllB );
 }

@@ -11,7 +11,6 @@
 
 #include "tests.h"
 
-#include "intermediate/label.h"
 #include "intermediate/point.h"
 #include "intermediate/variable.h"
 #include "intermediate/flatterm.h"
@@ -65,9 +64,10 @@ int main( int argc, char* argv [] )
    std::cout << prp << "\n";
    std::cout << flds << "\n";
 
-   // mixing( bod );
-   // repeated( bod );
-   auto f = tests::arrayconv( );
+   auto f = tests::mixing( );
+   // auto f = tests::repeated( );
+   std::cout << f << "\n";
+   f = tests::arrayconv( );
    std::cout << f << "\n";
 
    return 0;

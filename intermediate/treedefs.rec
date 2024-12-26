@@ -15,10 +15,11 @@
 %option u64const    { flat_u64const } => # u : size_t 
 %option doubleconst { flat_doubleconst } => # d : double
 
-%option any_bool    { flat_some_bool } =>
-%option any_char    { flat_some_char } =>
-%option any_u64     { flat_some_u64 } =>
-%option any_double  { flat_some_double } =>
+%option some_bool    { flat_some_bool } =>
+%option some_char    { flat_some_char } =>
+%option some_u64     { flat_some_u64 } =>
+%option some_double  { flat_some_double } =>
+%option some_integer { flat_some_integer } =>
 
 %option yield       { flat_yield } => # v : variable
 
@@ -30,14 +31,16 @@
                  flat_le, flat_ge,
                  flat_add, flat_sub } => # v1 : variable, v2 : variable
 
-%option scalfield { flat_scalfield } => # v : variable, fld : size_t 
-%option repfield { flat_vectfield, flat_listfield } => 
-    # v : variable, fld : size_t, ind : variable
+%option field { flat_field } => # v : variable, fname : exactident, 
+                                ind : std::optional< variable >  
+   // We don't store the offset, because it can be looked up from the name.
 
-%option scaltuple { flat_scaltuple } => [ v : variable ] 
-%option reptuple  { flat_vecttuple, flat_listtuple } => 
+%option scal_tuple { flat_scaltuple } => [ v : variable ] 
+%option vect_tuple { flat_vect_tuple } => 
       [ v : variable ], # nrrep : size_t 
- 
+%option list_tuple { flat_list_tuple } =>
+      [ v : variable ], # nrrep : size_t
+  
    // In the last two cases, we provide the scalar fields as initializers,
    // and specify how many repeated fields there are. The repeated
    // fields are initially empty. 
@@ -80,16 +83,18 @@
 %option pop      { stmnt_pop   } => # v : variable
 %option strct    { stmnt_strct } => v : variable, k : size_t, [ w : variable ]
 %option is       { stat_istrue, stat_isfalse } => # v : variable 
-%option resolve  { stat_resolve } => var : std::vector< variable >,
-                       [ prec : std::vector< prop::expr >, stat : statement ]
-   // Every prec must be a tuple whose size is var. size( ).
+%option resolve  { stat_resolve } => [ stat : statement ]
+   // Before, I tried to store the preconditions in the resolve statement,
+   // but I think that in all possible cases, the preconditions are evident
+   // from the statements. The statements are either a field access,
+   // a field assignment, a function call, or a return statement. 
 
-%option update   { stat_update } => v : variable, fld : size_t, 
+%option update   { stat_update } => v : variable, fname : exactident, 
                           ind : std::optional< variable >, val : variable 
+   // We are not storing the offset, because it can be determined from the name.
 
 %option return  { stat_return } => # v : variable 
-%option intrpt  { stmnt_abort,
-                  stmnt_error  } => mssg : std::string
+%option comment { stat_comment } => blah : std::string
 
 %option compound { stat_block, stat_repeat, stat_branch } 
        => [ stat : statement ]
@@ -103,7 +108,6 @@
 	#include "tvm/includes.h"
 	#include "flatterm.h"
 	#include "variable.h"
-	#include "label.h"
         #include "point.h"
 	#include "prop/expr.h"
 }

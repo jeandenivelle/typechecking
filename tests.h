@@ -15,6 +15,7 @@ namespace tests
 
    intermediate::function mixing( );
    intermediate::function arrayconv( ); 
+   intermediate::function repeated( );
    
 }
 

@@ -124,18 +124,12 @@ void intermediate::flatterm::print( std::ostream& out ) const
          out << "( " << b. v1( ) << ", " << b. v2( ) << " )";
          return;
       }
-   case flat_scalfield:
+   case flat_field:
       {
-         auto fld = view_scalfield( );
-         out << fld. v( ) << ".#" << fld. fld( );
-         return; 
-      }
-   case flat_vectfield:
-   case flat_listfield:
-      {
-         auto fld = view_repfield( );
-         out << fld. v( ) << ".#" << fld. fld( );
-         out << "[ " << fld. ind( ) << " ]";
+         auto fld = view_field( );
+         out << fld. v( ) << '.' << fld. fname( );
+         if( fld. ind( ). has_value( ))
+            out << "[ " << fld. ind( ). value( ) << " ]";
          return; 
       }
 #if 0
@@ -186,13 +180,6 @@ intermediate::statement::print( indentation ind, std::ostream& out ) const
    {
    case stat_nop:
       out << "nop\n"; return;
-
-// case stmnt_usel_assgn:
-// 		{
-// 			const auto& assgn = view_usel_assgn( );
-// 			out << assgn. v( ) << " <- " << assgn. s( );
-// 		}
-// 		break;
 
    case stat_assign:
       {
@@ -286,32 +273,16 @@ intermediate::statement::print( indentation ind, std::ostream& out ) const
       case stat_resolve:
          {
             auto res = view_resolve( );
-            out << "resolve on ( ";
-            for( size_t i = 0; i != res. var( ). size( ); ++ i )
-            {
-               if(i) out << ", ";
-               out << res. var()[i];
-            }
-            out << " )\n";
-
+            out << "resolve\n";
             for( size_t i = 0; i != res. size( ); ++ i )
-            {
-               out << (ind+3) << "( ";
-               for( size_t j = 0; j != res. prec(i). size( ); ++ j )
-               {
-                  if(j) out << ", ";
-                  out << res. prec(i)[j];
-               }
-               out << " ) ==>\n";
-               res. stat(i). print( ind + 6, out ); 
-            }
+               res. stat(i). print( ind + 3, out ); 
             return;
          }
  
       case stat_update:
          {
             auto up = view_update( ); 
-            out << "update " << up. v( ) << ".#" << up. fld( ); 
+            out << "update " << up. v( ) << "." << up. fname( ); 
             if( up. ind( ). has_value( ))
                out << "[ " << up. ind( ). value( ) << " ]";
             out << " := " << up. val( ) << "\n";
@@ -341,6 +312,12 @@ intermediate::statement::print( indentation ind, std::ostream& out ) const
          for( size_t i = 0; i != c. size( ); ++ i )
             c. stat(i). print( ind + 3, out );
           
+         return;
+      }
+
+   case stat_comment:
+      {
+         out << "// " << view_comment( ). blah( ) << "\n";
          return;
       }
 
