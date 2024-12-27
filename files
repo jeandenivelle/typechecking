@@ -1,11 +1,11 @@
 
 %rootdirs
    Source = .
-   Lexing = /home/nivelle/programs
-   Tvm = /home/nivelle/programs
-   Maph = /home/nivelle/programs/maphoon2024
-   Treegen = /home/nivelle/programs/treegen2023
-   Util = /home/nivelle/programs
+   Lexing = /home/dr_mimicry/Desktop/easy_prog_lang_projects
+   Tvm = /home/dr_mimicry/Desktop/easy_prog_lang_projects
+   Maph = /home/dr_mimicry/Desktop/easy_prog_lang_projects/maphoon2024
+   Treegen = /home/dr_mimicry/Desktop/easy_prog_lang_projects/treegen2023
+   Util = /home/dr_mimicry/Desktop/easy_prog_lang_projects
 
 %dir Source
 %exec typechecking
@@ -31,6 +31,19 @@
    selector.cpp
    flatterm.cpp
    statement.cpp
+   printing.cpp
+
+%dir Source/approx
+%sources
+   selector.cpp
+   approxterm.cpp
+   approxmap.cpp
+   printing.cpp
+
+%dir Source/setterm
+%sources
+   selector.cpp
+   term.cpp
    printing.cpp
 
 %preproc $(Treegen)/treegen $(Source)/prop/expr.rec
@@ -64,6 +77,26 @@
    flatterm.cpp
    statement.h
    statement.cpp
+
+%preproc $(Treegen)/treegen $(Source)/approx/approxterms.rec
+%dir Source/approx
+%in
+   approxterms.rec
+%out
+   selector.h
+   selector.cpp
+   approxterm.h
+   approxterm.cpp
+
+%preproc $(Treegen)/treegen $(Source)/setterm/setterms.rec
+%dir Source/setterm
+%in
+   setterms.rec
+%out
+   selector.h
+   selector.cpp
+   term.h
+   term.cpp
 
 %options
    Wall

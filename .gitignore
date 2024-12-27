@@ -1,4 +1,5 @@
 typechecking
+Makefile
 *.o
 */*.o
 
@@ -18,4 +19,16 @@ prop/selector.h
 prop/selector.cpp
 prop/expr.h
 prop/expr.cpp
+
+approx/approxterm.cpp
+approx/approxterm.h
+approx/selector.cpp
+approx/selector.h
+
+setterm/selector.cpp
+setterm/selector.h
+setterm/term.cpp
+setterm/term.h
+
+
 

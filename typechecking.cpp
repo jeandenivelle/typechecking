@@ -16,8 +16,11 @@
 #include "intermediate/flatterm.h"
 #include "intermediate/statement.h"
 
-#include "approx/cutoff.h"
+#include "approx/approximator.h"
+#include "approx/approxterm.h"
+#include "approx/approxmap.h"
 
+#include "setterm/term.h"
 
 int main( int argc, char* argv [] )
 {
