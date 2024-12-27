@@ -1,0 +1,29 @@
+%dir setterm
+
+%namespace setterm
+
+%define term( prim_never )
+
+%option never    { prim_never }   =>
+%option unit     { prim_unit }    =>
+%option bool     { prim_bool }    => b : char 
+%option char     { prim_char }    => c : char
+%option sel      { prim_sel }     => s : usel
+%option u64      { prim_u64 }     => i : size_t
+%option iter     { prim_iter }    => s : size_t
+%option integer  { prim_integer } => i : bigint 
+%option double   { prim_double }  => d : double 
+%option repeated { term_tuple,
+                  term_set }      => [ sub : term ]
+
+%h_incl {
+   #include "tvm/includes.h"
+   #include "tvm/unit.h" 
+   #include "usel.h"
+   #include "util/print.h"
+   #include "util/bigint.h"
+}
+
+%h_methods {
+   void print( std::ostream& ) const;
+}
