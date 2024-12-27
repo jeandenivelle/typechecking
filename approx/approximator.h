@@ -8,21 +8,21 @@
 namespace approx
 {
  
-   struct cutoff
+   struct approximator
    {
       size_t index;
 
-      cutoff( ) noexcept 
+      approximator( ) noexcept 
          : index(0)
       { } 
 
-      cutoff& operator ++ ( ) 
+      approximator& operator ++ ( ) 
          { ++ index; return *this; }
 
-      cutoff operator ++ ( int )
+      approximator operator ++ ( int )
          { auto res = *this; ++ index; return res; }
 
-      cutoff next( ) const
+      approximator next( ) const
          { auto res = *this; ++ res. index; return res; }
 
       void print( std::ostream& out ) const
@@ -30,17 +30,24 @@ namespace approx
 
       struct equal_to
       {
-         bool operator( ) ( cutoff ct1, cutoff ct2 ) const
+         bool operator( ) ( approximator ct1, approximator ct2 ) const
             { return ct1. index == ct2. index; } 
       };
 
       struct hash
       {
-         size_t operator( ) ( cutoff ct ) const
+         size_t operator( ) ( approximator ct ) const
             { return ct. index; }
       };
 
    };
+
+   inline bool operator == ( approximator a, approximator b )
+   { return a. index == b. index; }
+
+   inline bool operator != ( approximator a, approximator b )
+   { return a. index != b. index; }
+
 
 }
 
