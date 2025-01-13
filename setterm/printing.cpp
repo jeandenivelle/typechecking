@@ -1,48 +1,49 @@
-#include "term.h"
+#include "setterm.h"
+#include "atom.h"
 
 void
-setterm::term::print
+setterm::setterm::print
 ( std::ostream& out ) const
 {
 	switch( sel() )
 	{
-	case  prim_never:
-	case  prim_unit:
+	case  setterm_never:
+	case  setterm_unit:
 	out << sel( );
 	return;
 
-	case prim_bool:
+	case setterm_bool:
 	out << view_bool( ). b( );
 	return;
 
-	case prim_char:
+	case setterm_char:
 	out << view_char( ). c( );
 	return;
 	
-	case prim_sel:
+	case setterm_sel:
 	out << view_sel( ). s( );
 	return;
 
-	case prim_u64:
+	case setterm_u64:
 	out << view_u64( ). i( );
 	return;
 
-	case prim_iter:
+	case setterm_iter:
 	out << view_iter( ). s( );
 	return;
 
-	case prim_integer:
+	case setterm_integer:
 	out << "bigint";
 	return;	
 	
-	case prim_double:
+	case setterm_double:
 	out << view_double( ). d( );
 	return;
 
-	case term_tuple:
-	case term_set:
+	case setterm_tuple:
+	case setterm_set:
 	{
-		if( sel( ) == term_set ) out << "set";
+		if( sel( ) == setterm_set ) out << "set";
 		auto rep = view_repeated( );
 		out << '(';
 		for( size_t i = 0; i < rep. size( ); ++i )
@@ -57,4 +58,52 @@ setterm::term::print
 
 	out << "error: unhandles setterm selector in print function: " << sel( ) << '\n';
 	throw std::runtime_error( "stop" );	
+}
+
+void
+setterm::atom::print
+( std::ostream& out ) const
+{
+	switch( sel( ) )
+	{
+	case atom0:
+	return;
+
+	case atom1:
+	{
+		auto a = view_atom1( );
+		out << a. v( ) << '/' << a. s( ); 
+	}
+	return;
+
+	case atom2:
+	{
+		auto a = view_atom2( );
+		out << a. v( ) << '[' << a. i( ) << "]/" << a. s( );
+	}
+	return;
+
+	case atom3:
+	{
+		auto a = view_atom3( );
+		out << a. v( ) << '[' << a. t1( ) << " ... " << a. t2( ) << "]/"  << a. s( );
+	}
+	return;
+
+	case atom4:
+	{
+		auto a = view_atom4( );
+		out << "delta(" << a. t1( ) << ", " << a. t2( ) << '[';
+	    for( size_t i = 0; i < a. size( ); ++i )
+		{
+			if( i ) out << ", ";
+			out << a. s( i );
+		}
+		out << ']';
+	}
+	return;
+	}
+
+	out << "error: unhandled atom selector in print function: " << sel( ) << '\n';
+	throw std::runtime_error( "stop" );
 }
