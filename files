@@ -43,8 +43,14 @@
 %dir Source/setterm
 %sources
    selector.cpp
-   term.cpp
+   setterm.cpp
+   atom.cpp
    printing.cpp
+   comparing.cpp
+
+%dir Util/util
+%sources
+	bigint.cpp
 
 %preproc $(Treegen)/treegen $(Source)/prop/expr.rec
 %dir Source/prop
@@ -95,8 +101,10 @@
 %out
    selector.h
    selector.cpp
-   term.h
-   term.cpp
+   setterm.h
+   setterm.cpp
+   atom.h
+   atom.cpp
 
 %options
    Wall
