@@ -20,7 +20,8 @@
 #include "approx/approxterm.h"
 #include "approx/approxmap.h"
 
-#include "setterm/term.h"
+#include "setterm/setterm.h"
+#include "setterm/atom.h"
 
 int main( int argc, char* argv [] )
 {
