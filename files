@@ -15,6 +15,7 @@
    tests.cpp
    identifier.cpp
    fieldmap.cpp
+   state.cpp
 
 %dir Source/data
 %sources
