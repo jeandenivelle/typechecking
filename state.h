@@ -28,8 +28,7 @@ public:
 	
 	size_t size( ) { return mp. size( ); }
 
-	bool insert( exactident, const data::tree& );	
-  	bool insert( exactident, const data::tree&& );
+	bool insert( exactident, const data::tree& );
 
 	/* The find return a pair of iterator for outer map and iner map.
 	 * 

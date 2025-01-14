@@ -16,10 +16,6 @@ bool state::insert
 	return res. second;
 }
 
-bool state::insert
-( exactident key, const data::tree&& val )
-{ return insert( key, std::move(val) ); }
-
 /* The find return a pair of iterator for outer map and iner map.
  * 
  * if key does not exists in outer map, it returns a pair of
