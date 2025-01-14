@@ -23,6 +23,8 @@
 #include "setterm/setterm.h"
 #include "setterm/atom.h"
 
+#include "state.h"
+
 int main( int argc, char* argv [] )
 {
    auto flat = intermediate::flatterm( intermediate::flat_some_bool );
