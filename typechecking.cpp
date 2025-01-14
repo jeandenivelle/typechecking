@@ -24,6 +24,7 @@
 #include "setterm/atom.h"
 
 #include "state.h"
+#include "rangestate.h"
 
 int main( int argc, char* argv [] )
 {
