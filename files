@@ -16,6 +16,7 @@
    identifier.cpp
    fieldmap.cpp
    state.cpp
+   rangestate.cpp
 
 %dir Source/data
 %sources
