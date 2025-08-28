@@ -1,31 +1,43 @@
 
 #include <iostream>
-#include <list>
+//#include <list>
 
-#include "fieldmap.h"
-#include "identifier.h"
-#include "usel.h"
-#include "exactident.h"
+//#include "fieldmap.h"
+//#include "identifier.h"
+//#include "usel.h"
+//#include "exactident.h"
 
 #include "data/tree.h"
+#include "data/selector.h"
 
-#include "tests.h"
+//#include "tests.h"
 
-#include "intermediate/point.h"
-#include "intermediate/variable.h"
-#include "intermediate/flatterm.h"
-#include "intermediate/statement.h"
+//#include "intermediate/point.h"
+//#include "intermediate/variable.h"
+//#include "intermediate/flatterm.h"
+//#include "intermediate/statement.h"
 
-#include "approx/approximator.h"
-#include "approx/approxterm.h"
-#include "approx/approxmap.h"
+//#include "approx/approximator.h"
+//#include "approx/approxterm.h"
+//#include "approx/approxmap.h"
 
-#include "setterm/setterm.h"
-#include "setterm/atom.h"
+//#include "setterm/setterm.h"
+//#include "setterm/atom.h"
 
-#include "state.h"
-#include "rangestate.h"
+//#include "state.h"
+//#include "rangestate.h"
 
+
+int main( int argc, char* arcgv[] ) {
+	auto some_bool = data::tree( data::selector::prim_bool, true );
+	std::cout << some_bool << std::endl;
+	
+	return 0;
+}
+
+
+
+#if 0
 int main( int argc, char* argv [] )
 {
    auto flat = intermediate::flatterm( intermediate::flat_some_bool );
@@ -104,4 +116,4 @@ int main( int argc, char* argv [] )
 
    return 0;	
 }
-
+#endif

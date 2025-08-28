@@ -12,16 +12,12 @@
 
 %sources
    typechecking.cpp
-   tests.cpp
-   identifier.cpp
-   fieldmap.cpp
-   state.cpp
-   rangestate.cpp
 
 %dir Source/data
 %sources
    selector.cpp
    tree.cpp
+   printing.cpp
 
 %dir Source/prop
 %sources
