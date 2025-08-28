@@ -4,27 +4,20 @@
 %namespace data
    // Namespace in which the resulting types will be put.
 
-%define tree ( prim_never )
-   // Note that never is not really 'never', because it
-   // can be easily constructed.  
+%define tree ( prim_empty )
 
-%option never { prim_never } => 
-%option unit { prim_unit } => 
-%option bool { prim_bool } => b : char 
-%option char { prim_char } => c : char
-%option sel { prim_sel } => s : usel
-%option u64 { prim_u64 } => i : size_t
-%option iter { prim_iter } => s : size_t
-%option integer { prim_integer } => i : bigint 
+%option empty  { prim_empty }  =>
+%option bool   { prim_bool }   => b : bool
+%option char   { prim_char }   => c : char
+%option sel    { prim_sel }    => s : usel
+%option u64    { prim_u64 }    => i : size_t
+%option int    { prim_int }    => i : bigint 
 %option double { prim_double } => d : double 
 
-%option scal1 { scal1 } => scal1 : tree
-%option scal2 { scal2 } => scal1 : tree, scal2 : tree
-%option vect01 { vect01 } => [ vect0 : tree ] 
-%option vect02 { vect02 } => [ vect0 : tree, vect1 : tree ]
-%option vect11 { vect11 } => scal0 : tree, [ vect0 : tree ] 
-%option vect12 { vect12 } => scal0 : tree, [ vect0 : tree, vect2 : tree ] 
-%option list { list } => scaltup : tree, [ reptup : tree ] 
+%option atom   { data_atom } => [ vect : char ]
+%option unary  { data_neg } => scal : tree
+%option binary { data_imply, data_equiv } => scal1 : tree, scal2 : tree
+%option n_ary  { data_and, data_or } => [ vect : tree ]
 
 %h_incl {
    #include "tvm/includes.h"
@@ -37,19 +30,4 @@
 
 %h_methods {
    void print( std::ostream& ) const;
-}
-
-%cpp_back { 
-   void data::tree::print( std::ostream& out ) const
-   {
-      switch( sel( ) )
-      {
-      case prim_u64:
-         out << view_u64( ). i( ) << " :u64"; return; 
-      }
-      std::cout << sel( ) << "prop::expr::print not implemented\n\n";
-      throw std::runtime_error( "stop" ); 
-   }
-}
-
- 
+} 
