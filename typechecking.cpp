@@ -8,7 +8,7 @@
 //#include "exactident.h"
 
 #include "data/tree.h"
-#include "data/selector.h"
+#include "automata/state.h"
 
 //#include "tests.h"
 
@@ -29,9 +29,12 @@
 
 
 int main( int argc, char* arcgv[] ) {
-	auto some_bool = data::tree( data::selector::prim_bool, true );
+	auto some_bool = data::tree( data::selector::tree_bool, true );
 	std::cout << some_bool << std::endl;
 	
+	auto some_bool_state = automata::state( automata::selector::state_bool, false );
+	std::cout << some_bool_state << std::endl;
+
 	return 0;
 }
 

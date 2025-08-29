@@ -1,0 +1,31 @@
+%dir automata
+
+%namespace automata
+   // Namespace in which the resulting types will be put.
+
+%define state ( state_emptyt )
+
+%option empty  { state_emptyt, state_emptys }  =>
+
+%option bool   { state_bool }   => b : bool
+%option char   { state_char }   => c : char
+%option sel    { state_sel }    => s : usel
+%option u64    { state_u64 }    => i : size_t
+%option int    { state_int }    => i : bigint 
+%option double { state_double } => d : double 
+
+%option tuple { state_tuple } => [ vect : state ]
+%option mset  { state_mset }  => scal1 : state, scal2 : state
+
+%h_incl {
+   #include "tvm/includes.h"
+   #include "tvm/unit.h" 
+   #include "usel.h"
+   #include "util/print.h"
+   #include "util/bigint.h"
+}
+
+
+%h_methods {
+   void print( std::ostream& ) const;
+} 

@@ -19,6 +19,13 @@
    tree.cpp
    printing.cpp
 
+
+%dir Source/automata
+%sources
+   selector.cpp
+   state.cpp
+   printing.cpp
+
 %dir Source/prop
 %sources
    selector.cpp
@@ -69,6 +76,16 @@
    selector.cpp
    tree.h
    tree.cpp
+
+%preproc $(Treegen)/treegen $(Source)/automata/state.rec
+%dir Source/automata
+%in
+   state.rec
+%out
+   selector.h
+   selector.cpp
+   state.h
+   state.cpp
 
 %preproc $(Treegen)/treegen $(Source)/intermediate/treedefs.rec
 %dir Source/intermediate

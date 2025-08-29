@@ -8,6 +8,11 @@ data/selector.cpp
 data/tree.h
 data/tree.cpp
 
+automata/selector.h
+automata/selector.cpp
+automata/state.h
+automata/state.cpp
+
 intermediate/selector.h
 intermediate/selector.cpp
 intermediate/flatterm.h
