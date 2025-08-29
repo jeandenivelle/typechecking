@@ -4,20 +4,17 @@
 %namespace data
    // Namespace in which the resulting types will be put.
 
-%define tree ( prim_empty )
+%define tree ( tree_empty )
 
-%option empty  { prim_empty }  =>
-%option bool   { prim_bool }   => b : bool
-%option char   { prim_char }   => c : char
-%option sel    { prim_sel }    => s : usel
-%option u64    { prim_u64 }    => i : size_t
-%option int    { prim_int }    => i : bigint 
-%option double { prim_double } => d : double 
+%option empty  { tree_empty }  =>
+%option bool   { tree_bool }   => b : bool
+%option char   { tree_char }   => c : char
+%option sel    { tree_sel }    => s : usel
+%option u64    { tree_u64 }    => i : size_t
+%option int    { tree_int }    => i : bigint 
+%option double { tree_double } => d : double 
 
-%option atom   { data_atom } => [ vect : char ]
-%option unary  { data_neg } => scal : tree
-%option binary { data_imply, data_equiv } => scal1 : tree, scal2 : tree
-%option n_ary  { data_and, data_or } => [ vect : tree ]
+%option nary { tree_tuple, tree_array } => [ vect : tree ]
 
 %h_incl {
    #include "tvm/includes.h"
