@@ -8,10 +8,10 @@ data/selector.cpp
 data/tree.h
 data/tree.cpp
 
-automata/selector.h
-automata/selector.cpp
-automata/state.h
-automata/state.cpp
+dma/selector.h
+dma/selector.cpp
+dma/state.h
+dma/state.cpp
 
 intermediate/selector.h
 intermediate/selector.cpp

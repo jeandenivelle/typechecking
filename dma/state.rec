@@ -1,6 +1,6 @@
-%dir automata
+%dir dma
 
-%namespace automata
+%namespace dma
    // Namespace in which the resulting types will be put.
 
 %define state ( state_emptyt )

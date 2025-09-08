@@ -44,7 +44,7 @@ data::tree::print
 		out << "( ";
 		for( size_t i = 0; i < data_tuple. size(); ++i ) {
 			if( i ) out << " ,";
-			out << data_tupe. vect(i);
+			out << data_tuple. vect(i);
 		}
 		out << " )";
 	} break;

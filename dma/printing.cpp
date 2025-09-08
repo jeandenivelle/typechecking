@@ -2,10 +2,10 @@
 #include "state.h"
 
 void
-automta::state::print
+dma::state::print
 ( std::ostream& out ) const 
 {
-	switch( sle() ) {
+	switch( sel() ) {
 	case state_emptyt:
 	case state_emptys:
 		break;
@@ -14,7 +14,7 @@ automta::state::print
 		if( view_bool(). b() )
 			out << "q_bool( true )" << std::endl;
 		else
-			out << "q_bool( false )" << std:endl;
+			out << "q_bool( false )" << std::endl;
 		break;
 
 	case state_char:
@@ -56,8 +56,8 @@ automta::state::print
 	} break;
 
 	default:
-		std::cerr << "automata::state::print() : unrecognized selector : " << sel() << std::endl;
-		throw std::runtime_error( "automata::state::print() : unrecognized selector" );
+		std::cerr << "dma::state::print() : unrecognized selector : " << sel() << std::endl;
+		throw std::runtime_error( "dma::state::print() : unrecognized selector" );
 	}
 }
 
