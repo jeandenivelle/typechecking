@@ -31,13 +31,13 @@
 
 
 int main( int argc, char* arcgv[] ) {
-	auto some_bool = data::tree( data::selector::tree_bool, true );
-	std::cout << some_bool << std::endl;
-	
-	auto some_bool_state = dma::state( dma::selector::state_bool, false );
-	std::cout << some_bool_state << std::endl;
 
-	return 0;
+   using namespace data;
+
+   auto tr = tree( tree_array, 
+      { tree( tree_unit ), tree( tree_bool, true ), tree( tree_char, 'a' ) } );
+   std::cout << tr << "\n";
+   return 0;
 }
 
 

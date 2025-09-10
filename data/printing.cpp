@@ -2,26 +2,30 @@
 #include "tree.h"
 #include "selector.h"
 
-void
-data::tree::print
-( std::ostream& out ) const 
+void data::tree::print ( std::ostream& out ) const 
 {
-	switch( sel() ) {
-	case tree_empty:
-		break;
+   switch( sel( )) 
+   {
+   case tree_never:
+      out << view_never( ). n( ); 
+      return;
 
-	case tree_bool:
-		if( view_bool(). b() )
-			out << "true" << std::endl;	
-		else
-			out << "false" << std::endl;
-		break;
+   case tree_unit: 
+      out << "trivial"; 
+      return; 
 
-	case tree_char:
-		out << view_char(). c() << std::endl;
-		break;
+   case tree_bool:
+      if( view_bool( ). b( ))
+         out << "true";	
+      else
+         out << "false";
+      return; 
 
-    case tree_sel:
+   case tree_char:
+      out << '\'' << view_char(). c() << '\''; 
+      return; 
+
+   case tree_sel:
 		out << view_sel(). s() << std::endl;
 		break;
 
@@ -39,27 +43,32 @@ data::tree::print
 
 	case tree_tuple:
 	{
-		auto data_tuple = view_nary();
+		auto data_tuple = view_tuple();
 		
 		out << "( ";
 		for( size_t i = 0; i < data_tuple. size(); ++i ) {
 			if( i ) out << " ,";
-			out << data_tuple. vect(i);
+			out << data_tuple. val(i);
 		}
 		out << " )";
 	} break;
 
-	case tree_array:
-	{
-		auto data_array = view_nary();
+   case tree_array:
+      {
+         auto ar = view_array( );
 		
-		out << "( ";
-		for( size_t i = 0; i < data_array. size(); ++i ) {
-			if( i ) out << " ,";
-			out << data_array. vect(i);
-		}
-		out << " )";
-	} break;
+         out << "[";
+         for( size_t i = 0; i < ar. size(); ++ i ) 
+         {
+            if(i) 
+               out << ", ";
+            else
+               out << ' ';
+            out << ar. val(i);
+         }
+         out << " ]";
+         return;
+      }
 
 	default:
 		std::cerr << "data::tree::print() : unrecognized selector : " << sel() << '\n' << std::endl;

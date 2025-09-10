@@ -39,14 +39,6 @@
    statement.cpp
    printing.cpp
 
-%dir Source/setterm
-%sources
-   selector.cpp
-   setterm.cpp
-   atom.cpp
-   printing.cpp
-   comparing.cpp
-
 %dir Util/util
 %sources
 	bigint.cpp
@@ -102,18 +94,6 @@
    selector.cpp
    approxterm.h
    approxterm.cpp
-
-%preproc $(Treegen)/treegen $(Source)/setterm/setterms.rec
-%dir Source/setterm
-%in
-   setterms.rec
-%out
-   selector.h
-   selector.cpp
-   setterm.h
-   setterm.cpp
-   atom.h
-   atom.cpp
 
 %options
    Wall

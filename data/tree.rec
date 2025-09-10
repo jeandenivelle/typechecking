@@ -4,9 +4,10 @@
 %namespace data
    // Namespace in which the resulting types will be put.
 
-%define tree ( tree_empty )
+%define tree ( tree_unit )
 
-%option empty  { tree_empty }  =>
+%option never  { tree_never }  => n : never
+%option unit   { tree_unit }   => 
 %option bool   { tree_bool }   => b : bool
 %option char   { tree_char }   => c : char
 %option sel    { tree_sel }    => s : usel
@@ -14,11 +15,13 @@
 %option int    { tree_int }    => i : bigint 
 %option double { tree_double } => d : double 
 
-%option nary { tree_tuple, tree_array } => [ vect : tree ]
+%option tuple { tree_tuple } => [ val : tree ]
+%option array { tree_array } => [ val : tree ] 
 
 %h_incl {
    #include "tvm/includes.h"
    #include "tvm/unit.h" 
+   #include "never.h"
    #include "usel.h"
    #include "util/print.h"
    #include "util/bigint.h"
@@ -28,3 +31,4 @@
 %h_methods {
    void print( std::ostream& ) const;
 } 
+
