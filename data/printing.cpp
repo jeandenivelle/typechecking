@@ -37,9 +37,9 @@ void data::tree::print ( std::ostream& out ) const
 		out << view_int(). i() << std::endl;
 		break;
 
-	case tree_double:
-		out << view_double(). d() << std::endl;
-		break;
+   case tree_double:
+      out << view_double(). d( );
+      return;
 
 	case tree_tuple:
 	{

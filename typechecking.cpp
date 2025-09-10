@@ -35,7 +35,7 @@ int main( int argc, char* arcgv[] ) {
    using namespace data;
 
    auto tr = tree( tree_array, 
-      { tree( tree_unit ), tree( tree_bool, true ), tree( tree_char, 'a' ) } );
+      { tree( tree_unit ), tree( tree_bool, true ), tree( tree_char, 'a' ), tree( tree_double, 3.14 ) } );
    std::cout << tr << "\n";
    return 0;
 }
