@@ -3,44 +3,39 @@
 #define USEL_
 
 #include <string>
-#include <unordered_set>
 #include <iostream>
-#include "util/hashbuilder.h"
+#include "util/normalized.h"
 
-// Written by Hans de Nivelle, January 2021. 
-// Selector constants are printed with a '?' in front of them.
-// We will not store the '?' inside this class and also not print it.
+// Written by Hans de Nivelle, sept  2025. 
+// Selector constants are normally printed with a '?' in front of them.
+// In this class usel, we do not store the '?' inside this class 
+// and also will not print it.
 
 class usel
 {
-   using indextype = std::unordered_set< std::string > ;
-
-   indextype :: const_iterator p;
+   util::normalized< std::string > val;
 
 public: 
    usel( const std::string& s )
-   {
-      static indextype index;
-      auto val = index. insert(s);
-      p = val. first;
-   }
+      : val( util::normalized(s)) 
+   { }
      
    usel( const char* c )
       : usel( std::string(c))
    { }
  
    const std::string& getstring( ) const
-      { return *p; }
+      { return val. value( ); }
 
    bool operator == ( usel sel ) const 
-      { return p == sel.p; } 
+      { return val == sel.val; } 
    bool operator != ( usel sel ) const 
-      { return p != sel.p; } 
+      { return val != sel.val; } 
 
-   void hash( util::hashbuilder& b ) const 
+   size_t hash( ) const 
    { 
-      std::hash< const std::string* > hh; 
-      b << hh( & *p ); 
+      util::normalized< std::string > :: hash hh; 
+      return hh( val ); 
    }
  
 };
@@ -50,12 +45,6 @@ inline std::ostream& operator << ( std::ostream& out, usel sel )
 {
    out << sel. getstring( );
    return out;
-}
-
-inline util::hashbuilder& operator << ( util::hashbuilder& b, usel sel )
-{
-   sel. hash(b);
-   return b;
 }
 
 #endif

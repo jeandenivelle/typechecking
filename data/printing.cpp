@@ -22,43 +22,48 @@ void data::tree::print ( std::ostream& out ) const
       return; 
 
    case tree_char:
-      out << '\'' << view_char(). c() << '\''; 
+      out << '\'' << view_char(). c( ) << '\''; 
       return; 
 
-   case tree_sel:
-		out << view_sel(). s() << std::endl;
-		break;
+   case tree_usel:
+      out << '?' << view_usel( ). s( );
+      return;
 
-	case tree_u64:
-		out << view_u64(). i() << std::endl;
-		break;
+   case tree_u64:
+      out << view_u64( ). i( );
+      return;
 
-	case tree_int:
-		out << view_int(). i() << std::endl;
-		break;
+   case tree_bigint:
+      out << view_bigint( ). i( );
+      return;
 
    case tree_double:
       out << view_double(). d( );
       return;
 
-	case tree_tuple:
-	{
-		auto data_tuple = view_tuple();
+   case tree_tuple:
+      {
+         auto t = view_tuple( );
 		
-		out << "( ";
-		for( size_t i = 0; i < data_tuple. size(); ++i ) {
-			if( i ) out << " ,";
-			out << data_tuple. val(i);
-		}
-		out << " )";
-	} break;
+         out << "(";
+         for( size_t i = 0; i < t. size( ); ++ i ) 
+         {
+            if(i) 
+               out << ", ";
+            else
+               out << " ";
+            out << t. val(i);
+         }
+         out << " )";
+         return;
+      } 
 
    case tree_array:
       {
          auto ar = view_array( );
 		
          out << "[";
-         for( size_t i = 0; i < ar. size(); ++ i ) 
+         for( size_t i = 0; i < ar. size( ); ++ i ) 
          {
             if(i) 
                out << ", ";
@@ -70,8 +75,8 @@ void data::tree::print ( std::ostream& out ) const
          return;
       }
 
-	default:
-		std::cerr << "data::tree::print() : unrecognized selector : " << sel() << '\n' << std::endl;
-		throw std::runtime_error( "data::tree::print() : unrecognized selector" );
-	}
+   default:
+      std::cerr << "data::tree::print() : unrecognized selector : " << sel() << '\n' << std::endl;
+      throw std::runtime_error( "data::tree::print() : unrecognized selector" );
+   }
 }

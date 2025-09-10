@@ -6,14 +6,14 @@
 
 %define tree ( tree_unit )
 
-%option never  { tree_never }  => n : never
-%option unit   { tree_unit }   => 
-%option bool   { tree_bool }   => b : bool
-%option char   { tree_char }   => c : char
-%option sel    { tree_sel }    => s : usel
-%option u64    { tree_u64 }    => i : size_t
-%option int    { tree_int }    => i : bigint 
-%option double { tree_double } => d : double 
+%option never   { tree_never }    => n : never
+%option unit    { tree_unit }     => 
+%option bool    { tree_bool }     => b : bool
+%option char    { tree_char }     => c : char
+%option usel    { tree_usel }     => s : usel
+%option u64     { tree_u64 }      => i : size_t
+%option bigint  { tree_bigint }   => i : bigint 
+%option double  { tree_double }   => d : double 
 
 %option tuple { tree_tuple } => [ val : tree ]
 %option array { tree_array } => [ val : tree ] 

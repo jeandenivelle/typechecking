@@ -35,7 +35,13 @@ int main( int argc, char* arcgv[] ) {
    using namespace data;
 
    auto tr = tree( tree_array, 
-      { tree( tree_unit ), tree( tree_bool, true ), tree( tree_char, 'a' ), tree( tree_double, 3.14 ) } );
+      { tree( tree_unit ), 
+        tree( tree_bool, true ), 
+        tree( tree_char, 'a' ), 
+        tree( tree_double, 3.14 ),
+        tree( tree_usel, usel( "hello" ) ) } );
+   tr = tree( tree_tuple, { tr, tree( tree_bigint, bigint( "999999999999999999" ) ), tree( tree_u64, 2222ul ) } );
+
    std::cout << tr << "\n";
    return 0;
 }

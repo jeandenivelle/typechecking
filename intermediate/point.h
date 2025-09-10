@@ -7,7 +7,7 @@
 namespace intermediate
 {
    // Uniquely identifies each point in the flow graph.
-   // Points are not used as jump labels, only for collection
+   // Points are not used as jump labels, only for collecting
    // properties.
  
    struct point
