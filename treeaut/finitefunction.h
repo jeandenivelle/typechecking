@@ -17,7 +17,9 @@ namespace treeaut
 
       std::unordered_map<D,R,H,E > func;
 
-      finitefunction( ) = delete;
+      finitefunction( )
+         : def( R( ))
+      { }
 
       finitefunction( const R& def ) 
          : def( def )
@@ -55,6 +57,15 @@ namespace treeaut
       const_iterator begin() const { return func. begin(); }
       const_iterator end() const { return func. end(); }
 
+      const R& operator( ) ( const D& d ) const
+      {
+         auto p = func. find(d);
+         if( p != func. end( ))
+            return p -> second;
+         else
+            return def;
+      }
+
 #if 0
       // Uses binary search : 
 
@@ -86,6 +97,16 @@ namespace treeaut
       }
 
 #endif
+
+      void print( std::ostream& out ) const
+      {
+         out << "Finite Function:\n";
+         out << "default = " << def << "\n";
+         for( const auto& p : func )
+            out << "   " << p. first << " --> " << p. second << "\n";
+         out << "\n";
+      }
+
       void clear() { func. clear(); }
       size_t size() const { return func. size(); }
       bool empty() const { return func. empty( ); }
@@ -162,7 +183,6 @@ namespace treeaut
 
       return res;
    }
-
 #endif
 
 }

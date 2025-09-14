@@ -8,7 +8,7 @@
 
 // Written by Hans de Nivelle, sept  2025. 
 // Selector constants are normally printed with a '?' in front of them.
-// In this class usel, we do not store the '?' inside this class 
+// In this class usel, we do not store the '?' nowhere in this class 
 // and also will not print it.
 
 class usel
@@ -32,12 +32,22 @@ public:
    bool operator != ( usel sel ) const 
       { return val != sel.val; } 
 
-   size_t hash( ) const 
-   { 
-      util::normalized< std::string > :: hash hh; 
-      return hh( val ); 
-   }
- 
+   struct hash
+   {
+      util::normalized< std::string > :: hash hh;
+
+      bool operator( ) ( const usel sel ) const
+         { return hh( sel. val ); } 
+   };
+   
+   struct equal_to 
+   {
+      util::normalized< std::string > :: equal_to eq;
+
+      bool operator( ) ( usel sel1, usel sel2 ) const
+         { return eq( sel1. val, sel2. val ); }
+   };
+
 };
 
 

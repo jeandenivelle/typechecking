@@ -26,13 +26,17 @@
 
 int main( int argc, char* arcgv[] ) {
 
-   treeaut::finitefunction< std::string, size_t > func( 100 );
+   std::unordered_map< usel, int, usel::hash, usel::equal_to > tests;
 
-   func. assign( "hans", 1967 );
+   treeaut::finitefunction< usel, size_t, usel::hash, usel::equal_to > func;
+
+   func. assign( usel( "something" ), 50 );
+   func. assign( usel( "else" ), 200 );
+   std::cout << func << "\n";
+   std::cout << func( usel( "and" )) << "\n";
    return 0;
- 
-   using namespace data;
 
+   using namespace data;
    auto tr = tree( tree_array, 
       { tree( tree_unit ), 
         tree( tree_bool, true ), 
