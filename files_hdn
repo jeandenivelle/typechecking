@@ -20,12 +20,9 @@
    tree.cpp
    printing.cpp
 
-
-%dir Source/dma
+%dir Source/treeaut
 %sources
-   selector.cpp
-   state.cpp
-   printing.cpp
+   nondet.cpp
 
 %dir Source/prop
 %sources
@@ -62,16 +59,6 @@
    selector.cpp
    tree.h
    tree.cpp
-
-%preproc $(Treegen)/treegen $(Source)/automata/state.rec
-%dir Source/automata
-%in
-   state.rec
-%out
-   selector.h
-   selector.cpp
-   state.h
-   state.cpp
 
 %preproc $(Treegen)/treegen $(Source)/intermediate/treedefs.rec
 %dir Source/intermediate

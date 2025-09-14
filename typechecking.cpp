@@ -1,16 +1,13 @@
 
 #include <iostream>
-//#include <list>
 
 //#include "fieldmap.h"
 //#include "identifier.h"
-//#include "usel.h"
+#include "usel.h"
 //#include "exactident.h"
 
 #include "data/tree.h"
 
-#include "dma/selector.h"
-#include "dma/state.h"
 
 //#include "tests.h"
 
@@ -19,12 +16,9 @@
 //#include "intermediate/flatterm.h"
 //#include "intermediate/statement.h"
 
-//#include "approx/approximator.h"
+#include "treeaut/finitefunction.h"
 //#include "approx/approxterm.h"
 //#include "approx/approxmap.h"
-
-//#include "setterm/setterm.h"
-//#include "setterm/atom.h"
 
 //#include "state.h"
 //#include "rangestate.h"
@@ -32,6 +26,11 @@
 
 int main( int argc, char* arcgv[] ) {
 
+   treeaut::finitefunction< std::string, size_t > func( 100 );
+
+   func. assign( "hans", 1967 );
+   return 0;
+ 
    using namespace data;
 
    auto tr = tree( tree_array, 
