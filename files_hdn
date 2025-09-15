@@ -20,7 +20,7 @@
    tree.cpp
    printing.cpp
 
-%dir Source/treeaut
+%dir Source/atm
 %sources
    nondet.cpp
 

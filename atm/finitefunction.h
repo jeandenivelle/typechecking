@@ -1,16 +1,15 @@
 
-#ifndef TREEAUT_FINITEFUNCTION_
-#define TREEAUT_FINITEFUNCTION_ 
+#ifndef ATM_FINITEFUNCTION_
+#define ATM_FINITEFUNCTION_ 
 
 #include <iostream>
 #include <vector>
 
-namespace treeaut
+namespace atm
 {
 
    template < typename D, typename R, 
-              typename H = std::hash<D>, typename E = std::equal_to<D>>
-
+              typename H = std::hash<D>, typename E = std::equal_to<D> >
    struct finitefunction
    {
       R def;    // Default value.
@@ -27,6 +26,7 @@ namespace treeaut
  
       finitefunction( const R& def,
                       std::initializer_list<std::pair<const D, R>> init )
+         : def( def ) 
       {
          func. reserve( init. size( ));
          for( auto p : init )
@@ -35,7 +35,7 @@ namespace treeaut
 
       void assign( const D& d, const R& r )
       { 
-         auto p = func. find(d);
+         auto p = func.find(d);
          if( p != func. end( ))
          {
             throw std::logic_error( 
@@ -49,13 +49,13 @@ namespace treeaut
       using const_iterator = 
          typename std::unordered_map<D,R,H,E>::const_iterator;
 
-      iterator begin() { return func. begin(); }
-      iterator end() { return func. end(); }
+      iterator begin( ) { return func. begin(); }
+      iterator end( ) { return func. end(); }
 
-      const_iterator cbegin() const { return func. begin(); }
-      const_iterator cend() const { return func. end(); }
-      const_iterator begin() const { return func. begin(); }
-      const_iterator end() const { return func. end(); }
+      const_iterator cbegin( ) const { return func. begin(); }
+      const_iterator cend( ) const { return func. end(); }
+      const_iterator begin( ) const { return func. begin(); }
+      const_iterator end( ) const { return func. end(); }
 
       const R& operator( ) ( const D& d ) const
       {
