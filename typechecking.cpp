@@ -8,7 +8,6 @@
 
 #include "data/tree.h"
 
-
 //#include "tests.h"
 
 //#include "intermediate/point.h"
@@ -16,24 +15,52 @@
 //#include "intermediate/flatterm.h"
 //#include "intermediate/statement.h"
 
-#include "treeaut/finitefunction.h"
-//#include "approx/approxterm.h"
+#include "atm/finitefunction.h"
+#include "atm/borderfunction.h"
 //#include "approx/approxmap.h"
 
 //#include "state.h"
-//#include "rangestate.h"
-
+#include "diff/approxset.h"
 
 int main( int argc, char* arcgv[] ) {
 
-   std::unordered_map< usel, int, usel::hash, usel::equal_to > tests;
+   diff::approxset set1;
+   set1. insert( -2 );
+   set1. insert( -3 );
+   set1. insert( 0 );
+   std::cout << set1 << "\n";
 
-   treeaut::finitefunction< usel, size_t, usel::hash, usel::equal_to > func;
+   diff::approxset set2;
+   set2. insert( 1 );
+   set2. insert( 2 );
+   std::cout << set2 << "\n";
+
+   std::cout << "sum : " << ( -set1 + set2 ) << "\n";
+   std::cout << "inserset : " << ( -set1 & set2 ) << "\n";
+
+   return 0;
+ 
+   atm::finitefunction< usel, size_t, usel::hash, usel::equal_to > func
+      ( 100, { { usel( "sel1" ), 20 }, { usel( "sel2" ), 30 } } );
 
    func. assign( usel( "something" ), 50 );
    func. assign( usel( "else" ), 200 );
    std::cout << func << "\n";
-   std::cout << func( usel( "and" )) << "\n";
+   std::cout << func( usel( "something" )) << "\n";
+
+   atm::borderfunction< std::string, double > bord( 42 );
+   bord. append( "aa", 31 );
+   bord. append( "bb", 40 );
+   bord. append( "cc", 100 );
+   bord. append( "dd", 200 );
+   bord. append( "ee", 300 );
+   bord. append( "ff", 400 );
+   bord. append( "gg", 200 );
+   std::cout << bord << "\n\n";
+   std::cout << bord( "a" ) << "\n";  
+   for( const auto& p : bord )
+      std::cout << bord( p. first + "A" ) << "\n";
+ 
    return 0;
 
    using namespace data;
