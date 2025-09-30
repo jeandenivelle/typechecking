@@ -9,7 +9,9 @@
 #include "atm/borderfunction.h"
 #include "atm/automaton.h"
 
-int main( int argc, char* arcgv[] ) {
+#include "diff/approxset.h"
+
+void test_atm () {
 	// define an automaton
 	atm::dma< size_t > automaton( 0 );
 	
@@ -39,11 +41,11 @@ int main( int argc, char* arcgv[] ) {
 		}
 
 		{
-		
-		}
 			const auto tmp_state = automaton. new_state( );
 			automaton. tupl_transit. assign( std::pair( automaton. empty_tupl_state, automaton. usel_transit( "neg" ) ), tmp_state );
-			automaton. tupl_transit. assign( std::pair( tmp_state, prop_state ), prop_state );
+			automaton. tupl_transit. assign( std::pair( tmp_state, prop_state ), prop_state );	
+		}
+
 		{
 			const auto tmp1_state = automaton. new_state( );
 			automaton. tupl_transit. assign( std::pair( automaton. empty_tupl_state, automaton. usel_transit( "imply" ) ), tmp1_state );
@@ -138,8 +140,51 @@ int main( int argc, char* arcgv[] ) {
 		std::cout << d_and1 << " ==> " << automaton. Q_A( d_and1 ) << "\n";
 		std::cout << d_and2 << " ==> " << automaton. Q_A( d_and2 ) << "\n";
 	}
-	
+}
+
+
+int main( int argc, char* arcgv[] ) {
+	test_atm();
 	return 0;
+
+	diff::approxset set1;
+   set1. insert( -2 );
+   set1. insert( -3 );
+   set1. insert( 0 );
+   std::cout << set1 << "\n";
+
+   diff::approxset set2;
+   set2. insert( 1 );
+   set2. insert( 2 );
+   std::cout << set2 << "\n";
+
+   std::cout << "sum : " << ( -set1 + set2 ) << "\n";
+   std::cout << "inserset : " << ( -set1 & set2 ) << "\n";
+
+   return 0;
+ 
+   atm::finitefunction< usel, size_t, usel::hash, usel::equal_to > func
+      ( 100, { { usel( "sel1" ), 20 }, { usel( "sel2" ), 30 } } );
+
+   func. assign( usel( "something" ), 50 );
+   func. assign( usel( "else" ), 200 );
+   std::cout << func << "\n";
+   std::cout << func( usel( "something" )) << "\n";
+
+   atm::borderfunction< std::string, double > bord( 42 );
+   bord. append( "aa", 31 );
+   bord. append( "bb", 40 );
+   bord. append( "cc", 100 );
+   bord. append( "dd", 200 );
+   bord. append( "ee", 300 );
+   bord. append( "ff", 400 );
+   bord. append( "gg", 200 );
+   std::cout << bord << "\n\n";
+   std::cout << bord( "a" ) << "\n";  
+   for( const auto& p : bord )
+      std::cout << bord( p. first + "A" ) << "\n";
+ 
+   return 0;
 }
 
 

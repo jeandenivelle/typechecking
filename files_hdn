@@ -24,10 +24,9 @@
 %sources
    nondet.cpp
 
-%dir Source/prop
+%dir Source/diff
 %sources
-   selector.cpp
-   expr.cpp
+   approxset.cpp
 
 %dir Source/intermediate
 %sources

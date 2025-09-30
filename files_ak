@@ -19,6 +19,10 @@
    tree.cpp
    printing.cpp
 
+%dir Source/diff
+%sources
+   approxset.cpp
+
 %dir Util/util
 %sources
 	bigint.cpp
