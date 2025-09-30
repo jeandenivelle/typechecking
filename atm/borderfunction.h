@@ -88,9 +88,9 @@ namespace atm
                low = mid;
          }
 
-         std::cout << "d = " << d << "\n";
-         std::cout << "low " << low - table. begin( ) << "\n";
-         std::cout << "upp " << upp - table. begin( ) << "\n";
+         // std::cout << "d = " << d << "\n";
+         // std::cout << "low " << low - table. begin( ) << "\n";
+         // std::cout << "upp " << upp - table. begin( ) << "\n";
 
          // We search backwards:
 
