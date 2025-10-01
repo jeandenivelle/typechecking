@@ -24,20 +24,25 @@
 
 int main( int argc, char* arcgv[] ) {
 
-   diff::approxset set1;
+   std::cout << diff::approxset::le( ) << "\n";
+   std::cout << diff::approxset::ge( ) << "\n";
+
+   diff::approxset set1 = diff::approxset::empty( ); 
+
    set1. insert( -2 );
    set1. insert( -3 );
    set1. insert( 0 );
    std::cout << set1 << "\n";
 
-   diff::approxset set2;
-   set2. insert( 1 );
-   set2. insert( 2 );
+   diff::approxset set2 = diff::approxset::empty( );
+   set2. insert( -1 );
+   set2. insert( 3 );
    std::cout << set2 << "\n";
 
    std::cout << "sum : " << ( -set1 + set2 ) << "\n";
-   std::cout << "inserset : " << ( -set1 & set2 ) << "\n";
-
+#if 0
+   std::cout << "intersect : " << ( -set1 & set2 ) << "\n";
+#endif
    return 0;
  
    atm::finitefunction< usel, size_t, usel::hash, usel::equal_to > func
@@ -79,19 +84,6 @@ int main( int argc, char* arcgv[] ) {
 
 
 #if 0
-int main( int argc, char* argv [] )
-{
-   auto flat = intermediate::flatterm( intermediate::flat_some_bool );
- 
-   std::cout << flat << "\n";
- 
-#if 0
-   flowgraph::body bod;
-
-   // test_scalar_list( );
-
-#endif
-
 #if 0
    parsing::parser prs( simpmap, compmap, adjmap, funcmap, 
                         errors, toplevelspace, filespace, tok ); 

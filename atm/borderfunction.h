@@ -44,21 +44,25 @@ namespace atm
          if( !table. empty( ))
          {
             if( !cmp( table. back( ). first, d ))
-               throw std::logic_error( "borderfunction append: not increasing" );
-                  // check if the transition is already there
+            {
+               throw std::logic_error( 
+                            "borderfunction append: not increasing" );
+            }
+
+            // Check if the value is already there:
 
             if( eq( table. back( ). second, r ))
                return; 
                   // Same value as the last, so the addition is redundant.
          }
 
-         table. push_back( std::make_pair(d,r) );
+         table. push_back( std::pair<D,R> (d,r) );
       }
 
       using iterator =
-         typename std::vector<std::pair<const D, R>>::iterator;
+         typename std::vector<std::pair<const D, R>> :: iterator;
       using const_iterator =
-         typename std::vector<std::pair<const D, R>>::const_iterator;
+         typename std::vector<std::pair<const D, R>> :: const_iterator;
 
       iterator begin( ) { return table.begin( ); }
       iterator end( ) { return table.end( ); }
@@ -88,9 +92,9 @@ namespace atm
                low = mid;
          }
 
-         std::cout << "d = " << d << "\n";
-         std::cout << "low " << low - table. begin( ) << "\n";
-         std::cout << "upp " << upp - table. begin( ) << "\n";
+         // std::cout << "d = " << d << "\n";
+         // std::cout << "low " << low - table. begin( ) << "\n";
+         // std::cout << "upp " << upp - table. begin( ) << "\n";
 
          // We search backwards:
 
@@ -113,8 +117,8 @@ namespace atm
       void clear( ) { table. clear( ); }
       size_t size( ) const { return table. size( ); }
       bool empty( ) const { return table. empty( ); }
-
    };
+
 #if 0
 
    template< typename C, typename R, typename S1, typename S2, typename F >
