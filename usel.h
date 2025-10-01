@@ -36,7 +36,7 @@ public:
    {
       util::normalized< std::string > :: hash hh;
 
-      bool operator( ) ( const usel sel ) const
+      size_t operator( ) ( const usel sel ) const
          { return hh( sel. val ); } 
    };
    

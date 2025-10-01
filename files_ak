@@ -19,53 +19,13 @@
    tree.cpp
    printing.cpp
 
-
-%dir Source/automata
+%dir Source/diff
 %sources
-   selector.cpp
-   state.cpp
-   printing.cpp
-
-%dir Source/prop
-%sources
-   selector.cpp
-   expr.cpp
-
-%dir Source/intermediate
-%sources
-   selector.cpp
-   flatterm.cpp
-   statement.cpp
-   printing.cpp
-
-%dir Source/approx
-%sources
-   selector.cpp
-   approxterm.cpp
-   approxmap.cpp
-   printing.cpp
-
-%dir Source/setterm
-%sources
-   selector.cpp
-   setterm.cpp
-   atom.cpp
-   printing.cpp
-   comparing.cpp
+   approxset.cpp
 
 %dir Util/util
 %sources
 	bigint.cpp
-
-%preproc $(Treegen)/treegen $(Source)/prop/expr.rec
-%dir Source/prop
-%in 
-   expr.rec
-%out
-   selector.h
-   selector.cpp
-   expr.h
-   expr.cpp
 
 %preproc $(Treegen)/treegen $(Source)/data/tree.rec
 %dir Source/data
@@ -77,49 +37,6 @@
    tree.h
    tree.cpp
 
-%preproc $(Treegen)/treegen $(Source)/automata/state.rec
-%dir Source/automata
-%in
-   state.rec
-%out
-   selector.h
-   selector.cpp
-   state.h
-   state.cpp
-
-%preproc $(Treegen)/treegen $(Source)/intermediate/treedefs.rec
-%dir Source/intermediate
-%in
-   treedefs.rec
-%out
-   selector.h
-   selector.cpp
-   flatterm.h
-   flatterm.cpp
-   statement.h
-   statement.cpp
-
-%preproc $(Treegen)/treegen $(Source)/approx/approxterms.rec
-%dir Source/approx
-%in
-   approxterms.rec
-%out
-   selector.h
-   selector.cpp
-   approxterm.h
-   approxterm.cpp
-
-%preproc $(Treegen)/treegen $(Source)/setterm/setterms.rec
-%dir Source/setterm
-%in
-   setterms.rec
-%out
-   selector.h
-   selector.cpp
-   setterm.h
-   setterm.cpp
-   atom.h
-   atom.cpp
 
 %options
    Wall
