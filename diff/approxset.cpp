@@ -1,12 +1,102 @@
 
 #include "approxset.h"
 
+diff::approxset diff::approxset::empty( )
+{
+   approxset res;
+   for( short int i = 0; i != arraysize; ++ i )
+      res.occ[i] = false;
+   return res;
+}
+
+diff::approxset diff::approxset::full( )
+{
+   approxset res;
+   for( short int i = 0; i != arraysize; ++ i )
+      res.occ[i] = true;
+   return res;
+}
+
+diff::approxset diff::approxset::eq( )
+{
+   approxset res = empty( );
+   res.occ[ max ] = true;
+   return res;
+}
+
+diff::approxset diff::approxset::ne( )
+{
+   approxset res = full( );
+   res.occ[ max ] = false;
+   return res;
+}
+
+diff::approxset diff::approxset::lt( )
+{
+   approxset res;
+   for( short int i = 0; i != max; ++ i )
+      res.occ[i] = true;
+   for( short i = max; i != arraysize; ++ i )
+      res.occ[i] = false;
+
+   return res;
+}
+
+diff::approxset diff::approxset::gt( )
+{
+   approxset res;
+   for( short int i = 0; i != max + 1; ++ i )
+      res.occ[i] = false;
+   for( short i = max + 1; i != arraysize; ++ i )
+      res.occ[i] = true;
+   
+   return res;
+}
+
+diff::approxset diff::approxset::le( )
+{
+   approxset res;
+   for( short int i = 0; i != max + 1; ++ i )
+      res.occ[i] = true;
+   for( short i = max + 1; i != arraysize; ++ i )
+      res.occ[i] = false;
+
+   return res;
+}
+
+diff::approxset diff::approxset::ge( )
+{
+   approxset res;
+   for( short int i = 0; i != max; ++ i )
+      res.occ[i] = false;
+   for( short i = max; i != arraysize; ++ i )
+      res.occ[i] = true;
+
+   return res;
+}
+
+
+
+diff::approxset 
+diff::approxset::operator - ( ) const
+{
+   approxset res; 
+
+   auto p = occ + arraysize;
+   auto q = res. occ;
+   while( p > occ )
+      * q ++ = * -- p;
+
+   return res;
+}
+
 diff::approxset
 diff::operator + ( const approxset& set1, const approxset& set2 )
 {
    constexpr short int max = approxset::max;
 
-   diff::approxset res; 
+   auto res = diff::approxset::empty( );
+
    for( int i1 = -max; i1 <= max; ++ i1 )
       for( int i2 = -max; i2 <= max; ++ i2 )
       {
@@ -35,6 +125,8 @@ diff::operator + ( const approxset& set1, const approxset& set2 )
    return res; 
 }
 
+#if 0
+
 diff::approxset 
 diff::operator & ( const approxset& set1, const approxset& set2 )
 {
@@ -48,22 +140,7 @@ diff::operator & ( const approxset& set1, const approxset& set2 )
    return res;
 }
 
-
-diff::approxset diff::operator - ( const approxset& set )
-{
-   auto res = set; 
-
-   bool* p1 = res. occ; 
-   bool* p2 = res. occ + 2 * approxset::max; 
-
-   while( p1 < p2 )
-   {
-      std::swap( *p1, *p2 ); 
-      ++ p1; -- p2;
-   }
-
-   return res;
-}
+#endif
 
 
 std::ostream& 
