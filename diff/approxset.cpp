@@ -75,8 +75,6 @@ diff::approxset diff::approxset::ge( )
    return res;
 }
 
-
-
 diff::approxset 
 diff::approxset::operator - ( ) const
 {
@@ -125,23 +123,40 @@ diff::operator + ( const approxset& set1, const approxset& set2 )
    return res; 
 }
 
-#if 0
 
-diff::approxset 
-diff::operator & ( const approxset& set1, const approxset& set2 )
+bool diff::approxset::isempty( ) const
 {
-   auto res = set1;
-
-   for( unsigned int i = 0; i < 2 * approxset::max + 1; ++ i )
+   for( auto p = occ; p != occ + arraysize; ++ p )
    {
-      res. occ[i] = ( set1.occ[i] & set2.occ[i] ); 
+      if( *p ) return false;
    }
-
-   return res;
+   return true;
 }
 
-#endif
+bool diff::approxset::isfull( ) const
+{
+   for( auto p = occ; p != occ + arraysize; ++ p )
+   {
+      if( ! *p ) return false;
+   }
+   return true;
+}
 
+bool diff::approxset::restrict( const approxset& other )
+{
+   bool change = false;
+
+   for( short unsigned int i = 0; i < 2 * approxset::max + 1; ++ i )
+   {
+      if( occ[i] && !other.occ[i] )
+      {
+         change = true;
+         occ[i] = false;
+      }
+   }
+
+   return change;
+}
 
 std::ostream& 
 diff::operator << ( std::ostream& out, const approxset& set )

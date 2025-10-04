@@ -9,7 +9,7 @@
 #include "atm/borderfunction.h"
 #include "atm/automaton.h"
 
-#include "diff/approxset.h"
+#include "diff/matrix.h"
 
 void test_atm () {
 	// define an automaton
@@ -106,11 +106,10 @@ void test_atm () {
 		std::cout << d_bigint_0 << " ==> " << automaton. Q_A( d_bigint_0 ) << "\n";
 		std::cout << d_bigint_max << " ==> " << automaton. Q_A( d_bigint_max ) << "\n";
 
-		tree d_array_char( tree_array, { d_char, d_char, d_char } );
+		tree d_array_char( tree_array, 1, 2, { d_char, d_char, d_char } );
 		tree d_array( tree_array, { d_char, d_bigint_0, d_u64_0 } );
 		std::cout << d_array_char << " ==> " << automaton. Q_A( d_array_char ) << "\n";
 		std::cout << d_array << " ==> " << automaton. Q_A( d_array ) << "\n";
-
 		tree d_atom( tree_tuple, { d_usel_atom, d_array_char } );
 		std::cout << d_atom << " ==> " << automaton. Q_A( d_atom ) << "\n";
 
@@ -134,7 +133,7 @@ void test_atm () {
 		tree d_or2( tree_tuple, { d_usel_or, d_array_char } );
 		std::cout << d_or1 << " ==> " << automaton. Q_A( d_or1 ) << "\n";
 		std::cout << d_or2 << " ==> " << automaton. Q_A( d_or2 ) << "\n";
-		
+	
 		tree d_and1( tree_tuple, { d_usel_and, d_prop_array } );
 		tree d_and2( tree_tuple, { d_usel_and, d_array_char } );
 		std::cout << d_and1 << " ==> " << automaton. Q_A( d_and1 ) << "\n";
@@ -144,25 +143,42 @@ void test_atm () {
 
 
 int main( int argc, char* arcgv[] ) {
-	test_atm();
-	return 0;
+   // test_atm();
+   // return 0;
 
-	diff::approxset set1 = diff::approxset::empty( );
-
+   diff::approxset set1 = diff::approxset::empty( );
    set1. insert( -2 );
-   set1. insert( -3 );
-   set1. insert( 0 );
-   std::cout << set1 << "\n";
+   set1. insert( -1 );
 
    diff::approxset set2 = diff::approxset::empty( );
    set2. insert( -1 );
    set2. insert( 3 );
+   set2. insert( -2 );
+   std::cout << set1 << "\n";
    std::cout << set2 << "\n";
+   bool b = set1. restrict( set2 );
+   std::cout << "after restrict " << set1 << "\n";
+   std::cout << "restrict returned " << b << "\n";
 
-   std::cout << "sum : " << ( -set1 + set2 ) << "\n";
-#if 0
-   std::cout << "intersect : " << ( -set1 & set2 ) << "\n";
-#endif
+   diff::matrix< std::string > mat;
+   mat. extend( "aa" );
+   mat. extend( "bb" );
+   mat. extend( "cc" );
+   mat. extend( "aa" );
+
+   std::cout << mat << "\n";
+   mat. at( "aa", "bb" ) = diff::approxset::lt( );
+   mat. at( "bb", "cc" ) = diff::approxset::lt( );
+   mat. at( "aa", "cc" ) = diff::approxset::eq( );
+
+   auto cl = mat. close( );
+   std::cout << mat << "\n";
+   std::cout << "closure returned " << cl << "\n";
+   mat. erase( "aa" );
+   std::cout << mat << "\n";
+   std::cout << mat. at( "cc", "bb" ) << "\n";
+   mat. erase( "bb" );
+   std::cout << mat << "\n";
    return 0;
  
    atm::finitefunction< usel, size_t, usel::hash, usel::equal_to > func
