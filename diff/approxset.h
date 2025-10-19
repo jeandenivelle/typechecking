@@ -39,7 +39,6 @@ namespace diff
       static approxset le( );
       static approxset ge( );
  
- 
       bool contains( short int i ) const
       {
          if( i >= max ) return occ[ 2 * max ];
@@ -55,10 +54,16 @@ namespace diff
       }
 
       approxset operator - ( ) const; 
+
+      bool isempty( ) const;
+      bool isfull( ) const;
+
+      bool restrict( const approxset& other );
+         // Returns true if there was a change in *this.
+
    };
 
    approxset operator + ( const approxset& set1, const approxset& set2 );
-   approxset operator & ( const approxset& set1, const approxset& set2 );
 
    std::ostream& operator << ( std::ostream& out, const approxset& set );
 }
