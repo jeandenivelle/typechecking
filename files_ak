@@ -1,11 +1,11 @@
 
 %rootdirs
    Source = .
-   Lexing = /home/dr_mimicry/Desktop/easy_prog_lang_projects
-   Tvm = /home/dr_mimicry/Desktop/easy_prog_lang_projects
-   Maph = /home/dr_mimicry/Desktop/easy_prog_lang_projects/maphoon2024
-   Treegen = /home/dr_mimicry/Desktop/easy_prog_lang_projects/treegen2023
-   Util = /home/dr_mimicry/Desktop/easy_prog_lang_projects
+   Lexing = /home/dr_mimicry/Desktop/research/lexing
+   Tvm = /home/dr_mimicry/Desktop/research
+   Maph = /home/dr_mimicry/Desktop/research/maphoon/maphoon2024
+   Treegen = /home/dr_mimicry/Desktop/research/treegen/treegen2023
+   Util = /home/dr_mimicry/Desktop/research
 
 %dir Source
 %exec typechecking
@@ -36,7 +36,6 @@
    selector.cpp
    tree.h
    tree.cpp
-
 
 %options
    Wall

@@ -1,165 +1,80 @@
 #ifndef ATM_AUTOMATON
 #define ATM_AUTOMATON
 
-#include "atm/finitefunction.h"
-#include "atm/borderfunction.h"
+#include "finitefunction.h"
+#include "borderfunction.h"
+#include "states.h"
 
-#include <concepts>
-#include <type_traits>
-#include <unordered_set>
 #include <limits>
 
 namespace atm {
-	template< typename T >
-	concept incrementable = requires( T t ) {
-		{ ++t } -> std::same_as< T& >;
-		{ t++ } -> std::same_as< T >;
-		{ t=t };
-	};
-
-	template<
-		incrementable T,
-		typename H = std::hash< T >,
-		typename E = std::equal_to< T >
-	>
-	struct pair_hash {
-		 std::size_t operator( ) ( const std::pair< T, T >& p ) const {
-			  return H{}( p.first ) ^ ( H{}( p.second ) << 1 );
-		 }
-	};
-	
-	template<
-		incrementable T,
-		typename H = std::hash< T >,
-		typename E = std::equal_to< T >
-	>
-	struct pair_equal_to {
-		 std::size_t operator( ) ( const std::pair< T, T >& p1, const std::pair< T, T >& p2 ) const {
-			  return E{}(p1. first, p2. first) && E{}( p2. second, p2. second );
-		 }
-	};
-	
-	template<
-		incrementable K,
-		typename H = std::hash< K >,
-		typename E = std::equal_to< K >
-	>
 	struct dma {
-		const K def;
-		std::unordered_set< K, H, E > states;
+		const state_t def;
+		states_t states;
 
-   	finitefunction< bool, K > 										bool_transit;
-		borderfunction< char, K >                             char_transit;
-   	finitefunction< usel, K, usel::hash, usel::equal_to > usel_transit;
-		borderfunction< size_t, K > 									u64_transit;
-		borderfunction< bigint, K > 									bigint_transit;
-		// borderfunction< double, K > 									double_transit;
-		K empty_mset_state;
-		K empty_tupl_state;
+      /* tag types */
+      finitefunction< bool, state_t > bool_transit;
+		borderfunction< char, state_t > char_transit;
+   	finitefunction< usel, state_t, usel::hash, usel::equal_to > usel_transit;
+		
+      /* index type u64 */
+      borderfunction< size_t, state_t > u64_transit;
+		
+      state_t bigint_state;
+		state_t double_state;
+		state_t empty_mset_state;
+		state_t empty_tupl_state;
 
 		finitefunction< 
-			std::pair< K , K >, K, 
-			pair_hash< K >, 
-			pair_equal_to< K > 
+			state_pair_t, state_t, 
+			state_pair_hash, 
+			state_pair_equal_to
 		> tupl_transit;
 
 		finitefunction<
-			std::pair< K, K >, K,
-			pair_hash< K >,
-			pair_equal_to< K > 
+			state_pair_t, state_t, 
+			state_pair_hash, 
+			state_pair_equal_to
 		> mset_transit;
 
 		dma( ) = delete;
-		dma( K& def ): 
-			def( def ),
-	  		bool_transit( finitefunction< bool, K >( this-> def ) ),
-	  		char_transit( borderfunction< char, K >( this-> def ) ),
-	  		usel_transit( finitefunction< usel, K, usel::hash, usel::equal_to >( this-> def ) ),
-	  		u64_transit( borderfunction< size_t, K >( this-> def ) ),
-	  		bigint_transit( borderfunction< bigint, K >( this-> def ) ),
-	  		// double_transit( borderfunction< double, K >( this-> def ) ) 
-			tupl_transit(
-				finitefunction<
-					std::pair< K, K >, K,
-					atm::pair_hash< K >,
-					atm::pair_equal_to< K > 
-				> ( this-> def )	
-			),
-			mset_transit(
-				atm::finitefunction<
-					std::pair< K, K >, K,
-					atm::pair_hash< K >,
-					atm::pair_equal_to< K > 
-				> ( this-> def )	
-			)
-		{
-			bool_transit. assign( true, new_state( ) );
-			bool_transit. assign( false, new_state( ) );
-
-			char_transit. append( 0, new_state( ) );
-				
-			u64_transit. append( 0, new_state( ) );
-			u64_transit. append( 1, new_state( ) );
-			
-			bigint_transit. append( bigint( INT64_MIN ), new_state( ) );
-			bigint_transit. append( bigint( 0 ), new_state( ) );
-			bigint_transit. append( bigint( 1 ), new_state( ) );
-			
-			empty_mset_state = new_state( );
-			empty_tupl_state = new_state( );
-		}
-		
-		dma( K&& def ):
+		dma( state_t&& def ):
 			def( std::move( def ) ),
-	  		bool_transit( finitefunction< bool, K >( this-> def ) ),
-	  		char_transit( borderfunction< char, K >( this-> def ) ),
-	  		usel_transit( finitefunction< usel, K, usel::hash, usel::equal_to >( this-> def ) ),
-	  		u64_transit( borderfunction< size_t, K >( this-> def ) ),
-	  		bigint_transit( borderfunction< bigint, K >( this-> def ) ),
-	  		// double_transit( borderfunction< double, K >( this-> def ) )
+         states( states_t( this-> def ) ),
+	  		bool_transit( finitefunction< bool, state_t >( this-> def ) ),
+	  		char_transit( borderfunction< char, state_t >( this-> def ) ),
+	  		usel_transit( finitefunction< usel, state_t, usel::hash, usel::equal_to >( this-> def ) ),
+	  		u64_transit( borderfunction< size_t, state_t >( this-> def ) ),
 			tupl_transit(
 				atm::finitefunction<
-					std::pair< size_t, size_t >,
-					size_t,
-					atm::pair_hash< size_t >,
-					atm::pair_equal_to< size_t> 
+               state_pair_t, state_t, 
+               state_pair_hash, 
+               state_pair_equal_to
 				> ( this-> def )	
 			),
 			mset_transit(
 				atm::finitefunction<
-					std::pair< size_t, size_t >,
-					size_t,
-					atm::pair_hash< size_t >,
-					atm::pair_equal_to< size_t> 
+               state_pair_t, state_t, 
+               state_pair_hash, 
+               state_pair_equal_to
 				> ( this-> def )	
 			)
 		{
-			bool_transit. assign( true, new_state( ) );
-			bool_transit. assign( false, new_state( ) );
+			bool_transit. assign( true, states. get_next_state() );
+			bool_transit. assign( false, states. get_next_state() );
 
-			char_transit. append( 0, new_state( ) );
+			char_transit. append( 0, states. get_next_state() );
 				
-			u64_transit. append( 0, new_state( ) );
-			u64_transit. append( 1, new_state( ) );
+			u64_transit. append( 0, states. get_next_state() );
+			u64_transit. append( 1, states. get_next_state() );
 
-			bigint_transit. append( bigint( INT64_MIN ), new_state( ) );
-			bigint_transit. append( bigint( 0 ), new_state( ) );
-			bigint_transit. append( bigint( 1 ), new_state( ) );
-			
-			empty_mset_state = new_state( );
-			empty_tupl_state = new_state( );
+			bigint_state = states. get_next_state();
+			double_state = states. get_next_state();
+			empty_mset_state = states. get_next_state();
+			empty_tupl_state = states. get_next_state();
 		}
 
-		K new_state( ) {
-			K state = def;
-		  	while( states. find( state ) != states. end() ) {
-				state++;
-			}
-			states. insert( state );
-			return state;
-		}
-
-		K Q_A( const data::tree& d ) const {
+		state_t Q_A( const data::tree& d ) const {
 			switch( d. sel() ) {
 			case data::tree_bool:
 				return bool_transit( d. view_bool(). b() );
@@ -173,12 +88,15 @@ namespace atm {
 				return u64_transit( d. view_u64(). i() );
 
 			case data::tree_bigint:
-				return bigint_transit( d. view_bigint(). i() );
+				return bigint_state;
+
+         case data::tree_double:
+            return double_state;
 
 			case data::tree_tuple:
 				{
 					auto tuple = d. view_tuple();
-					K s1 = empty_tupl_state, s2;
+					state_t s1 = empty_tupl_state, s2;
 					for( size_t i = 0; i < tuple. size(); ++i ) {
 						s2 = Q_A( tuple. val( i ) );
 						s1 = tupl_transit( std::pair( s1, s2 ) );
@@ -189,7 +107,7 @@ namespace atm {
 			case data::tree_array:
 				{
 					auto array = d. view_array();
-					K s1 = empty_mset_state, s2;
+					state_t s1 = empty_mset_state, s2;
 					for( size_t i = 0; i < array. size(); ++i ) {
 						s2 = Q_A( array. val( i ) );
 						s1 = mset_transit( std::pair( s1, s2 ) );
@@ -235,13 +153,8 @@ namespace atm {
 				out << "\t" << it-> first << " --> " << it-> second << "\n";
 			}
 
-			out << "Bigint Transitions:\n";
-			for( auto it = bigint_transit. begin();
-				  it != bigint_transit. cend(); ++it )
-			{
-				out << "\t" << it-> first << " --> " << it-> second << "\n";
-			}
-
+			out << "Bigint Transitions:\n\tc --> " << bigint_state << "\n";
+			out << "Double Transitions:\n\tc --> " << double_state << "\n";
 			out << "Empty Tuple Transition:\n\t() --> " << empty_tupl_state << "\n";
 
 			out << "Tuple Transitions:\n";

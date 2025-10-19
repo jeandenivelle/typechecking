@@ -1,0 +1,179 @@
+#ifndef ATM_NDA
+#define ATM_NDA
+
+#include "states.h"
+#include "finitefunction.h"
+#include "borderfunction.h"
+
+#include <unordered_set>
+
+namespace atm{
+   struct nda_t{
+      states_t states;
+      
+      /* trap state */
+      state_t trap_state;
+      
+      /* transition functions for constants of a tag type */
+      finitefunction <bool, state_t> bool_transitions;
+      finitefunction <char, state_t> char_transitions;
+      finitefunction <usel, state_t, usel::hash, usel::equal_to > usel_transitions; 
+      
+      /* transition fucntion for constants of u64 type */
+      borderfunction <size_t, state_t> u64_transitions;
+      
+      /* states for constants of trivial types */
+      state_t bigint_state;
+      state_t double_state;
+
+      /* Empty tuple state */
+      state_t empty_tuple_state;
+
+      /* Empty multiset states connected by epsilon transitions to each other */
+      std::unordered_set < state_t > empty_multiset_states;
+
+      /* transition function for pairs of states */
+      finitefunction <state_pair_t, state_t, state_pair_hash, state_pair_equal_to> tuple_transitions;
+      finitefunction <state_pair_t, state_t, state_pair_hash, state_pair_equal_to> multiset_transitions;
+   
+      nda_t() {
+         trap_state = states. get_next_state();
+        
+         bool_transitions. assign( true, states. get_next_state() ); 
+         bool_transitions. assign( false, states. get_next_state() ); 
+         
+         u64_transitions. append( 0, states. get_next_state() );
+         u64_transitions. append( 1, states. get_next_state() );
+         
+         bigint_state = states. get_next_state();
+         double_state = states. get_next_state();
+
+         empty_tuple_state = states. get_next_state();
+      }
+      
+      std::unordered_set <state_t>
+      data2state_t( const data::tree& d ) const {
+         switch( d. sel() ) {
+         case data::tree_never:
+         case data::tree_unit:
+            return std::unordered_set <state_t> ( { trap_state } );
+         
+         case data::tree_bool:
+            return std::unordered_set <state_t> 
+               ( { bool_transitions( d. view_bool(). b() ) } );
+
+         case data::tree_char:
+            return std::unordered_set <state_t> 
+               ( { char_transitions( d. view_char(). c() ) } );
+            
+         case data::tree_usel:
+            return std::unordered_set <state_t> 
+               ( { usel_transitions( d. view_usel(). s() ) } );
+         
+         case data::tree_u64:
+            return std::unordered_set <state_t> 
+               ( { u64_transitions( d. view_u64(). i() ) } );
+
+         case data::tree_bigint:
+            return std::unordered_set <state_t> ( { bigint_state } );
+
+         case data::tree_double:
+            return std::unordered_set <state_t> ( { double_state } );
+
+         case data::tree_tuple: {
+            auto tuple = d. view_tuple();
+            auto res = std::unordered_set <state_t> ( { empty_tuple_state } );
+            for( size_t i = 0; i < tuple. size(); ++i ) {
+               auto tmp_set1 = data2state_t( tuple. val( i ) );
+               std::unordered_set <state_t> tmp_set2;
+               for( auto elm1 : res ) {
+                  for( auto elm2 : tmp_set1 ) {
+                     tmp_set2. insert( tuple_transitions( state_pair_t( elm1, elm2 ) ) );
+                  }
+               }
+               res = tmp_set2; 
+            }
+            return res;
+         }
+
+         case data::tree_array: {
+            auto array = d. view_array();
+            auto res = empty_multiset_states;
+            for( size_t i = 0; i < array. size(); ++i ) {
+               auto tmp_set1 = data2state_t( array. val( i ) );
+               std::unordered_set <state_t> tmp_set2;
+               for( auto elm1 : res ) {
+                  for( auto elm2 : tmp_set1 ) {
+                     tmp_set2. insert( multiset_transitions( state_pair_t( elm1, elm2 ) ) );
+                  }
+               }
+               res = tmp_set2; 
+            }
+            return res;
+         }
+ 
+         default:
+            throw std::runtime_error( "atm::nda_t::data2state_t(): error: unrecognizer data::selector instance\n" );
+         }
+      }
+
+      void print( std::ostream& out ) const {
+         out << "Trap state: " << trap_state << "\n";
+         
+         out << "Transitions for constants of Bool type:\n";
+         for( auto entry : bool_transitions ) {
+            out << "\t" << entry. first << " --> " << entry. second << "\n";
+         }
+
+         out << "Transitions for constants of Char type:\n";
+         for( auto entry : char_transitions ) {
+            out << "\t" << entry. first << " --> " << entry. second << "\n";
+         }
+          
+         out << "Transitions for constants of Usel type:\n";
+         for( auto entry : usel_transitions ) {
+            out << "\t" << entry. first << " --> " << entry. second << "\n";
+         }
+
+         out << "Transitions for constants of U64 type:\n";
+         for( auto entry : u64_transitions ) {
+            out << "\t" << entry. first << " --> " << entry. second << "\n";
+         }
+         
+         out << "Transitions for constants of Bigint type:\n";
+         out << "\tc:Bigint --> " << bigint_state << '\n';
+
+         out << "Transitions for constants of Double type:\n";
+         out << "\tc:Double --> " << double_state << '\n';
+
+         out << "Transitions for empty multiset states:\n";
+         for( auto entry : empty_multiset_states ) {
+            out << "\t{} --> " << entry << '\n';
+         }
+
+         out << "Transition fpr the empty tuples:\n";
+         out << "\t() --> " << empty_tuple_state << '\n';
+
+         out << "Transitions tuples of states:\n";
+         for( auto entry : tuple_transitions ) {
+            out << "\t" << entry. first << " --> " << entry. second << "\n";
+         }
+
+         out << "Transitions multiset insertions:\n";
+         for( auto entry : multiset_transitions ) {
+            out << "\t" << entry. first << " --> " << entry. second << "\n";
+         }
+      }
+   };
+   inline std::ostream& operator<< ( std::ostream& out, const std::unordered_set <state_t> set ) {
+      out << "{ ";
+      for( auto i = set. begin(); i != set. end(); ++i ) {
+         if( i != set. begin() ) out << " ,";
+         out << *i;
+      }
+      out << " }";
+      return out;
+   }
+};
+
+#endif
