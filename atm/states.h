@@ -54,7 +54,7 @@ namespace atm {
    };
 
    inline std::ostream& operator<< ( std::ostream& out, const state_pair_t& state_pair ) {
-      out << "< " << state_pair. first << " ," << state_pair. second << " >";
+      out << "< " << state_pair. first << ", " << state_pair. second << " >";
       return out;
    }
 
