@@ -3,9 +3,10 @@
 
 #include "states.h"
 #include "finitefunction.h"
-#include "borderfunction.h"
+#include "intervalfunction.h"
 
 #include <unordered_set>
+#include <iostream>
 
 namespace atm{
    struct nda_t{
@@ -19,13 +20,11 @@ namespace atm{
       finitefunction <char, state_t> char_transitions;
       finitefunction <usel, state_t, usel::hash, usel::equal_to > usel_transitions; 
       
-      /* transition fucntion for constants of u64 type */
-      borderfunction <size_t, state_t> u64_transitions;
+      /* transition fucntion for constants of u64, bigint, and double types */
+      intervalfunction <size_t, state_t> u64_transitions;
+      intervalfunction <bigint, state_t> bigint_transitions;
+      intervalfunction <double, state_t> double_transitions;
       
-      /* states for constants of trivial types */
-      state_t bigint_state;
-      state_t double_state;
-
       /* Empty tuple state */
       state_t empty_tuple_state;
 
@@ -37,16 +36,21 @@ namespace atm{
       finitefunction <state_pair_t, state_t, state_pair_hash, state_pair_equal_to> multiset_transitions;
    
       nda_t() {
-         trap_state = states. get_next_state();
-        
+         trap_state = states. get_next_state() ;
+
          bool_transitions. assign( true, states. get_next_state() ); 
          bool_transitions. assign( false, states. get_next_state() ); 
          
-         u64_transitions. append( 0, states. get_next_state() );
-         u64_transitions. append( 1, states. get_next_state() );
+         u64_transitions = intervalfunction <size_t, state_t> ( states. get_next_state() );
+         u64_transitions. append( 1, states. get_next_state(), states. get_next_state() );
+        
+         bigint_transitions = intervalfunction <bigint, state_t> ( states. get_next_state() );
+         bigint_transitions. append( 0, states. get_next_state(), states. get_next_state() );
+         bigint_transitions. append( 1, states. get_next_state(), states. get_next_state() );
          
-         bigint_state = states. get_next_state();
-         double_state = states. get_next_state();
+         double_transitions = intervalfunction <double, state_t> ( states. get_next_state() );
+         double_transitions. append( 0.0, states. get_next_state(), states. get_next_state() );
+         double_transitions. append( 1.0, states. get_next_state(), states. get_next_state() );
 
          empty_tuple_state = states. get_next_state();
       }
@@ -75,10 +79,12 @@ namespace atm{
                ( { u64_transitions( d. view_u64(). i() ) } );
 
          case data::tree_bigint:
-            return std::unordered_set <state_t> ( { bigint_state } );
+            return std::unordered_set <state_t> 
+               ( { bigint_transitions( d. view_bigint(). i() ) } );
 
          case data::tree_double:
-            return std::unordered_set <state_t> ( { double_state } );
+            return std::unordered_set <state_t> 
+               ( { double_transitions( d. view_double(). d() ) } );
 
          case data::tree_tuple: {
             auto tuple = d. view_tuple();
@@ -136,16 +142,26 @@ namespace atm{
          }
 
          out << "Transitions for constants of U64 type:\n";
+         out << "\tbottom --> " << u64_transitions. bot << '\n';
          for( auto entry : u64_transitions ) {
-            out << "\t" << entry. first << " --> " << entry. second << "\n";
+            out << '\t' << entry. d;
+            out << " --> [ " << entry. at << "; " << entry. after << " )\n";
          }
          
          out << "Transitions for constants of Bigint type:\n";
-         out << "\tc:Bigint --> " << bigint_state << '\n';
+         out << "\tbottom --> " << bigint_transitions. bot << '\n';
+         for( auto entry : bigint_transitions ) {
+            out << '\t' << entry. d;
+            out << " --> [ " << entry. at << "; " << entry. after << " )\n";
+         }
 
          out << "Transitions for constants of Double type:\n";
-         out << "\tc:Double --> " << double_state << '\n';
-
+         out << "\tbottom --> " << double_transitions. bot << '\n';
+         for( auto entry : double_transitions ) {
+            out << '\t' << entry. d;
+            out << " --> [ " << entry. at << "; " << entry. after << " )\n";
+         }
+         
          out << "Transitions for empty multiset states:\n";
          for( auto entry : empty_multiset_states ) {
             out << "\t{} --> " << entry << '\n';

@@ -154,6 +154,28 @@ namespace atm {
 
       std::cout << nda << '\n';
 
+      // test U64
+      const auto u64_a = data::tree( data::tree_u64, (size_t) 0 );
+      const auto u64_b = data::tree( data::tree_u64, (size_t) 1 );
+      std::cout << u64_a << " : " << nda. data2state_t( u64_a ) << '\n';
+      std::cout << u64_b << " : " << nda. data2state_t( u64_b ) << '\n';
+
+      // test Bigint
+      const auto bigint_a = data::tree( data::tree_bigint, bigint( -1 ) );
+      const auto bigint_b = data::tree( data::tree_bigint, bigint( 0 ) ); 
+      const auto bigint_c = data::tree( data::tree_bigint, bigint( 1 ) ); 
+      std::cout << bigint_a << " : " << nda. data2state_t( bigint_a ) << '\n';
+      std::cout << bigint_b << " : " << nda. data2state_t( bigint_b ) << '\n';
+      std::cout << bigint_c << " : " << nda. data2state_t( bigint_c ) << '\n';
+
+      // test Double
+      const auto double_a = data::tree( data::tree_double, -1.5 );
+      const auto double_b = data::tree( data::tree_double, 0.0 );
+      const auto double_c = data::tree( data::tree_double, 1.5 );
+      std::cout << double_a << " : " << nda. data2state_t( double_a ) << '\n';
+      std::cout << double_b << " : " << nda. data2state_t( double_b ) << '\n';
+      std::cout << double_c << " : " << nda. data2state_t( double_c ) << '\n';
+
       // test multiset of char
       const auto char_a = data::tree( data::tree_char, 'a' );
       const auto set_char_a = data::tree( data::tree_array, { char_a, char_a, char_a } ); 

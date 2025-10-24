@@ -10,7 +10,7 @@
 #include "tests/atm_tests.h"
 
 int main( int argc, char* arcgv[] ) {
-	atm::test();
+   atm::test();
    return 0;
 /*
    diff::approxset set1 = diff::approxset::empty( );
