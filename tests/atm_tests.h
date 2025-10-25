@@ -24,12 +24,10 @@ namespace atm {
       nda. usel_transitions. assign( usel( "and" ), nda. states. get_next_state() );
 
       // define transitions for multiset of char
-      const auto empty_char_state = nda. states. get_next_state();
       const auto forall_char_state = nda. states. get_next_state();
-      nda. empty_multiset_states. insert( empty_char_state );
       nda. multiset_transitions. assign( 
          state_pair_t{
-            empty_char_state,
+            nda. empty_multiset_state,
             nda. char_transitions( 'a' ),
          },
          forall_char_state
@@ -110,12 +108,10 @@ namespace atm {
       );
 
       // define transitions for multiset of prop
-      const auto empty_prop_state = nda. states. get_next_state();
       const auto forall_prop_state = nda. states. get_next_state();
-      nda. empty_multiset_states. insert( empty_prop_state );
       nda. multiset_transitions. assign(
          state_pair_t{
-            empty_prop_state,
+            nda. empty_multiset_state,
             prop_state,
          },
          forall_prop_state

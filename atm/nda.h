@@ -25,11 +25,9 @@ namespace atm{
       intervalfunction <bigint, state_t> bigint_transitions;
       intervalfunction <double, state_t> double_transitions;
       
-      /* Empty tuple state */
+      /* Empty tuple and multisets states */
       state_t empty_tuple_state;
-
-      /* Empty multiset states connected by epsilon transitions to each other */
-      std::unordered_set < state_t > empty_multiset_states;
+      state_t empty_multiset_state;
 
       /* transition function for pairs of states */
       finitefunction <state_pair_t, state_t, state_pair_hash, state_pair_equal_to> tuple_transitions;
@@ -53,67 +51,51 @@ namespace atm{
          double_transitions. append( 1.0, states. get_next_state(), states. get_next_state() );
 
          empty_tuple_state = states. get_next_state();
+         empty_multiset_state = states. get_next_state();
       }
       
-      std::unordered_set <state_t>
+      state_t
       data2state_t( const data::tree& d ) const {
          switch( d. sel() ) {
          case data::tree_never:
          case data::tree_unit:
-            return std::unordered_set <state_t> ( { trap_state } );
+            return trap_state;
          
          case data::tree_bool:
-            return std::unordered_set <state_t> 
-               ( { bool_transitions( d. view_bool(). b() ) } );
+            return bool_transitions( d. view_bool(). b() );
 
          case data::tree_char:
-            return std::unordered_set <state_t> 
-               ( { char_transitions( d. view_char(). c() ) } );
+            return char_transitions( d. view_char(). c() );
             
          case data::tree_usel:
-            return std::unordered_set <state_t> 
-               ( { usel_transitions( d. view_usel(). s() ) } );
+            return usel_transitions( d. view_usel(). s() );
          
          case data::tree_u64:
-            return std::unordered_set <state_t> 
-               ( { u64_transitions( d. view_u64(). i() ) } );
+            return u64_transitions( d. view_u64(). i() );
 
          case data::tree_bigint:
-            return std::unordered_set <state_t> 
-               ( { bigint_transitions( d. view_bigint(). i() ) } );
+            return bigint_transitions( d. view_bigint(). i() );
 
          case data::tree_double:
-            return std::unordered_set <state_t> 
-               ( { double_transitions( d. view_double(). d() ) } );
+            return double_transitions( d. view_double(). d() );
 
          case data::tree_tuple: {
             auto tuple = d. view_tuple();
-            auto res = std::unordered_set <state_t> ( { empty_tuple_state } );
+            auto res = empty_tuple_state;
             for( size_t i = 0; i < tuple. size(); ++i ) {
-               auto tmp_set1 = data2state_t( tuple. val( i ) );
-               std::unordered_set <state_t> tmp_set2;
-               for( auto elm1 : res ) {
-                  for( auto elm2 : tmp_set1 ) {
-                     tmp_set2. insert( tuple_transitions( state_pair_t( elm1, elm2 ) ) );
-                  }
-               }
-               res = tmp_set2; 
+               auto tmp = data2state_t( tuple. val( i ) );
+               res = tuple_transitions( state_pair_t( res, tmp ) );
+               if( res == trap_state ) break;
             }
             return res;
          }
 
          case data::tree_array: {
             auto array = d. view_array();
-            auto res = empty_multiset_states;
+            auto res = empty_multiset_state;
             for( size_t i = 0; i < array. size(); ++i ) {
-               auto tmp_set1 = data2state_t( array. val( i ) );
-               std::unordered_set <state_t> tmp_set2;
-               for( auto elm1 : res ) {
-                  for( auto elm2 : tmp_set1 ) {
-                     tmp_set2. insert( multiset_transitions( state_pair_t( elm1, elm2 ) ) );
-                  }
-               }
-               res = tmp_set2; 
+               auto tmp = data2state_t( array. val( i ) );
+               res = multiset_transitions( state_pair_t( res, tmp ) );
             }
             return res;
          }
@@ -162,12 +144,10 @@ namespace atm{
             out << " --> [ " << entry. at << "; " << entry. after << " )\n";
          }
          
-         out << "Transitions for empty multiset states:\n";
-         for( auto entry : empty_multiset_states ) {
-            out << "\t{} --> " << entry << '\n';
-         }
+         out << "Transition for empty multiset states:\n";
+         out << "\t{} --> " << empty_multiset_state << '\n';
 
-         out << "Transition fpr the empty tuples:\n";
+         out << "Transition for the empty tuples:\n";
          out << "\t() --> " << empty_tuple_state << '\n';
 
          out << "Transitions tuples of states:\n";
