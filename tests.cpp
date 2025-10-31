@@ -1,7 +1,15 @@
 #include <list>
 
 #include "tests.h"
+
+#include "data/tree.h"
+
+#include "atm/state.h"
+#include "atm/stateset.h"
 #include "atm/statemap.h"
+#include "atm/simple.h"
+
+#include "simulation.h"
 
 #if 0
 void test_scalar_list( )
@@ -310,11 +318,11 @@ intermediate::function tests::arrayconv( )
 }
 #endif
 
-#if 0
+#if 1
 // Add natural numbers, even and odd numbers:
-void tests::add_nat( prop::defmap& prp, fieldmap& flds )
+void tests::add_nat()
 {
-   std::cout << "Constructing Natural Numbers:\n";
+   std::cout << "Constructing An Automaton for Natural Numbers:\n";
 
    auto nat = atm::simple( atm::state( ));
 
@@ -349,6 +357,31 @@ void tests::add_nat( prop::defmap& prp, fieldmap& flds )
    nat. addtuple( { prop. at( "?succ" ), prop. at( "even" ) }, prop. at("odd" ));
    nat. addtuple( { prop. at( "?succ" ), prop. at( "odd" ) }, prop. at("even" )) ; 
    std::cout << nat << "\n";
+
+   std::cout << "Simulating The Automaton of Natural Numbers\n";
+   simulation sim( nat );
+   
+   auto usel_zero = data::tree( data::tree_usel, usel( "zero" ) );
+   std::cout << usel_zero << " ==> { "; 
+   for( auto s : sim( usel_zero ) ) {
+      std::cout << s << ", "; 
+   }
+   std::cout << " }\n";
+ 
+   auto data_zero = data::tree( data::tree_tuple, { usel_zero } );
+   std::cout << data_zero << " ==> { "; 
+   for( auto s : sim( data_zero ) ) {
+      std::cout << s << ", "; 
+   }
+   std::cout << " }\n";
+
+   auto usel_succ = data::tree( data::tree_usel, usel( "succ" ) );
+   std::cout << usel_succ << " ==> { "; 
+   for( auto s : sim( usel_succ ) ) {
+      std::cout << s << ", "; 
+   }
+   std::cout << " }\n";
+   
 
 #if 0
    auto zero = prop::expr( prop::sel_const, usel( "zero" ));

@@ -66,8 +66,13 @@ atm::stateset simulation::operator() ( const data::tree& d ) {
                auto it2 = it1-> second. find( s2 );
                if( it2 == it1-> second. cend() )
                   continue;
-            
-               ss_new. insert( it2-> second ); 
+
+               auto it3 = atm. delta_eps. find( it2-> second );
+               if( it3 == atm. delta_eps. cend() ) {
+                  ss_new. insert( it2-> second );
+               } else {
+                  ss_new. repr. insert( it3-> second. cbegin(), it3-> second. cend() );
+               }
             }
          }
          
@@ -105,7 +110,12 @@ atm::stateset simulation::operator() ( const data::tree& d ) {
                if( it2 == it1-> second. cend() )
                   continue;
 
-               ss_new. insert( it2-> second );
+               auto it3 = atm. delta_eps. find( it2-> second );
+               if( it3 == atm. delta_eps. cend() ) {
+                  ss_new. insert( it2-> second );
+               } else {
+                  ss_new. repr. insert( it3-> second. cbegin(), it3-> second. cend() );
+               }
             }
          }
          

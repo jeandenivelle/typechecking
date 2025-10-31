@@ -6,7 +6,8 @@
 
 namespace tests
 {
-   atm::simple prop( );
+   void add_nat();
+   atm::simple prop();
       // Produce a non-deterministic automaton that
       // recognizes propositional formulas.
 

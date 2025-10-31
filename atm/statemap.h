@@ -4,6 +4,7 @@
 #include <string>
 
 #include "state.h"
+#include "util/print.h"
 
 namespace atm
 {

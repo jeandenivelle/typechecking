@@ -7,7 +7,10 @@
 
 #include "diff/approxset.h"
 
+#include "tests.h"
+
 int main( int argc, char* arcgv[] ) {
+   tests::add_nat();
    return 0;
 /*
    diff::approxset set1 = diff::approxset::empty( );
