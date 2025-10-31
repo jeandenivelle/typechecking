@@ -1,9 +1,9 @@
 
-#include <iostream>
-#include <vector>
-
 #ifndef ATM_INTERVALFUNCTION_
 #define ATM_INTERVALFUNCTION_ 
+
+#include <iostream>
+#include <vector>
 
 // Border functions are nicer, but they don't work with the reals.
 // With a border function, one cannot classify 
@@ -24,7 +24,7 @@ namespace atm
       C lt; 
       E eq; 
 
-      R bot;    // The value before the first d. 
+      R bot;    // The value below the first d. 
 
       struct interval
       {
@@ -41,7 +41,7 @@ namespace atm
       { }
 
       intervalfunction( const R& bot,
-                      std::initializer_list<interval> init )
+                        std::initializer_list<interval> init )
          : bot( bot ) 
       {
          table. reserve( init. size( ));
@@ -136,7 +136,6 @@ namespace atm
       size_t size( ) const { return table. size( ); }
       bool empty( ) const { return table. empty( ); }
    };
-
 
 #if 0
 
