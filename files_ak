@@ -12,6 +12,7 @@
 
 %sources
    typechecking.cpp
+   simulation.cpp
 
 %dir Source/data
 %sources
