@@ -2,17 +2,17 @@
 #define _SIMULATION_
 
 #include "data/tree.h"
-#include "atm/states.h"
-#include "atm/automaton.h"
+#include "atm/stateset.h"
+#include "atm/simple.h"
 
 struct simulation {
-   const atm::automaton atm;
+   const atm::simple atm;
    
    simulation() = delete;
-   simulation( const atm::automaton& atm ):
+   simulation( const atm::simple& atm ):
       atm( atm ) {}
 
-   atm::state_t operator() ( const data::tree& );
+   atm::stateset operator() ( const data::tree& );
 };
 
 #endif

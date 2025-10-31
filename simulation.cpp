@@ -2,52 +2,129 @@
 
 #include <stdexcept>
 
-atm::state_t simulation::operator() ( const data::tree& d ) {
+atm::stateset simulation::operator() ( const data::tree& d ) {
+   atm::stateset ss;
+
    switch( d. sel() ) {
    case data::tree_never:
    case data::tree_unit:
-      return atm. trap_state;
+      ss. insert( atm. collapsed );
+      break;
    
    case data::tree_bool:
-      return atm. bool_transitions( d. view_bool(). b() );
+      ss. insert( 
+         atm. delta_bool( 
+            d. view_bool(). b() ) );
+      break;
 
    case data::tree_char:
-      return atm. char_transitions( d. view_char(). c() );
+      ss. insert(
+         atm. delta_char( 
+            d. view_char(). c() ) );
+      break;
       
    case data::tree_usel:
-      return atm. usel_transitions( d. view_usel(). s() );
+      ss. insert(
+         atm. delta_usel( 
+            d. view_usel(). s() ) );
+      break;
    
    case data::tree_u64:
-      return atm. u64_transitions( d. view_u64(). i() );
+      ss. insert(
+         atm. delta_u64(
+            d. view_u64(). i() ) );
+      break;
 
    case data::tree_bigint:
-      return atm. bigint_transitions( d. view_bigint(). i() );
+      ss. insert(
+         atm. delta_bigint( 
+            d. view_bigint(). i() ) );
+      break;
 
    case data::tree_double:
-      return atm. double_transitions( d. view_double(). d() );
+      ss. insert(
+         atm. delta_double(
+            d. view_double(). d() ) );
+      break;
 
    case data::tree_tuple: {
       auto tuple = d. view_tuple();
-      auto res = atm. empty_tuple_state;
-      for( size_t i = 0; i < tuple. size(); ++i ) {
-         auto tmp = (*this)( tuple. val( i ) );
-         res = atm. tuple_transitions( atm::state_pair_t( res, tmp ) );
-         if( res == atm. trap_state ) break;
+      ss. insert( atm. empty_tup );
+      atm::stateset ss_new;
+      
+      for( size_t i = 0; i < tuple. size(); ++i ) { 
+         auto _ss = (*this)( tuple. val( i ) );
+         for( auto s1 : ss ) {
+            for( auto s2 : _ss ) {
+               if( s2 == atm. collapsed )
+                  continue;
+
+               auto it1 = atm. delta_tup. find( s1 );
+               if( it1 == atm. delta_tup. cend() )
+                  continue;
+
+               auto it2 = it1-> second. find( s2 );
+               if( it2 == it1-> second. cend() )
+                  continue;
+            
+               ss_new. insert( it2-> second ); 
+            }
+         }
+         
+         if( ss_new. empty() ) {
+            ss_new. insert( atm. collapsed );
+            ss = ss_new;
+            break;
+         }
+
+         ss = ss_new;
+         ss_new = atm::stateset();
       }
-      return res;
+
+      break;
    }
 
    case data::tree_array: {
       auto array = d. view_array();
-      auto res = atm. empty_multiset_state;
-      for( size_t i = 0; i < array. size(); ++i ) {
-         auto tmp = (*this)( array. val( i ) );
-         res = atm. multiset_transitions( atm::state_pair_t( res, tmp ) );
+      ss. insert( atm. empty_mset );
+      atm::stateset ss_new;
+
+      for( size_t i = 0; i < array. size(); ++ i ) {
+         auto _ss = (*this)( array. val( i ) );
+
+         for( auto s1 : ss ) {
+            for( auto s2 : _ss ) {
+               if( s2 == atm. collapsed )
+                  continue;
+
+               auto it1 = atm. delta_mset. find( s1 );
+               if( it1 == atm. delta_mset. cend() )
+                  continue;
+
+               auto it2 = it1-> second. find( s2 );
+               if( it2 == it1-> second. cend() )
+                  continue;
+
+               ss_new. insert( it2-> second );
+            }
+         }
+         
+         if( ss_new. empty() ) {
+            ss_new. insert( atm. collapsed );
+            ss = ss_new;
+            break;
+         }
+
+         ss = ss_new;
+         ss_new = atm::stateset();
       }
-      return res;
+
+      break;
    }
 
    default:
       throw std::runtime_error( "simulate(): error: unrecognizer data::selector instance\n" );
    }
+
+   return ss;
 }

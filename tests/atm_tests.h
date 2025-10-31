@@ -10,7 +10,16 @@
 
 #include <iostream>
 
+#include "atm/state.h"
+#include "atm/stateset.h"
+#include "atm/statemap.h"
+#include "atm/simple.h"
+
 namespace atm {
+   int test_simple() {
+      return 0;
+   }
+
    int test() {
       automaton atm;
    

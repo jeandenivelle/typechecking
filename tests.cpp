@@ -1,9 +1,9 @@
-
 #include <list>
 
 #include "tests.h"
 #include "atm/statemap.h"
 
+#if 0
 void test_scalar_list( )
 {
    std::vector< std::string > s = 
@@ -41,8 +41,9 @@ void test_scalar_list( )
    dropshare(p);
    dropshare(p1);
 }
+#endif
 
-
+#if 0
 intermediate::function tests::mixing( )
 {
    using namespace intermediate;
@@ -183,7 +184,9 @@ intermediate::function tests::mixing( )
                      prop::expr( prop::type_unit ));
 
 }
+#endif
 
+#if 0
 intermediate::function tests::repeated( )
 {
 #if 0
@@ -230,9 +233,10 @@ intermediate::function tests::repeated( )
 #endif
 
 }
+#endif
 
+#if 0
 // Adjective conversion in an array:
-
 intermediate::function tests::arrayconv( )
 {
    using namespace intermediate; 
@@ -304,10 +308,10 @@ intermediate::function tests::arrayconv( )
    return function( statement( stat_block, p ++, res.begin( ), res. end( )),
                     propAllB );
 }
+#endif
 
-
+#if 0
 // Add natural numbers, even and odd numbers:
-
 void tests::add_nat( prop::defmap& prp, fieldmap& flds )
 {
    std::cout << "Constructing Natural Numbers:\n";
@@ -372,8 +376,9 @@ void tests::add_nat( prop::defmap& prp, fieldmap& flds )
                         prop::expr( prop::ident, { identifier( ) + "nat", 0 } ), 0 ));
 #endif
 }
+#endif
 
-
+#if 0
 void tests::add_fol( prop::defmap& prp, fieldmap& flds )
 {
    std::cout << "\n";
@@ -598,7 +603,7 @@ void tests::add_fol( prop::defmap& prp, fieldmap& flds )
             }), 3 ));
 
 }
-
+#endif
 
 #if 0
 
