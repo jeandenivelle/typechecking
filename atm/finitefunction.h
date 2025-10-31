@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
 namespace atm
 {
@@ -16,11 +17,7 @@ namespace atm
 
       std::unordered_map<D,R,H,E > func;
 
-      finitefunction( )
-         : def( R( ))
-      { }
-
-      finitefunction( const R& def ) 
+      finitefunction( const R& def = R( )) 
          : def( def )
       { }
  
@@ -33,16 +30,10 @@ namespace atm
             assign( p.first, p.second );
       }
 
-      void assign( const D& d, const R& r )
+      bool assign( const D& d, const R& r )
       { 
-         auto p = func.find(d);
-         if( p != func. end( ))
-         {
-            throw std::logic_error( 
-                           "finitefunction: reassignment not allowed" );
-         }
-         else
-            func. insert( std::pair<D,R> ( d, r )); 
+         auto p = func.insert( std::pair<D,R> (d,r));
+         return p. second; 
       }
 
       using iterator = typename std::unordered_map<D,R,H,E>::iterator;
@@ -100,11 +91,12 @@ namespace atm
 
       void print( std::ostream& out ) const
       {
-         out << "Finite Function:\n";
-         out << "default = " << def << "\n";
+         out << "<def> -> " << def;
          for( const auto& p : func )
-            out << "   " << p. first << " --> " << p. second << "\n";
-         out << "\n";
+         {
+            out << ", ";
+            out << p. first << " -> " << p. second;
+         }
       }
 
       void clear() { func. clear(); }
@@ -184,6 +176,14 @@ namespace atm
       return res;
    }
 #endif
+
+   template< typename D, typename R, typename H, typename E > 
+   inline std::ostream& 
+   operator << ( std::ostream& out, const finitefunction<D,R,H,E> & fin )
+   { 
+      fin. print( out ); 
+      return out; 
+   }
 
 }
 

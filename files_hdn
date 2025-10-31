@@ -13,6 +13,8 @@
 %sources
    typechecking.cpp
    identifier.cpp
+   fieldmap.cpp
+   tests.cpp
 
 %dir Source/data
 %sources
@@ -22,8 +24,15 @@
 
 %dir Source/atm
 %sources
-   nondet.cpp
+   stateset.cpp
+   statemap.cpp
+   simple.cpp
 
+%dir Source/prop
+%sources
+   selector.cpp
+   expr.cpp
+   
 %dir Source/diff
 %sources
    approxset.cpp

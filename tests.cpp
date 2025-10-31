@@ -1,7 +1,8 @@
 
-#include "tests.h"
-
 #include <list>
+
+#include "tests.h"
+#include "atm/statemap.h"
 
 void test_scalar_list( )
 {
@@ -273,7 +274,6 @@ intermediate::function tests::arrayconv( )
                               flatterm( flat_field, x0, 
                                   exactident( identifier( ) + "f", 0 ), i0 )) } ));
 
-  
    {
       auto call = statement( stat_assign, p ++, e0, flatterm( flat_call,
                              exactident( identifier( ) + "F", 0 ), { d0 } )); 
@@ -312,6 +312,41 @@ void tests::add_nat( prop::defmap& prp, fieldmap& flds )
 {
    std::cout << "Constructing Natural Numbers:\n";
 
+   auto nat = atm::simple( atm::state( ));
+
+#if 0
+   auto goal = nat. newstate( );
+   std::cout << "newstate = " << goal << "\n";
+   auto q1 = nat. newstate( );
+   auto q2 = nat. newstate( );
+   auto q3 = nat. newstate( );
+
+   nat. addtuple( { q1, q2 }, goal );
+
+   goal = nat. newstate( );
+   nat. addtuple( { q1, q2 }, goal ); 
+#endif
+
+   atm::statemap prop;
+   prop[ "nat" ] = nat. newstate( );
+   prop[ "even" ] = nat. newstate( );
+   prop[ "odd" ] = nat. newstate( );
+   prop[ "?zero" ] = nat. newstate( );
+   prop[ "?succ" ] = nat. newstate( );
+
+   nat. delta_bool = { nat. collapsed };
+
+   std::cout << prop << "\n";
+ 
+   nat. delta_usel. assign( usel( "zero" ), prop. at( "?zero" ));
+   nat. delta_usel. assign( usel( "succ" ), prop. at( "?succ" ));
+
+   nat. addtuple( { prop. at( "?zero" ) }, prop. at( "even" ));
+   nat. addtuple( { prop. at( "?succ" ), prop. at( "even" ) }, prop. at("odd" ));
+   nat. addtuple( { prop. at( "?succ" ), prop. at( "odd" ) }, prop. at("even" )) ; 
+   std::cout << nat << "\n";
+
+#if 0
    auto zero = prop::expr( prop::sel_const, usel( "zero" ));
    zero = prop::expr( prop::tuple, { zero } );
  
@@ -335,6 +370,7 @@ void tests::add_nat( prop::defmap& prp, fieldmap& flds )
    flds. insert( exactident( identifier( ) + "op", 0 ), 
                      fielddef( fld_scalar, 
                         prop::expr( prop::ident, { identifier( ) + "nat", 0 } ), 0 ));
+#endif
 }
 
 
@@ -353,7 +389,6 @@ void tests::add_fol( prop::defmap& prp, fieldmap& flds )
    flds. insert( exactident( identifier( ) + "c", 0 ),
       fielddef( fld_vector, 
          prop::expr( prop::ident, ident ), 0 ));   
-
 
    //// term:
 
@@ -375,7 +410,6 @@ void tests::add_fol( prop::defmap& prp, fieldmap& flds )
    flds. insert( exactident( identifier( ) + "args", 0 ),
       fielddef( fld_vector,
          prop::expr( prop::ident, term ), 1 ));  
-
 
    //// sort:
 
@@ -451,7 +485,6 @@ void tests::add_fol( prop::defmap& prp, fieldmap& flds )
       } );
 
    prp. insert( fol, prop::expr( prop::log_or, { atom, eq, negated, bin, nary, quant } ));
-
 
    flds. insert( exactident( identifier( ) + "op", 2 ),
       fielddef( fld_scalar,
@@ -549,7 +582,6 @@ void tests::add_fol( prop::defmap& prp, fieldmap& flds )
               prop::expr( prop::log_forall, prop::expr( prop::ident, sort ))
             }), 2 ));
 
-
    // Sort of quantified variable: 
 
    flds. insert( exactident( identifier( ) + "srt", 1 ),
@@ -590,4 +622,10 @@ void modaladjectives( adj::map& sys )
 
 #endif
 
+atm::simple tests::prop( )
+{
+
+
+
+}
 
