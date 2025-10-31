@@ -1,4 +1,5 @@
 #include <list>
+#include <vector>
 
 #include "tests.h"
 
@@ -10,7 +11,6 @@
 #include "atm/simple.h"
 
 #include "simulation.h"
-
 #if 0
 void test_scalar_list( )
 {
@@ -361,27 +361,32 @@ void tests::add_nat()
    std::cout << "Simulating The Automaton of Natural Numbers\n";
    simulation sim( nat );
    
-   auto usel_zero = data::tree( data::tree_usel, usel( "zero" ) );
-   std::cout << usel_zero << " ==> { "; 
-   for( auto s : sim( usel_zero ) ) {
-      std::cout << s << ", "; 
-   }
-   std::cout << " }\n";
- 
-   auto data_zero = data::tree( data::tree_tuple, { usel_zero } );
-   std::cout << data_zero << " ==> { "; 
-   for( auto s : sim( data_zero ) ) {
-      std::cout << s << ", "; 
-   }
-   std::cout << " }\n";
+   std::vector< data::tree > ds;
 
+   auto usel_zero = data::tree( data::tree_usel, usel( "zero" ) );
+   ds. push_back( usel_zero );
+ 
    auto usel_succ = data::tree( data::tree_usel, usel( "succ" ) );
-   std::cout << usel_succ << " ==> { "; 
-   for( auto s : sim( usel_succ ) ) {
-      std::cout << s << ", "; 
-   }
-   std::cout << " }\n";
+   ds. push_back( usel_succ );
    
+   auto data_zero = data::tree( data::tree_tuple, { usel_zero } );
+   ds. push_back( data_zero );
+
+   ds. push_back(
+      data::tree( data::tree_tuple, 
+         { usel_succ, data_zero } ));
+
+   ds. push_back( 
+      data::tree( data::tree_tuple, 
+         { usel_succ, ds. back() } ));
+
+   for( auto d : ds ) {
+      std::cout << d << " ==> { "; 
+      for( auto s : sim( d ) ) {
+         std::cout << s << ", "; 
+      }
+      std::cout << " }\n";
+   }
 
 #if 0
    auto zero = prop::expr( prop::sel_const, usel( "zero" ));
