@@ -4,13 +4,17 @@
 #include "usel.h"
 
 #include "data/tree.h"
-
+#include "data/tree_operators.h" 
 #include "diff/approxset.h"
 
 #include "tests.h"
 
 int main( int argc, char* arcgv[] ) {
    tests::add_nat();
+   std::cout << data::zero( ) << "\n";
+   std::cout << data::succ( data::zero( )) << "\n";
+   std::cout << !data::atom( "sasha" ) << "\n";
+
    return 0;
 /*
    diff::approxset set1 = diff::approxset::empty( );
@@ -118,4 +122,5 @@ int main( int argc, char* arcgv[] ) {
 
    return 0;	
 }
+
 #endif
