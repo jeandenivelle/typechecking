@@ -314,19 +314,6 @@ void tests::add_nat( prop::defmap& prp, fieldmap& flds )
 
    auto nat = atm::simple( atm::state( ));
 
-#if 0
-   auto goal = nat. newstate( );
-   std::cout << "newstate = " << goal << "\n";
-   auto q1 = nat. newstate( );
-   auto q2 = nat. newstate( );
-   auto q3 = nat. newstate( );
-
-   nat. addtuple( { q1, q2 }, goal );
-
-   goal = nat. newstate( );
-   nat. addtuple( { q1, q2 }, goal ); 
-#endif
-
    atm::statemap prop;
    prop[ "nat" ] = nat. newstate( );
    prop[ "even" ] = nat. newstate( );
@@ -347,6 +334,9 @@ void tests::add_nat( prop::defmap& prp, fieldmap& flds )
    std::cout << nat << "\n";
 
 #if 0
+   // This is code that uses property expressions.
+   // I keep them for the moment.
+
    auto zero = prop::expr( prop::sel_const, usel( "zero" ));
    zero = prop::expr( prop::tuple, { zero } );
  
@@ -380,6 +370,17 @@ void tests::add_fol( prop::defmap& prp, fieldmap& flds )
    std::cout << "Constructing definition of simply typed first-order logic:\n\n";
       // The definition was copied from an unfinished (hardly started)
       // implementation of geo.
+
+   auto nat = atm::simple( atm::state( ));
+
+   atm::statemap prop;
+   prop[ "nat" ] = nat. newstate( );
+   prop[ "even" ] = nat. newstate( );
+   prop[ "odd" ] = nat. newstate( );
+   prop[ "?zero" ] = nat. newstate( );
+   prop[ "?succ" ] = nat. newstate( );
+
+   nat. delta_bool = { nat. collapsed };
  
    auto ident = exactident( identifier( ) + "ident", 0 );
 
@@ -600,32 +601,64 @@ void tests::add_fol( prop::defmap& prp, fieldmap& flds )
 }
 
 
-#if 0
-
-void modaladjectives( adj::map& sys )
-{
-#if 0
-   std::cout << "Adding adjectives on modal formula:\n";
-
-   using namespace ast;
-
-   auto tr = tree( new expr( op_or( ),
-         { tree( new constant( selector( "?true" ))),
-           tree( new constant( selector( "?false" ))) } ));
-
-   auto nullaryF = exactname( "nullaryF" );
-   sys. insert( { nullaryF, 
-                  adj::def( decldef( -1, 0, vis_global ),
-                            new type::fullident( "modal" ), tr ) } );
-#endif 
-}
-
-#endif
 
 atm::simple tests::prop( )
 {
+   using namespace atm;
 
+   auto prop = simple( state( ));
 
+   // define transition for characters:
 
+   state q_char = prop. newstate( );
+   prop. delta_char. bot = prop. collapsed;
+
+   prop. delta_char. append( '0', q_char, q_char );
+   prop. delta_char. append( '9', q_char, prop. collapsed );
+
+   prop. delta_char. append( 'A', q_char, q_char );
+   prop. delta_char. append( 'Z', q_char, prop. collapsed );
+
+   prop. delta_char. append( '_', q_char, prop. collapsed );
+
+   prop. delta_char. append( 'a', q_char, q_char );
+   prop. delta_char. append( 'z', q_char, prop. collapsed );
+
+   state q_all_char = prop. newstate( );
+   prop. addforall( q_char, q_all_char );
+
+   auto q_atom = prop. newstate( );
+   auto q_neg = prop. newstate( );
+   auto q_implies = prop. newstate( );
+   auto q_equiv = prop. newstate( );
+   auto q_or = prop. newstate( );
+   auto q_and = prop. newstate( );
+
+   auto q_prop = prop. newstate( );
+
+   prop. delta_usel. def = prop. collapsed;
+   prop. delta_usel. assign( usel( "atom" ), q_atom );
+   prop. delta_usel. assign( usel( "neg" ), q_neg );
+   prop. delta_usel. assign( usel( "implies" ), q_implies );
+   prop. delta_usel. assign( usel( "equiv" ), q_equiv );
+   prop. delta_usel. assign( usel( "or" ), q_or );
+   prop. delta_usel. assign( usel( "and" ), q_and );
+
+   prop. addtuple( { q_atom, q_all_char }, q_prop );
+   prop. addtuple( { q_neg, q_prop }, q_prop );
+
+   prop. addtuple( { q_implies, q_prop, q_prop }, q_prop );
+   prop. addtuple( { q_equiv, q_prop, q_prop }, q_prop );
+
+   // A multiset of props:
+
+   auto q_all_prop = prop. newstate( );
+   prop. addforall( q_prop, q_all_prop );
+
+   prop. addtuple( { q_or, q_all_prop }, q_all_prop );
+   prop. addtuple( { q_and, q_all_prop }, q_all_prop );
+
+   std::cout << prop << "\n";
+   return prop; 
 }
 

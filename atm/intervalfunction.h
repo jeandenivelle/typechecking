@@ -122,12 +122,11 @@ namespace atm
 
       void print( std::ostream& out ) const
       { 
-         out << "Interval Function:\n";
-         out << "bottom = " << bot << "\n";
+         out << "<bot> -> " << bot;
          for( const auto& p : table )
          {
-            out << "   " << p. d;
-            out << " --> [ " << p. at << "; " << p. after << " )\n";
+            out << ", " << p.d << " -> ";
+            out << "[ " << p. at << " < " << p. after << " ]";
          }
          out << "\n";
       } 
@@ -209,6 +208,16 @@ namespace atm
       return res;
    }
 #endif
+
+   template< typename D, typename R,
+             typename C = std::less<D>, typename E = std::equal_to<R> >
+   inline std::ostream&
+   operator << ( std::ostream& out, const intervalfunction<D,R,C,E> & func )
+   {
+      func. print( out );
+      return out;
+   }
+
 
 }
 

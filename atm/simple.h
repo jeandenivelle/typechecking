@@ -65,6 +65,7 @@ namespace atm
          { return nextstate ++ ; }
 
       void addtuple( const std::vector< state > & tup, state goal );
+      void addforall( state q, state goal );
 
       void print( std::ostream& out ) const; 
    };

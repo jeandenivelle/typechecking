@@ -35,13 +35,27 @@ void atm::simple::addtuple( const std::vector< state > & tup, state goal )
    // We need to create an epsilon transition to goal. 
 }
 
+
+void atm::simple::addforall( state q, state goal )
+{
+   std::cout << "adding forall " << q; 
+   std::cout << " -> " << goal << "\n";
+
+   auto qq = newstate( );
+   delta_eps[ empty_mset ]. insert( qq );
+   delta_mset[ qq ][q] = qq;
+   delta_eps[ qq ]. insert( goal );
+}
+
 void atm::simple::print( std::ostream& out ) const
 {
    out << "Simple Automaton:\n";
    out << "   collapsed = " << collapsed << "\n\n";
    out << "Selector transitions:\n";
    out << "   " << delta_usel << "\n"; 
-
+   out << "Character transitions:\n";
+   out << "   " << delta_char << "\n";
+ 
    out << "\n";
 
    out << "Tuple transitions:\n";
@@ -58,7 +72,7 @@ void atm::simple::print( std::ostream& out ) const
    for( const auto& set : delta_mset )
       for( const auto& ins : set. second )
       {
-         out << "   " << set. first << " + " << ins. first;
+         out << "   " << set. first << " ++ [ " << ins. first << " ]";
          out << " -> " << ins. second << "\n";
       }
    out << "\n";
