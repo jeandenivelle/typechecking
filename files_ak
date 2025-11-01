@@ -12,12 +12,20 @@
 
 %sources
    typechecking.cpp
+   simulation.cpp
+   tests.cpp
 
 %dir Source/data
 %sources
    selector.cpp
    tree.cpp
    printing.cpp
+
+%dir Source/atm
+%sources
+   stateset.cpp
+   statemap.cpp
+   simple.cpp
 
 %dir Source/diff
 %sources

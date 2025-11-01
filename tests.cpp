@@ -1,9 +1,17 @@
-
 #include <list>
+#include <vector>
 
 #include "tests.h"
-#include "atm/statemap.h"
 
+#include "data/tree.h"
+
+#include "atm/state.h"
+#include "atm/stateset.h"
+#include "atm/statemap.h"
+#include "atm/simple.h"
+
+#include "simulation.h"
+#if 0
 void test_scalar_list( )
 {
    std::vector< std::string > s = 
@@ -41,8 +49,9 @@ void test_scalar_list( )
    dropshare(p);
    dropshare(p1);
 }
+#endif
 
-
+#if 0
 intermediate::function tests::mixing( )
 {
    using namespace intermediate;
@@ -183,7 +192,9 @@ intermediate::function tests::mixing( )
                      prop::expr( prop::type_unit ));
 
 }
+#endif
 
+#if 0
 intermediate::function tests::repeated( )
 {
 #if 0
@@ -230,9 +241,10 @@ intermediate::function tests::repeated( )
 #endif
 
 }
+#endif
 
+#if 0
 // Adjective conversion in an array:
-
 intermediate::function tests::arrayconv( )
 {
    using namespace intermediate; 
@@ -304,13 +316,13 @@ intermediate::function tests::arrayconv( )
    return function( statement( stat_block, p ++, res.begin( ), res. end( )),
                     propAllB );
 }
+#endif
 
-
+#if 1
 // Add natural numbers, even and odd numbers:
-
-void tests::add_nat( prop::defmap& prp, fieldmap& flds )
+void tests::add_nat()
 {
-   std::cout << "Constructing Natural Numbers:\n";
+   std::cout << "Constructing An Automaton for Natural Numbers:\n";
 
    auto nat = atm::simple( atm::state( ));
 
@@ -332,6 +344,36 @@ void tests::add_nat( prop::defmap& prp, fieldmap& flds )
    nat. addtuple( { prop. at( "?succ" ), prop. at( "even" ) }, prop. at("odd" ));
    nat. addtuple( { prop. at( "?succ" ), prop. at( "odd" ) }, prop. at("even" )) ; 
    std::cout << nat << "\n";
+
+   std::cout << "Simulating The Automaton of Natural Numbers\n";
+   simulation sim( nat );
+   
+   std::vector< data::tree > ds;
+
+   auto usel_zero = data::tree( data::tree_usel, usel( "zero" ) );
+   ds. push_back( usel_zero );
+ 
+   auto usel_succ = data::tree( data::tree_usel, usel( "succ" ) );
+   ds. push_back( usel_succ );
+   
+   auto data_zero = data::tree( data::tree_tuple, { usel_zero } );
+   ds. push_back( data_zero );
+
+   ds. push_back(
+      data::tree( data::tree_tuple, 
+         { usel_succ, data_zero } ));
+
+   ds. push_back( 
+      data::tree( data::tree_tuple, 
+         { usel_succ, ds. back() } ));
+
+   for( auto d : ds ) {
+      std::cout << d << " ==> { "; 
+      for( auto s : sim( d ) ) {
+         std::cout << s << ", "; 
+      }
+      std::cout << " }\n";
+   }
 
 #if 0
    // This is code that uses property expressions.
@@ -362,8 +404,9 @@ void tests::add_nat( prop::defmap& prp, fieldmap& flds )
                         prop::expr( prop::ident, { identifier( ) + "nat", 0 } ), 0 ));
 #endif
 }
+#endif
 
-
+#if 0
 void tests::add_fol( prop::defmap& prp, fieldmap& flds )
 {
    std::cout << "\n";
@@ -599,7 +642,7 @@ void tests::add_fol( prop::defmap& prp, fieldmap& flds )
             }), 3 ));
 
 }
-
+#endif
 
 
 atm::simple tests::prop( )
