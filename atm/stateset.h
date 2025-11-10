@@ -19,6 +19,9 @@ namespace atm
       bool insert( state s )
          { return repr. insert(s). second; }
 
+      void insert( const std::set<atm::state, atm::state::less> other_repr )
+         { repr. insert( other_repr. cbegin(), other_repr. cend() ); }
+
       bool remove( state s )
          { return repr. erase(s); }       
 
