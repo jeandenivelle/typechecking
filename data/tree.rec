@@ -27,7 +27,6 @@
    #include "util/bigint.h"
 }
 
-
 %h_methods {
    void print( std::ostream& ) const;
 } 

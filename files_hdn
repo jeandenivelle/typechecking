@@ -15,6 +15,7 @@
    identifier.cpp
    fieldmap.cpp
    tests.cpp
+   simulation.cpp
 
 %dir Source/data
 %sources
