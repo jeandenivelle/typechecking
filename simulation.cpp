@@ -4,7 +4,8 @@
 #include <stdexcept>
 
 
-atm::stateset eps_close ( const atm::simple atm, const atm::stateset sset ) {
+atm::stateset eps_close
+( const atm::simple& atm, const atm::stateset sset ) {
    atm::stateset new_sset( sset );
 
    while( true ) {
@@ -53,7 +54,8 @@ atm::stateset set_delta(
 }
 
 
-atm::stateset simulation::operator() ( const data::tree& data ) {
+atm::stateset simulate
+( const atm::simple& atm, const data::tree& data ) {
    atm::stateset sset;
 
    switch( data. sel() ) {
@@ -95,7 +97,7 @@ atm::stateset simulation::operator() ( const data::tree& data ) {
       sset = eps_close( atm, sset );
       
       for( size_t i = 0; i < tuple. size(); ++i ) { 
-         auto sset_at_i = (*this)( tuple. val( i ) ); 
+         auto sset_at_i = simulate( atm, tuple. val( i ) ); 
          atm::stateset new_sset;
          new_sset = set_delta( atm. delta_tup, sset, sset_at_i );
          sset = eps_close( atm, new_sset );
@@ -116,7 +118,7 @@ atm::stateset simulation::operator() ( const data::tree& data ) {
       sset = eps_close( atm, sset );
 
       for( size_t i = 0; i < array. size(); ++ i ) {
-         auto sset_at_i = (*this)( array. val( i ) );
+         auto sset_at_i = simulate( atm, array. val( i ) );
          atm::stateset new_sset;
          new_sset = set_delta( atm. delta_mset, sset, sset_at_i );
          sset = eps_close( atm, new_sset );

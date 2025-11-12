@@ -5,14 +5,7 @@
 #include "atm/stateset.h"
 #include "atm/simple.h"
 
-struct simulation {
-   const atm::simple atm;
-   
-   simulation() = delete;
-   simulation( const atm::simple& atm ):
-      atm( atm ) {}
-
-   atm::stateset operator() ( const data::tree& );
-};
+atm::stateset eps_close ( const atm::simple&, const atm::stateset );
+atm::stateset simulate ( const atm::simple&, const data::tree& );
 
 #endif

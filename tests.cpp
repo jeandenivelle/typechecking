@@ -346,7 +346,6 @@ void tests::add_nat()
    std::cout << nat << "\n";
 
    std::cout << "Simulating The Automaton of Natural Numbers\n";
-   simulation sim( nat );
    
    std::vector< data::tree > ds;
 
@@ -369,7 +368,7 @@ void tests::add_nat()
 
    for( auto d : ds ) {
       std::cout << d << " ==> { "; 
-      for( auto s : sim( d ) ) {
+      for( auto s : simulate( nat, d ) ) {
          std::cout << s << ", "; 
       }
       std::cout << " }\n";
