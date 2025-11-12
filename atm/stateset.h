@@ -16,6 +16,9 @@ namespace atm
 
       stateset( ) noexcept = default;
 
+      bool contains( state s ) const 
+         { return repr. contains(s); }
+
       bool insert( state s )
          { return repr. insert(s). second; }
 

@@ -4,53 +4,55 @@
 #include <stdexcept>
 
 
-atm::stateset eps_close
-( const atm::simple& atm, const atm::stateset sset ) {
-   atm::stateset new_sset( sset );
+atm::stateset 
+eps_closure( const atm::simple& atm, atm::stateset unchecked ) {
+   atm::stateset checked; 
+   while( unchecked. size( ))
+   {
+      auto s1 = * ( unchecked. begin( ));
+      unchecked. remove(s1);
+      checked. insert(s1);
 
-   while( true ) {
-      size_t size = new_sset. size();
-  
-      for( auto state1 : new_sset ) {
-         auto state2_itr = atm. delta_eps. find( state1 );
-         if( state2_itr != atm. delta_eps. cend() ) {
-            new_sset. insert( state2_itr-> second );
+      auto it = atm. delta_eps. find( s1 );
+      if( it != atm. delta_eps. end() ) {
+         for( auto s2 : it -> second )
+         {
+            if( !checked. contains(s2) && !unchecked. contains(s2)) 
+               unchecked. insert(s2); 
          }
       }
-      
-      if( new_sset. size() - size == 0 ) {
-         break;
+   }
+
+   return checked;
+}
+
+
+namespace
+{
+
+atm::stateset set_delta(
+   const std::map< atm::state, std::map< atm::state, atm::state, atm::state::less >, atm::state::less > & delta,
+   const atm::stateset& sset1,
+   const atm::stateset& sset2 
+) {
+   atm::stateset new_sset;
+   
+   for( auto state1 : sset1 ) {
+      auto itr1 = delta. find( state1 );
+      if( itr1 != delta. end( ))
+      {
+         for( auto state2 : sset2 ) {
+            auto itr2 = itr1-> second. find( state2 );
+            if( itr2 != itr1-> second. end( )) {
+               auto new_state = itr2-> second;
+               new_sset. insert( new_state );
+            }
+         }
       }
    }
 
    return new_sset;
 }
-
-atm::stateset set_delta(
-   const std::map< atm::state, std::map< atm::state, atm::state, atm::state::less >, atm::state::less > delta,
-   const atm::stateset sset1,
-   const atm::stateset sset2 
-) {
-   atm::stateset new_sset;
-   
-   for( auto state1 : sset1 ) {
-      for( auto state2 : sset2 ) {
-         auto itr1 = delta. find( state1 );
-         if( itr1 == delta. cend() ) {
-            continue;
-         }
-
-         auto itr2 = itr1-> second. find( state2 );
-         if( itr2 == itr1-> second. cend()  ) {
-            continue;
-         }
-
-         auto new_state = itr2-> second;
-         new_sset. insert( new_state );
-      }
-   }
-
-   return new_sset;
 }
 
 
@@ -60,8 +62,11 @@ atm::stateset simulate
 
    switch( data. sel() ) {
    case data::tree_never:
-   case data::tree_unit:
       sset. insert( atm. collapsed );
+      break;
+
+   case data::tree_unit:
+      sset. insert( atm. delta_unit );
       break;
    
    case data::tree_bool:
@@ -94,16 +99,15 @@ atm::stateset simulate
 
       /* initial set state */
       sset. insert( atm. empty_tup );
-      sset = eps_close( atm, sset );
+      sset = eps_closure( atm, std::move( sset ));
       
       for( size_t i = 0; i < tuple. size(); ++i ) { 
          auto sset_at_i = simulate( atm, tuple. val( i ) ); 
-         atm::stateset new_sset;
-         new_sset = set_delta( atm. delta_tup, sset, sset_at_i );
-         sset = eps_close( atm, new_sset );
+         atm::stateset new_sset = set_delta( atm. delta_tup, sset, sset_at_i );
+         sset = eps_closure( atm, std::move( new_sset ));
          if( sset. size() == 0 ) {
             sset. insert( atm. collapsed );
-            break;
+            return sset;
          }
       }
 
@@ -115,13 +119,13 @@ atm::stateset simulate
 
       /* initial set state */
       sset. insert( atm. empty_mset );
-      sset = eps_close( atm, sset );
+      sset = eps_closure( atm, std::move( sset ));
 
       for( size_t i = 0; i < array. size(); ++ i ) {
          auto sset_at_i = simulate( atm, array. val( i ) );
          atm::stateset new_sset;
          new_sset = set_delta( atm. delta_mset, sset, sset_at_i );
-         sset = eps_close( atm, new_sset );
+         sset = eps_closure( atm, std::move( new_sset ));
          if( sset. size() == 0 ) {
             sset. insert( atm. collapsed );
             break;
@@ -132,9 +136,9 @@ atm::stateset simulate
    }
 
    default:
-      throw std::runtime_error( "simulate(): error: unrecognizer data::selector instance\n" );
+      throw std::runtime_error( "simulate(): error: unrecognized data::selector instance\n" );
    }
 
-   sset = eps_close( atm, sset );
+   sset = eps_closure( atm, std::move( sset ));
    return sset;
 }
