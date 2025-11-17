@@ -3,10 +3,9 @@
 #include <map>
 #include <stdexcept>
 
-
-atm::stateset 
-eps_closure( const atm::simple& atm, atm::stateset unchecked ) {
-   atm::stateset checked; 
+atm::stateset atm::eps_closure
+( const simple& atm, stateset unchecked ) {
+   stateset checked; 
    while( unchecked. size( ))
    {
       auto s1 = * ( unchecked. begin( ));
@@ -26,39 +25,35 @@ eps_closure( const atm::simple& atm, atm::stateset unchecked ) {
    return checked;
 }
 
-
-namespace
-{
-
-atm::stateset set_delta(
-   const std::map< atm::state, std::map< atm::state, atm::state, atm::state::less >, atm::state::less > & delta,
-   const atm::stateset& sset1,
-   const atm::stateset& sset2 
-) {
-   atm::stateset new_sset;
-   
-   for( auto state1 : sset1 ) {
-      auto itr1 = delta. find( state1 );
-      if( itr1 != delta. end( ))
-      {
-         for( auto state2 : sset2 ) {
-            auto itr2 = itr1-> second. find( state2 );
-            if( itr2 != itr1-> second. end( )) {
-               auto new_state = itr2-> second;
-               new_sset. insert( new_state );
+namespace {
+   atm::stateset set_delta(
+      const std::map< atm::state, std::map< atm::state, atm::state, atm::state::less >, atm::state::less > & delta,
+      const atm::stateset& sset1,
+      const atm::stateset& sset2 
+   ) {
+      atm::stateset new_sset;
+      
+      for( auto state1 : sset1 ) {
+         auto itr1 = delta. find( state1 );
+         if( itr1 != delta. end( ))
+         {
+            for( auto state2 : sset2 ) {
+               auto itr2 = itr1-> second. find( state2 );
+               if( itr2 != itr1-> second. end( )) {
+                  auto new_state = itr2-> second;
+                  new_sset. insert( new_state );
+               }
             }
          }
       }
+
+      return new_sset;
    }
-
-   return new_sset;
-}
 }
 
-
-atm::stateset simulate
-( const atm::simple& atm, const data::tree& data ) {
-   atm::stateset sset;
+atm::stateset atm::simulate
+( const simple& atm, const data::tree& data ) {
+   stateset sset;
 
    switch( data. sel() ) {
    case data::tree_never:
@@ -103,7 +98,7 @@ atm::stateset simulate
       
       for( size_t i = 0; i < tuple. size(); ++i ) { 
          auto sset_at_i = simulate( atm, tuple. val( i ) ); 
-         atm::stateset new_sset = set_delta( atm. delta_tup, sset, sset_at_i );
+         stateset new_sset = set_delta( atm. delta_tup, sset, sset_at_i );
          sset = eps_closure( atm, std::move( new_sset ));
          if( sset. size() == 0 ) {
             sset. insert( atm. collapsed );
@@ -123,7 +118,7 @@ atm::stateset simulate
 
       for( size_t i = 0; i < array. size(); ++ i ) {
          auto sset_at_i = simulate( atm, array. val( i ) );
-         atm::stateset new_sset;
+         stateset new_sset;
          new_sset = set_delta( atm. delta_mset, sset, sset_at_i );
          sset = eps_closure( atm, std::move( new_sset ));
          if( sset. size() == 0 ) {

@@ -9,8 +9,8 @@
 #include "atm/stateset.h"
 #include "atm/statemap.h"
 #include "atm/simple.h"
+#include "atm/simulation.h"
 
-#include "simulation.h"
 #if 0
 void test_scalar_list( )
 {
@@ -368,7 +368,7 @@ void tests::add_nat()
 
    for( auto d : ds ) {
       std::cout << d << " ==> { "; 
-      for( auto s : simulate( nat, d ) ) {
+      for( auto s : atm::simulate( nat, d ) ) {
          std::cout << s << ", "; 
       }
       std::cout << " }\n";
