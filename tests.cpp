@@ -707,8 +707,8 @@ void tests::gen_prop( atm::simple& prop, atm::statemap& smap )
    smap. insert( "[prop]", q_all_prop );
    prop. addforall( q_prop, q_all_prop );
 
-   prop. addtuple( { q_or, q_all_prop }, q_all_prop );
-   prop. addtuple( { q_and, q_all_prop }, q_all_prop );
+   prop. addtuple( { q_or, q_all_prop }, q_prop );
+   prop. addtuple( { q_and, q_all_prop }, q_prop );
 }
 
 void tests::sim_prop( ) { 
@@ -772,7 +772,8 @@ void tests::sim_prop( ) {
    
    for( auto d : data ) {
       std::cout << d << " ==> ";
-      atm::pretty_print( std::cout, atm::simulate( prop, d ), smap );
+      std::cout << atm::simulate( prop, d );
+      //atm::pretty_print( std::cout, atm::simulate( prop, d ), smap );
       std::cout << "\n";
    }
 }

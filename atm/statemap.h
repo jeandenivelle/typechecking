@@ -34,13 +34,13 @@ namespace atm
          { return map. begin( ); }
 
       iterator end( ) 
-         { return map. begin( ); }
+         { return map. end( ); }
 
       const_iterator begin( ) const
          { return map. begin( ); }
 
       const_iterator end( ) const 
-         { return map. begin( ); }
+         { return map. end( ); }
 
       iterator find( const std::string& name )
          { return map. find( name ); }
