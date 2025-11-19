@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "state.h"
+#include "statemap.h"
 
 namespace atm 
 {
@@ -49,6 +50,7 @@ namespace atm
 
    bool operator == ( const stateset& s1, const stateset& s2 ); 
    bool subset( const stateset& s1, const stateset& s2 ); 
+   void pretty_print( std::ostream&, const stateset&, const statemap& );
 }
 
 #endif

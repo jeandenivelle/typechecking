@@ -1,6 +1,6 @@
 
 #include "stateset.h"
-
+#include "statemap.h"
 
 #if 0
    struct states_t {
@@ -84,3 +84,11 @@ bool atm::subset( const stateset& s1, const stateset& s2 )
 }
 
 
+void atm::pretty_print( std::ostream& out, const atm::stateset& set, const atm::statemap& map ) {
+   out << "{ ";
+   for( auto it = set. begin( ); it != set. end( ); ++ it ) {
+      if( it != set. begin( ) ) out << ", ";
+      out << state2str( *it, map );
+   }
+   out << " }";
+}

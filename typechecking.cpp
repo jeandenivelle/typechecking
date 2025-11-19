@@ -10,11 +10,8 @@
 #include "tests.h"
 
 int main( int argc, char* arcgv[] ) {
-   tests::add_nat();
-   std::cout << data::zero( ) << "\n";
-   std::cout << data::succ( data::zero( )) << "\n";
-   std::cout << !data::atom( "sasha" ) << "\n";
-
+   tests::sim_nat();
+   tests::sim_prop();
    return 0;
 /*
    diff::approxset set1 = diff::approxset::empty( );

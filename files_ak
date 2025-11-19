@@ -12,7 +12,6 @@
 
 %sources
    typechecking.cpp
-   simulation.cpp
    tests.cpp
 
 %dir Source/data
@@ -26,6 +25,7 @@
    stateset.cpp
    statemap.cpp
    simple.cpp
+   simulation.cpp
 
 %dir Source/diff
 %sources

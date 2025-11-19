@@ -9,8 +9,8 @@
 #include "atm/stateset.h"
 #include "atm/statemap.h"
 #include "atm/simple.h"
+#include "atm/simulation.h"
 
-#include "simulation.h"
 #if 0
 void test_scalar_list( )
 {
@@ -319,8 +319,8 @@ intermediate::function tests::arrayconv( )
 #endif
 
 #if 1
-// Add natural numbers, even and odd numbers:
-void tests::add_nat()
+// Generates automaton for natural numbers, even and odd numbers:
+atm::simple tests::add_nat()
 {
    std::cout << "Constructing An Automaton for Natural Numbers:\n";
 
@@ -343,6 +343,12 @@ void tests::add_nat()
    nat. addtuple( { prop. at( "?zero" ) }, prop. at( "even" ));
    nat. addtuple( { prop. at( "?succ" ), prop. at( "even" ) }, prop. at("odd" ));
    nat. addtuple( { prop. at( "?succ" ), prop. at( "odd" ) }, prop. at("even" )) ; 
+   
+   return nat;
+}
+
+void tests::sim_nat() {
+   auto nat = add_nat();
    std::cout << nat << "\n";
 
    std::cout << "Simulating The Automaton of Natural Numbers\n";
@@ -367,11 +373,7 @@ void tests::add_nat()
          { usel_succ, ds. back() } ));
 
    for( auto d : ds ) {
-      std::cout << d << " ==> { "; 
-      for( auto s : simulate( nat, d ) ) {
-         std::cout << s << ", "; 
-      }
-      std::cout << " }\n";
+      std::cout << d << " ==> " << atm::simulate( nat, d ) << "\n";
    }
 
 #if 0
@@ -644,15 +646,14 @@ void tests::add_fol( prop::defmap& prp, fieldmap& flds )
 #endif
 
 
-atm::simple tests::prop( )
+void tests::gen_prop( atm::simple& prop, atm::statemap& smap )
 {
    using namespace atm;
-
-   auto prop = simple( state( ));
 
    // define transition for characters:
 
    state q_char = prop. newstate( );
+   smap. insert( "char", q_char );
    prop. delta_char. bot = prop. collapsed;
 
    prop. delta_char. append( '0', q_char, q_char );
@@ -667,6 +668,7 @@ atm::simple tests::prop( )
    prop. delta_char. append( 'z', q_char, prop. collapsed );
 
    state q_all_char = prop. newstate( );
+   smap. insert( "[char]", q_all_char );
    prop. addforall( q_char, q_all_char );
 
    auto q_atom = prop. newstate( );
@@ -675,8 +677,15 @@ atm::simple tests::prop( )
    auto q_equiv = prop. newstate( );
    auto q_or = prop. newstate( );
    auto q_and = prop. newstate( );
+   smap. insert( "atom", q_atom );
+   smap. insert( "neg", q_neg );
+   smap. insert( "implies", q_implies );
+   smap. insert( "equiv", q_equiv );
+   smap. insert( "or", q_or );
+   smap. insert( "and", q_and );
 
    auto q_prop = prop. newstate( );
+   smap. insert( "prop", q_prop );
 
    prop. delta_usel. def = prop. collapsed;
    prop. delta_usel. assign( usel( "atom" ), q_atom );
@@ -695,12 +704,76 @@ atm::simple tests::prop( )
    // A multiset of props:
 
    auto q_all_prop = prop. newstate( );
+   smap. insert( "[prop]", q_all_prop );
    prop. addforall( q_prop, q_all_prop );
 
-   prop. addtuple( { q_or, q_all_prop }, q_all_prop );
-   prop. addtuple( { q_and, q_all_prop }, q_all_prop );
-
-   std::cout << prop << "\n";
-   return prop; 
+   prop. addtuple( { q_or, q_all_prop }, q_prop );
+   prop. addtuple( { q_and, q_all_prop }, q_prop );
 }
 
+void tests::sim_prop( ) { 
+   auto prop = atm::simple( atm::state( ) );
+   auto smap = atm::statemap( );
+   gen_prop( prop, smap );
+   std::cout << smap << "\n";
+   std::cout << prop << "\n";
+
+   using namespace data;
+   std::vector< tree > data;
+
+   auto char_a = tree( tree_char, 'a' );
+   auto char_b = tree( tree_char, 'b' );
+   auto char_c = tree( tree_char, 'c' );
+   data. push_back( char_a );
+   data. push_back( char_b );
+   data. push_back( char_c );
+
+   auto array_char = tree( tree_array, { char_a, char_b, char_c } );
+   //data. push_back( array_char ); 
+
+   auto usel_atom = tree( tree_usel, usel( "atom" ) );
+   auto atom = tree( tree_tuple, { usel_atom, array_char } );
+   data. push_back( usel_atom );
+   data. push_back( atom );
+
+   auto usel_neg = tree( tree_usel, usel( "neg" ) );
+   auto neg = tree( tree_tuple, { usel_neg, atom } );
+   data. push_back( usel_neg );
+   data. push_back( neg );
+
+   auto usel_imply = tree( tree_usel, usel( "implies" ) );
+   auto usel_equiv = tree( tree_usel, usel( "equiv" ) );
+   auto imply = tree( tree_tuple, { usel_imply, atom, neg } );
+   auto equiv = tree( tree_tuple, { usel_equiv, atom, neg } );
+   data. push_back( usel_imply );  
+   data. push_back( usel_equiv );  
+   data. push_back( imply );  
+   data. push_back( equiv );
+
+
+   auto array_prop = tree( tree_array, { atom, neg, imply, equiv } );
+   data. push_back( array_prop );
+
+   auto usel_or = tree( tree_usel, usel( "or" ) );
+   auto usel_and = tree( tree_usel, usel( "and" ) );
+   auto lor = tree( tree_tuple, { usel_or, array_prop } );
+   auto land = tree( tree_tuple, { usel_and, array_prop } );
+   data. push_back( usel_or );
+   data. push_back( usel_and );
+   data. push_back( lor );
+   data. push_back( land );
+
+   auto usel_bad = tree( tree_usel, usel( "bad+usel" ) );
+   auto tuple_bad = tree( tree_tuple, { usel_bad, char_a } );
+   auto array_bad = tree( tree_array, { usel_bad, char_a } );
+   data. push_back( usel_bad );
+   data. push_back( tuple_bad );
+   data. push_back( array_bad );
+   
+   for( auto d : data ) {
+      std::cout << d << " ==> ";
+      std::cout << atm::simulate( prop, d );
+      //atm::pretty_print( std::cout, atm::simulate( prop, d ), smap );
+      std::cout << "\n";
+   }
+}
