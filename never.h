@@ -6,7 +6,7 @@
 #include "util/hashbuilder.h" 
 
 // Never is a type without elements.
-// A never can be copied, assigned, but not constructed.
+// A never can be copied, and assigned, but not constructed.
 
 class never
 {

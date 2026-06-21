@@ -6,7 +6,6 @@
 #include <iostream>
 
 #include "state.h"
-#include "statemap.h"
 
 namespace atm 
 {
@@ -17,14 +16,8 @@ namespace atm
 
       stateset( ) noexcept = default;
 
-      bool contains( state s ) const 
-         { return repr. contains(s); }
-
       bool insert( state s )
          { return repr. insert(s). second; }
-
-      void insert( const std::set<atm::state, atm::state::less> other_repr )
-         { repr. insert( other_repr. cbegin(), other_repr. cend() ); }
 
       bool remove( state s )
          { return repr. erase(s); }       
@@ -50,7 +43,6 @@ namespace atm
 
    bool operator == ( const stateset& s1, const stateset& s2 ); 
    bool subset( const stateset& s1, const stateset& s2 ); 
-   void pretty_print( std::ostream&, const stateset&, const statemap& );
 }
 
 #endif
