@@ -6,42 +6,42 @@ void data::tree::print ( std::ostream& out ) const
 {
    switch( sel( )) 
    {
-   case tree_never:
+   case sel_never:
       out << view_never( ). n( ); 
       return;
 
-   case tree_unit: 
+   case sel_unit: 
       out << "trivial"; 
       return; 
 
-   case tree_bool:
+   case sel_bool:
       if( view_bool( ). b( ))
          out << "true";	
       else
          out << "false";
       return; 
 
-   case tree_char:
+   case sel_char:
       out << '\'' << view_char(). c( ) << '\''; 
       return; 
 
-   case tree_usel:
+   case sel_usel:
       out << '?' << view_usel( ). s( );
       return;
 
-   case tree_u64:
+   case sel_u64:
       out << view_u64( ). i( );
       return;
 
-   case tree_bigint:
+   case sel_bigint:
       out << view_bigint( ). i( );
       return;
 
-   case tree_double:
+   case sel_double:
       out << view_double(). d( );
       return;
 
-   case tree_tuple:
+   case sel_tuple:
       {
          auto t = view_tuple( );
 		
@@ -58,7 +58,7 @@ void data::tree::print ( std::ostream& out ) const
          return;
       } 
 
-   case tree_array:
+   case sel_array:
       {
          auto ar = view_array( );
 		

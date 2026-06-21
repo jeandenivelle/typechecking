@@ -1,18 +1,24 @@
 
 #include <iostream>
 
+#include "data/examples.h"
 #include "usel.h"
-
 #include "data/tree.h"
-#include "data/tree_operators.h" 
-#include "diff/approxset.h"
 
+#include "atm/simple.h"
 #include "tests.h"
 
 int main( int argc, char* arcgv[] ) {
-   tests::sim_nat();
-   tests::sim_prop();
+   std::cout << data::variable( data::string( "abcdef" )) << "\n";
+   auto f1 = data::term( data::string( "lessthan" ), {
+             data::variable( data::string( "x0" )),
+             data::variable( data::string( "x1" )) } );
+
+   auto f2 = data::variable( data::string( "P" ));
+   std::cout << data::implies( f1, f2 ) << "\n";
+
    return 0;
+
 /*
    diff::approxset set1 = diff::approxset::empty( );
    set1. insert( -2 );
@@ -48,9 +54,6 @@ int main( int argc, char* arcgv[] ) {
    mat. erase( "bb" );
    std::cout << mat << "\n";
 */
-    return 0;
-}
-
 
 
 #if 0
@@ -76,21 +79,22 @@ int main( int argc, char* arcgv[] ) {
 
    return 0;
 #endif
- 
+#endif  
    fieldmap flds;
-   prop::defmap prp;
+   regexp::defmap prp;
 
    tests::add_nat( prp, flds );
    tests::add_fol( prp, flds );
 
    std::cout << prp << "\n";
    std::cout << flds << "\n";
-
+#if 0
    auto f = tests::mixing( );
    // auto f = tests::repeated( );
    std::cout << f << "\n";
    f = tests::arrayconv( );
    std::cout << f << "\n";
+#endif
 
    return 0;
 
@@ -119,5 +123,3 @@ int main( int argc, char* arcgv[] ) {
 
    return 0;	
 }
-
-#endif

@@ -11,11 +11,11 @@ namespace intermediate
    struct function
    {
       statement body;
-      prop::expr returntype;
-      std::vector< prop::expr > parameters;   
+      regexp::expr returntype;
+      std::vector< regexp::expr > parameters;   
          // Temporary solution.
 
-      function( const statement& body, const prop::expr& returntype )
+      function( const statement& body, const regexp::expr& returntype )
          : body( body ),
            returntype( returntype )
       { }

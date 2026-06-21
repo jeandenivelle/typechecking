@@ -1,7 +1,7 @@
 
-%dir prop
+%dir regexp
 
-%namespace prop
+%namespace regexp
 
 %define expr ( type_never )
 
@@ -47,12 +47,12 @@
    // The following is needed because intermediate::statement
    // uses vectors of property expressions:
  
-   bool very_equal( const std::vector< prop::expr > & ,
-                    const std::vector< prop::expr > & );
+   bool very_equal( const std::vector< regexp::expr > & ,
+                    const std::vector< regexp::expr > & );
 }
 
 %cpp_back {
-   void prop::expr::print( std::ostream& out ) const
+   void regexp::expr::print( std::ostream& out ) const
    {
       switch( sel( ) )
       {

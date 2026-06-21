@@ -1,4 +1,4 @@
-typechecking
+checking
 Makefile
 *.o
 */*.o
@@ -15,15 +15,11 @@ intermediate/flatterm.cpp
 intermediate/statement.h
 intermediate/statement.cpp
 
-prop/selector.h
-prop/selector.cpp
-prop/expr.h
-prop/expr.cpp
+regexp/selector.h
+regexp/selector.cpp
+regexp/expr.h
+regexp/expr.cpp
 
-approx/approxterm.cpp
-approx/approxterm.h
-approx/selector.cpp
-approx/selector.h
 
 
 

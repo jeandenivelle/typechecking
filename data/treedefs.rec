@@ -1,0 +1,71 @@
+
+%dir data
+
+%namespace data
+   // Namespace in which the resulting types will be put.
+
+%define tree ( sel_unit )
+
+%option never   { sel_never }    => n : never
+%option unit    { sel_unit }     => 
+%option bool    { sel_bool }     => b : bool
+%option char    { sel_char }     => c : char
+%option usel    { sel_usel }     => s : usel
+%option u64     { sel_u64 }      => i : uint64_t
+%option bigint  { sel_bigint }   => i : bigint 
+%option double  { sel_double }   => d : double 
+
+%option tuple { sel_tuple } => [ val : tree ]
+   // We are agnostic about the question whether
+   // the tuple is in place, or under a pointer.
+
+%option array { sel_array } => [ val : tree ] 
+   // Always under a pointer. 
+
+%h_incl {
+   #include <initializer_list>
+   #include <concepts>
+
+   #include "tvm/includes.h"
+   #include "tvm/unit.h" 
+   #include "never.h"
+   #include "usel.h"
+   #include "util/print.h"
+   #include "util/bigint.h"
+}
+
+
+%h_methods {
+   void print( std::ostream& ) const;
+} 
+
+%h_after {
+
+inline tree tree_usel( usel sel )
+{
+   return tree( sel_usel, sel );
+}
+
+template< std::random_access_iterator It >
+requires std::convertible_to< std::iter_value_t<It>, tree >
+inline tree tree_tuple( It begin, It end )
+      { return tree( sel_tuple, begin, end ); }
+
+inline tree tree_tuple( std::initializer_list< tree > sub )
+      { return tree_tuple( sub. begin( ), sub. end( )); }
+ 
+
+template< std::random_access_iterator It >
+requires std::convertible_to< std::iter_value_t<It>, tree >
+inline tree tree_array( It begin, It end )
+      { return tree( sel_array, begin, end ); }
+
+inline tree tree_array( std::initializer_list< tree > sub )
+      { return tree_array( sub. begin( ), sub. end( )); }
+
+
+
+
+}
+
+

@@ -2,7 +2,7 @@
 #ifndef FIELDMAP_
 #define FIELDMAP_
 
-#include "prop/expr.h"
+#include "regexp/expr.h"
 #include "exactident.h"
 
 enum fieldtype { fld_scalar, fld_vector, fld_list };
@@ -17,13 +17,13 @@ inline std::ostream& operator << ( std::ostream& out, fieldtype tp )
 struct fielddef
 {
    fieldtype tp;  
-   prop::expr precond;  
+   regexp::expr precond;  
       // postcondition is read off from the tuple. 
       // Our types are strictly extensional. 
    size_t ind; 
 
    fielddef( fieldtype tp, 
-             const prop::expr& precond, 
+             const regexp::expr& precond, 
              size_t ind ) 
       : tp( tp ),
         precond( precond ), 

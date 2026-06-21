@@ -109,7 +109,7 @@
 	#include "flatterm.h"
 	#include "variable.h"
         #include "point.h"
-	#include "prop/expr.h"
+	#include "regexp/expr.h"
 }
 
 %h_before 
@@ -117,8 +117,8 @@
    bool very_equal( const std::vector< variable > & , 
                     const std::vector< variable > & );
 
-   bool very_equal( const std::vector< prop::expr > & ,
-                    const std::vector< prop::expr > & );
+   bool very_equal( const std::vector< regexp::expr > & ,
+                    const std::vector< regexp::expr > & );
    
 }
 

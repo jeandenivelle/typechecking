@@ -1,13 +1,13 @@
 
-#ifndef PROP_DEFMAP_
-#define PROP_DEFMAP_
+#ifndef REGEXP_DEFMAP_
+#define REGEXP_DEFMAP_
 
 #include <unordered_map>
 #include <iostream>
 
 #include "exactident.h"
 
-namespace prop
+namespace regexp
 {
    struct defmap
    {

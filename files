@@ -1,0 +1,92 @@
+
+%comment TYPECHECKING
+
+%rootdirs 
+   Source = .
+   Lexing = /home/nivelle/programs
+   Tvm = /home/nivelle/programs
+   Maph = /home/nivelle/programs/maphoon
+   Treegen = /home/nivelle/programs/treegen2023
+   Util = /home/nivelle/programs
+
+%dir Source
+%exec checking
+
+%sources
+   checking.cpp
+   identifier.cpp
+   fieldmap.cpp
+   tests.cpp
+
+%dir Source/data
+%sources
+   tree.cpp
+   selector.cpp
+   printing.cpp
+   examples.cpp
+
+%dir Source/regexp
+%sources
+   expr.cpp
+   selector.cpp
+
+%dir Source/atm
+%sources
+   simple.cpp
+
+%dir Source/intermediate
+%sources
+   statement.cpp
+   flatterm.cpp
+
+%dir Util
+%sources
+   util/bigint.cpp
+
+%options 
+   Wall
+   Wno-switch
+   Wno-invalid-offsetof
+   Wno-unused-function
+   pedantic-errors
+   std=c++23
+
+%includedirs
+   Lexing
+   Util
+   Tvm
+   Source   
+
+%preproc $(Treegen)/treegen data/treedefs.rec 
+%dir Source/data
+%in 
+   treedefs.rec
+%out
+   selector.h
+   selector.cpp
+   tree.h
+   tree.cpp
+
+  
+%preproc $(Treegen)/treegen regexp/treedefs.rec
+%dir Source/regexp
+%in 
+   treedefs.rec
+%out
+   selector.h
+   selector.cpp
+   expr.h
+   expr.cpp
+
+%preproc $(Treegen)/treegen intermediate/treedefs.rec
+%dir Source/intermediate
+%in 
+   treedefs.rec
+%out
+   selector.h
+   selector.cpp
+   flatterm.h
+   flatterm.cpp
+   statement.h
+   statement.cpp
+

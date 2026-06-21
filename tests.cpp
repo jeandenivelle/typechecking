@@ -1,57 +1,8 @@
+
 #include <list>
-#include <vector>
 
 #include "tests.h"
 
-#include "data/tree.h"
-
-#include "atm/state.h"
-#include "atm/stateset.h"
-#include "atm/statemap.h"
-#include "atm/simple.h"
-#include "atm/simulation.h"
-
-#if 0
-void test_scalar_list( )
-{
-   std::vector< std::string > s = 
-   { "aaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "ccccccccccccccccccccccccccccccccccccccccccc", "dddddddd", "eeeeee" };
-   auto p = tvm::constr_scalar_list< std::list< std::string >, std::string > 
-               ( std::list< std::string > ( { "a", "b", "c" } ), s. begin( ), s. end( )); 
-   p = takeshare(p);
-   auto p1 = takeshare(p);
-
-   p1 = takeshare( replacebywritable( p1 ));
-   p = takeshare( replacebywritablewithcap( p, p -> size( ) + 2 )); 
-   for( auto it = p -> begin( ); it != p -> end( ); )
-   {
-      if( p -> at(it). size( ) % 2 == 0 )
-         it = erase( p, it );
-      else
-         it = p -> next( it );
-   }
-   show( p, std::cout );
-   auto ind = p -> begin( );
-   std::cout << "inserting at " << p -> at( ind ) << "\n";
-   ind = insert( p, ind, "prof" ); 
-   ind = insert( p, ind, "hans" ); 
-   ind = insert( p, ind, "de" );
-   ind = insert( p, ind, "nivelle" );
-   p = takeshare( replacebywritablewithcap( p, 200 ));
-   ind = insert( p, ind, "kireeva" );
-   ind = p -> next( ind );
-   std::string str = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy";
-   insert( p, ind, str );
-   ind = insert( p, ind, "abcdefghijklm" );
-   std::cout << "moved out " << str << "\n";
-   show( p, std::cout );
-   checkinvariant(p);
-   dropshare(p);
-   dropshare(p1);
-}
-#endif
-
-#if 0
 intermediate::function tests::mixing( )
 {
    using namespace intermediate;
@@ -78,11 +29,11 @@ intermediate::function tests::mixing( )
 
    variable succ = { 's', 0 };
 
-   auto propSucc = prop::expr( prop::tuple, 
-      { prop::expr( prop::sel_const, usel( "succ" )),
-        prop::expr( prop::ident, exactident( identifier( ) + "nat", 0 )) } );
+   auto propSucc = regexp::expr( regexp::tuple, 
+      { regexp::expr( regexp::sel_const, usel( "succ" )),
+        regexp::expr( regexp::ident, exactident( identifier( ) + "nat", 0 )) } );
 
-   auto propEven = prop::expr( prop::ident, 
+   auto propEven = regexp::expr( regexp::ident, 
       exactident( identifier( ) + "even", 0 ));
 
    std::vector< statement > res;
@@ -189,12 +140,10 @@ intermediate::function tests::mixing( )
    res. push_back( statement( stat_repeat, p ++, rep. begin( ), rep. end( )));
 
     return function( statement( stat_block, p ++, res.begin( ), res. end( )),
-                     prop::expr( prop::type_unit ));
+                     regexp::expr( regexp::type_unit ));
 
 }
-#endif
 
-#if 0
 intermediate::function tests::repeated( )
 {
 #if 0
@@ -232,7 +181,7 @@ intermediate::function tests::repeated( )
    auto s6 = statement( stat_assign, p++, a4, flatterm( flat_field, x2, 0, { } ));
 
    auto res = statement( stat_resolve, p ++, 
-       { { precond( {{ a4, prop::expr( prop::sel_const, usel( "zero" )) }} ), 
+       { { precond( {{ a4, regexp::expr( regexp::sel_const, usel( "zero" )) }} ), 
               statement( stat_return, p ++, a4 ) }} );
 
    auto fin = statement( stat_block, p ++, { s1, s2, eq, cnd1, s3, s4, s5, cnd2, s6, res } ); 
@@ -241,10 +190,9 @@ intermediate::function tests::repeated( )
 #endif
 
 }
-#endif
 
-#if 0
 // Adjective conversion in an array:
+
 intermediate::function tests::arrayconv( )
 {
    using namespace intermediate; 
@@ -262,10 +210,10 @@ intermediate::function tests::arrayconv( )
    auto d0 = variable( 'd', 0 );
    auto e0 = variable( 'e', 0 );
 
-   auto propA = prop::expr( prop::ident, exactident( identifier( ) + "A", 0 ));
-   auto propB = prop::expr( prop::ident, exactident( identifier( ) + "B", 0 ));
-   auto propAllA = prop::expr( prop::log_forall, propA );
-   auto propAllB = prop::expr( prop::log_forall, propB );
+   auto propA = regexp::expr( regexp::ident, exactident( identifier( ) + "A", 0 ));
+   auto propB = regexp::expr( regexp::ident, exactident( identifier( ) + "B", 0 ));
+   auto propAllA = regexp::expr( regexp::log_forall, propA );
+   auto propAllB = regexp::expr( regexp::log_forall, propB );
 
    std::vector< statement > res;
       // It will be collected into a single block at the end. 
@@ -286,12 +234,13 @@ intermediate::function tests::arrayconv( )
                               flatterm( flat_field, x0, 
                                   exactident( identifier( ) + "f", 0 ), i0 )) } ));
 
+  
    {
       auto call = statement( stat_assign, p ++, e0, flatterm( flat_call,
                              exactident( identifier( ) + "F", 0 ), { d0 } )); 
 
       std::vector< variable > var = { d0 };
-      std::vector< prop::expr > prec = { propA };
+      std::vector< regexp::expr > prec = { propA };
 
       rep. push_back( statement( stat_resolve, p ++, { call } ));
       
@@ -316,133 +265,65 @@ intermediate::function tests::arrayconv( )
    return function( statement( stat_block, p ++, res.begin( ), res. end( )),
                     propAllB );
 }
-#endif
 
-#if 1
-// Generates automaton for natural numbers, even and odd numbers:
-atm::simple tests::add_nat()
+
+// Add natural numbers, even and odd numbers:
+
+void tests::add_nat( regexp::defmap& prp, fieldmap& flds )
 {
-   std::cout << "Constructing An Automaton for Natural Numbers:\n";
+   std::cout << "Constructing Natural Numbers:\n";
 
-   auto nat = atm::simple( atm::state( ));
+   using namespace regexp;
 
-   atm::statemap prop;
-   prop[ "nat" ] = nat. newstate( );
-   prop[ "even" ] = nat. newstate( );
-   prop[ "odd" ] = nat. newstate( );
-   prop[ "?zero" ] = nat. newstate( );
-   prop[ "?succ" ] = nat. newstate( );
-
-   nat. delta_bool = { nat. collapsed };
-
-   std::cout << prop << "\n";
+   auto zero = expr( sel_const, usel( "zero" ));
+   zero = expr( tuple, { zero } );
  
-   nat. delta_usel. assign( usel( "zero" ), prop. at( "?zero" ));
-   nat. delta_usel. assign( usel( "succ" ), prop. at( "?succ" ));
-
-   nat. addtuple( { prop. at( "?zero" ) }, prop. at( "even" ));
-   nat. addtuple( { prop. at( "?succ" ), prop. at( "even" ) }, prop. at("odd" ));
-   nat. addtuple( { prop. at( "?succ" ), prop. at( "odd" ) }, prop. at("even" )) ; 
-   
-   return nat;
-}
-
-void tests::sim_nat() {
-   auto nat = add_nat();
-   std::cout << nat << "\n";
-
-   std::cout << "Simulating The Automaton of Natural Numbers\n";
-   
-   std::vector< data::tree > ds;
-
-   auto usel_zero = data::tree( data::tree_usel, usel( "zero" ) );
-   ds. push_back( usel_zero );
- 
-   auto usel_succ = data::tree( data::tree_usel, usel( "succ" ) );
-   ds. push_back( usel_succ );
-   
-   auto data_zero = data::tree( data::tree_tuple, { usel_zero } );
-   ds. push_back( data_zero );
-
-   ds. push_back(
-      data::tree( data::tree_tuple, 
-         { usel_succ, data_zero } ));
-
-   ds. push_back( 
-      data::tree( data::tree_tuple, 
-         { usel_succ, ds. back() } ));
-
-   for( auto d : ds ) {
-      std::cout << d << " ==> " << atm::simulate( nat, d ) << "\n";
-   }
-
-#if 0
-   // This is code that uses property expressions.
-   // I keep them for the moment.
-
-   auto zero = prop::expr( prop::sel_const, usel( "zero" ));
-   zero = prop::expr( prop::tuple, { zero } );
- 
-   auto succ = prop::expr( prop::sel_const, usel( "succ" ));
-   succ = prop::expr( prop::tuple, 
-      { succ, prop::expr( prop::ident, { identifier( ) + "nat", 0 } ) } );
+   auto succ = expr( sel_const, usel( "succ" ));
+   succ = expr( tuple, 
+      { succ, expr( ident, { identifier( ) + "nat", 0 } ) } );
 
    auto nat = exactident( identifier( ) + "nat", 0 );
-   prp. insert( nat, prop::expr( prop::log_or, { zero, succ } ));
+   prp. insert( nat, expr( log_or, { zero, succ } ));
 
-   succ = prop::expr( prop::sel_const, usel( "succ" ));
-   succ = prop::expr( prop::tuple, { succ, prop::expr( prop::ident, { identifier( ) + "odd", 0 } ) } );
+   succ = expr( sel_const, usel( "succ" ));
+   succ = expr( tuple, { succ, expr( ident, { identifier( ) + "odd", 0 } ) } );
    auto even = exactident( identifier( ) + "even", 0 );
-   prp. insert( even, prop::expr( prop::log_or, { zero, succ } ));
+   prp. insert( even, expr( log_or, { zero, succ } ));
   
-   succ = prop::expr( prop::sel_const, usel( "succ" )); 
-   succ = prop::expr( prop::tuple, { succ, prop::expr( prop::ident, { identifier( ) + "even", 0 } ) } );
+   succ = expr( sel_const, usel( "succ" )); 
+   succ = expr( tuple, { succ, expr( ident, { identifier( ) + "even", 0 } ) } );
    auto odd = exactident( identifier( ) + "odd", 0 );
    prp. insert( odd, succ );
 
    flds. insert( exactident( identifier( ) + "op", 0 ), 
                      fielddef( fld_scalar, 
-                        prop::expr( prop::ident, { identifier( ) + "nat", 0 } ), 0 ));
-#endif
+                        expr( ident, { identifier( ) + "nat", 0 } ), 0 ));
 }
-#endif
 
-#if 0
-void tests::add_fol( prop::defmap& prp, fieldmap& flds )
+
+void tests::add_fol( regexp::defmap& prp, fieldmap& flds )
 {
    std::cout << "\n";
    std::cout << "Constructing definition of simply typed first-order logic:\n\n";
       // The definition was copied from an unfinished (hardly started)
       // implementation of geo.
 
-   auto nat = atm::simple( atm::state( ));
-
-   atm::statemap prop;
-   prop[ "nat" ] = nat. newstate( );
-   prop[ "even" ] = nat. newstate( );
-   prop[ "odd" ] = nat. newstate( );
-   prop[ "?zero" ] = nat. newstate( );
-   prop[ "?succ" ] = nat. newstate( );
-
-   nat. delta_bool = { nat. collapsed };
+   using namespace regexp;
  
    auto ident = exactident( identifier( ) + "ident", 0 );
 
-   prp. insert( ident, prop::expr( prop::tuple, { prop::expr( prop::log_forall, 
-                                                  prop::expr( prop::type_char )) } ));
+   prp. insert( ident, expr( tuple, { expr( log_forall, expr( type_char )) } ));
 
    flds. insert( exactident( identifier( ) + "c", 0 ),
-      fielddef( fld_vector, 
-         prop::expr( prop::ident, ident ), 0 ));   
+      fielddef( fld_vector, expr( regexp::ident, ident ), 0 ));   
 
    //// term:
 
    auto term = exactident( identifier( ) + "term", 0 );
 
    {
-      auto tm = prop::expr( prop::tuple,
-         { prop::expr( prop::ident, ident ),
-           prop::expr( prop::log_forall, prop::expr( prop::ident, ident ))
+      auto tm = expr( tuple, { expr( regexp::ident, ident ),
+           expr( log_forall, expr( regexp::ident, ident ))
          } );
 
       prp. insert( term, tm );
@@ -450,330 +331,222 @@ void tests::add_fol( prop::defmap& prp, fieldmap& flds )
 
    flds. insert( exactident( identifier( ) + "func", 0 ),
       fielddef( fld_scalar,
-         prop::expr( prop::ident, term ), 0 ));  
+         expr( regexp::ident, term ), 0 ));  
 
    flds. insert( exactident( identifier( ) + "args", 0 ),
       fielddef( fld_vector,
-         prop::expr( prop::ident, term ), 1 ));  
+         expr( regexp::ident, term ), 1 ));  
+
 
    //// sort:
 
    auto sort = exactident( identifier( ) + "sort", 0 );
 
    {
-      auto prim = prop::expr( prop::log_or, 
-               { prop::expr( prop::sel_const, usel( "truthval" )),
-                 prop::expr( prop::sel_const, usel( "obj" )),
-                 prop::expr( prop::sel_const, usel( "set" )) } );
+      auto prim = expr( log_or, 
+               { expr( sel_const, usel( "truthval" )),
+                 expr( sel_const, usel( "obj" )),
+                 expr( sel_const, usel( "set" )) } );
 
-      prim = prop::expr( prop::tuple, { prim } );
+      prim = expr( tuple, { prim } );
 
-      auto named = prop::expr( prop::tuple,  
-         { prop::expr( prop::sel_const, usel( "named" )),
-           prop::expr( prop::ident, ident ) } );
+      auto named = expr( tuple,  
+         { expr( sel_const, usel( "named" )),
+           expr( regexp::ident, ident ) } );
 
-      prp. insert( sort, prop::expr( prop::log_or, { prim, named } )); 
+      prp. insert( sort, expr( log_or, { prim, named } )); 
    };
   
    // op gets index 1, because 'op' of nat has index 0.
  
    flds. insert( exactident( identifier( ) + "op", 1 ),
       fielddef( fld_scalar,
-         prop::expr( prop::ident, sort ), 0 ));
+         expr( regexp::ident, sort ), 0 ));
 
    flds. insert( exactident( identifier( ) + "name", 0 ),
       fielddef( fld_scalar,
-         prop::expr( prop::tuple,
-            { prop::expr( prop::sel_const, usel( "named" )),
-              prop::expr( prop::ident, ident )
+         expr( tuple,
+            { expr( sel_const, usel( "named" )),
+              expr( regexp::ident, ident )
             }), 1 ));
 
    /// fol :
  
    auto fol = exactident( identifier( ) + "fol", 0 );
 
-   auto atom = prop::expr( prop::tuple,
-      { prop::expr( prop::sel_const, usel( "atom" )),
-        prop::expr( prop::ident, ident ), 
-        prop::expr( prop::log_forall, prop::expr( prop::ident, term )) 
+   auto atom = expr( tuple, { expr( sel_const, usel( "atom" )),
+        expr( regexp::ident, ident ), 
+        expr( log_forall, expr( regexp::ident, term )) 
       } );
 
-   auto negated = prop::expr( prop::tuple,
-      { prop::expr( prop::sel_const, usel( "not" )),
-        prop::expr( prop::ident, fol )
+   auto negated = expr( tuple,
+      { expr( sel_const, usel( "not" )),
+        expr( regexp::ident, fol )
       } );
 
-   auto eq = prop::expr( prop::tuple,
-      { prop::expr( prop::sel_const, usel( "equals" )),
-        prop::expr( prop::ident, fol ),
-        prop::expr( prop::ident, fol )
+   auto eq = expr( tuple,
+      { expr( sel_const, usel( "equals" )),
+        expr( regexp::ident, fol ),
+        expr( regexp::ident, fol )
       } );
 
-   auto bin = prop::expr( prop::tuple,
-      { prop::expr( prop::log_or, { prop::expr( prop::sel_const, usel( "implies" )),
-                                    prop::expr( prop::sel_const, usel( "equiv" )) } ),
-        prop::expr( prop::ident, fol ),
-        prop::expr( prop::ident, fol ) 
+   auto bin = expr( tuple,
+      { expr( log_or, { expr( sel_const, usel( "implies" )),
+                                    expr( sel_const, usel( "equiv" )) } ),
+        expr( regexp::ident, fol ),
+        expr( regexp::ident, fol ) 
       } );
 
-   auto nary = prop::expr( prop::tuple,
-      { prop::expr( prop::log_or, { prop::expr( prop::sel_const, usel( "and" )),
-                                    prop::expr( prop::sel_const, usel( "or" )) } ),
-        prop::expr( prop::log_forall, prop::expr( prop::ident, fol )) 
+   auto nary = expr( tuple,
+      { expr( log_or, { expr( sel_const, usel( "and" )),
+                                    expr( sel_const, usel( "or" )) } ),
+        expr( log_forall, expr( regexp::ident, fol )) 
       } );
 
-   auto quant = prop::expr( prop::tuple,
-      { prop::expr( prop::log_or, { prop::expr( prop::sel_const, usel( "forall" )),
-                                    prop::expr( prop::sel_const, usel( "exists" )) } ), 
-        prop::expr( prop::log_forall, prop::expr( prop::ident, ident )),
-        prop::expr( prop::log_forall, prop::expr( prop::ident, sort )),
+   auto quant = expr( tuple,
+      { expr( log_or, { expr( sel_const, usel( "forall" )),
+                                    expr( sel_const, usel( "exists" )) } ), 
+        expr( log_forall, expr( regexp::ident, ident )),
+        expr( log_forall, expr( regexp::ident, sort )),
       } );
 
-   prp. insert( fol, prop::expr( prop::log_or, { atom, eq, negated, bin, nary, quant } ));
+   prp. insert( fol, expr( log_or, { atom, eq, negated, bin, nary, quant } ));
+
 
    flds. insert( exactident( identifier( ) + "op", 2 ),
       fielddef( fld_scalar,
-         prop::expr( prop::ident, fol ), 0 ));
+         expr( regexp::ident, fol ), 0 ));
 
    flds. insert( exactident( identifier( ) + "sub", 0 ),
       fielddef( fld_scalar,
-         prop::expr( prop::tuple,
-            { prop::expr( prop::sel_const, usel( "not" )),
-              prop::expr( prop::ident, fol )
+         expr( tuple,
+            { expr( sel_const, usel( "not" )),
+              expr( regexp::ident, fol )
             }), 1 ));
 
    flds. insert( exactident( identifier( ) + "sub1", 0 ),
       fielddef( fld_scalar,
-         prop::expr( prop::tuple,
-            { prop::expr( prop::sel_const, usel( "equals" )),
-              prop::expr( prop::ident, term ),
-              prop::expr( prop::ident, term )
+         expr( tuple,
+            { expr( sel_const, usel( "equals" )),
+              expr( regexp::ident, term ),
+              expr( regexp::ident, term )
             }), 1 ));
 
    flds. insert( exactident( identifier( ) + "sub2", 0 ),
       fielddef( fld_scalar,
-         prop::expr( prop::tuple,
-            { prop::expr( prop::sel_const, usel( "equals" )),
-              prop::expr( prop::ident, term ),
-              prop::expr( prop::ident, term )
+         expr( tuple,
+            { expr( sel_const, usel( "equals" )),
+              expr( regexp::ident, term ),
+              expr( regexp::ident, term )
             }), 2 ));
 
    // sub1,sub2 of binary logical operator:
 
    flds. insert( exactident( identifier( ) + "sub1", 1 ),
       fielddef( fld_scalar,
-         prop::expr( prop::tuple,
-            { prop::expr( prop::log_or,
-                 { prop::expr( prop::sel_const, usel( "implies" )),
-                   prop::expr( prop::sel_const, usel( "equiv" ))
+         expr( tuple, { expr( log_or,
+                 { expr( sel_const, usel( "implies" )),
+                   expr( sel_const, usel( "equiv" ))
                  }
               ),
-              prop::expr( prop::ident, fol ),
-              prop::expr( prop::ident, fol )
+              expr( regexp::ident, fol ),
+              expr( regexp::ident, fol )
             }), 1 ));
 
    flds. insert( exactident( identifier( ) + "sub2", 1 ),
       fielddef( fld_scalar,
-         prop::expr( prop::tuple,
-            { prop::expr( prop::log_or,
-                 { prop::expr( prop::sel_const, usel( "implies" )),
-                   prop::expr( prop::sel_const, usel( "equiv" ))
+         expr( tuple,
+            { expr( log_or,
+                 { expr( sel_const, usel( "implies" )),
+                   expr( sel_const, usel( "equiv" ))
                  }
               ),
-              prop::expr( prop::ident, fol ),
-              prop::expr( prop::ident, fol )
+              expr( regexp::ident, fol ),
+              expr( regexp::ident, fol )
             }), 2 ));
 
    // sub of n-ary logical operator:
 
    flds. insert( exactident( identifier( ) + "sub", 1 ),
       fielddef( fld_vector,
-         prop::expr( prop::tuple,
-            { prop::expr( prop::log_or,
-                 { prop::expr( prop::sel_const, usel( "and" )),
-                   prop::expr( prop::sel_const, usel( "or" ))
+         expr( tuple,
+            { expr( log_or,
+                 { expr( sel_const, usel( "and" )),
+                   expr( sel_const, usel( "or" ))
                  }
               ),
-              prop::expr( prop::log_forall, prop::expr( prop::ident, fol )) 
+              expr( log_forall, expr( regexp::ident, fol )) 
             }), 1 ));
 
    // body of quantifier:
 
    flds. insert( exactident( identifier( ) + "body", 1 ),
       fielddef( fld_scalar,
-         prop::expr( prop::tuple,
-            { prop::expr( prop::log_or,
-                 { prop::expr( prop::sel_const, usel( "forall" )),
-                   prop::expr( prop::sel_const, usel( "exists" ))
+         expr( tuple,
+            { expr( log_or,
+                 { expr( sel_const, usel( "forall" )),
+                   expr( sel_const, usel( "exists" ))
                  }
               ),
-              prop::expr( prop::expr( prop::ident, fol )),
-              prop::expr( prop::log_forall, prop::expr( prop::ident, ident )),
-              prop::expr( prop::log_forall, prop::expr( prop::ident, sort )) 
+              expr( expr( regexp::ident, fol )),
+              expr( log_forall, expr( regexp::ident, ident )),
+              expr( log_forall, expr( regexp::ident, sort )) 
             }), 1 ));
 
    // Preferred name of quantified variable: 
 
    flds. insert( exactident( identifier( ) + "pref", 1 ),
       fielddef( fld_vector,
-         prop::expr( prop::tuple,
-            { prop::expr( prop::log_or,
-                 { prop::expr( prop::sel_const, usel( "forall" )),
-                   prop::expr( prop::sel_const, usel( "exists" ))
+         expr( tuple,
+            { expr( log_or,
+                 { expr( sel_const, usel( "forall" )),
+                   expr( sel_const, usel( "exists" ))
                  }
               ),
-              prop::expr( prop::expr( prop::ident, fol )),
-              prop::expr( prop::log_forall, prop::expr( prop::ident, ident )),
-              prop::expr( prop::log_forall, prop::expr( prop::ident, sort ))
+              expr( expr( regexp::ident, fol )),
+              expr( log_forall, expr( regexp::ident, ident )),
+              expr( log_forall, expr( regexp::ident, sort ))
             }), 2 ));
+
 
    // Sort of quantified variable: 
 
    flds. insert( exactident( identifier( ) + "srt", 1 ),
       fielddef( fld_vector,
-         prop::expr( prop::tuple,
-            { prop::expr( prop::log_or,
-                 { prop::expr( prop::sel_const, usel( "forall" )),
-                   prop::expr( prop::sel_const, usel( "exists" ))
+         expr( tuple,
+            { expr( log_or,
+                 { expr( sel_const, usel( "forall" )),
+                   expr( sel_const, usel( "exists" ))
                  }
               ),
-              prop::expr( prop::expr( prop::ident, fol )),
-              prop::expr( prop::log_forall, prop::expr( prop::ident, ident )),
-              prop::expr( prop::log_forall, prop::expr( prop::ident, sort ))
+              expr( expr( regexp::ident, fol )),
+              expr( log_forall, expr( regexp::ident, ident )),
+              expr( log_forall, expr( regexp::ident, sort ))
             }), 3 ));
 
 }
+
+
+#if 0
+
+void modaladjectives( adj::map& sys )
+{
+#if 0
+   std::cout << "Adding adjectives on modal formula:\n";
+
+   using namespace ast;
+
+   auto tr = tree( new expr( op_or( ),
+         { tree( new constant( selector( "?true" ))),
+           tree( new constant( selector( "?false" ))) } ));
+
+   auto nullaryF = exactname( "nullaryF" );
+   sys. insert( { nullaryF, 
+                  adj::def( decldef( -1, 0, vis_global ),
+                            new type::fullident( "modal" ), tr ) } );
+#endif 
+}
+
 #endif
 
 
-void tests::gen_prop( atm::simple& prop, atm::statemap& smap )
-{
-   using namespace atm;
-
-   // define transition for characters:
-
-   state q_char = prop. newstate( );
-   smap. insert( "char", q_char );
-   prop. delta_char. bot = prop. collapsed;
-
-   prop. delta_char. append( '0', q_char, q_char );
-   prop. delta_char. append( '9', q_char, prop. collapsed );
-
-   prop. delta_char. append( 'A', q_char, q_char );
-   prop. delta_char. append( 'Z', q_char, prop. collapsed );
-
-   prop. delta_char. append( '_', q_char, prop. collapsed );
-
-   prop. delta_char. append( 'a', q_char, q_char );
-   prop. delta_char. append( 'z', q_char, prop. collapsed );
-
-   state q_all_char = prop. newstate( );
-   smap. insert( "[char]", q_all_char );
-   prop. addforall( q_char, q_all_char );
-
-   auto q_atom = prop. newstate( );
-   auto q_neg = prop. newstate( );
-   auto q_implies = prop. newstate( );
-   auto q_equiv = prop. newstate( );
-   auto q_or = prop. newstate( );
-   auto q_and = prop. newstate( );
-   smap. insert( "atom", q_atom );
-   smap. insert( "neg", q_neg );
-   smap. insert( "implies", q_implies );
-   smap. insert( "equiv", q_equiv );
-   smap. insert( "or", q_or );
-   smap. insert( "and", q_and );
-
-   auto q_prop = prop. newstate( );
-   smap. insert( "prop", q_prop );
-
-   prop. delta_usel. def = prop. collapsed;
-   prop. delta_usel. assign( usel( "atom" ), q_atom );
-   prop. delta_usel. assign( usel( "neg" ), q_neg );
-   prop. delta_usel. assign( usel( "implies" ), q_implies );
-   prop. delta_usel. assign( usel( "equiv" ), q_equiv );
-   prop. delta_usel. assign( usel( "or" ), q_or );
-   prop. delta_usel. assign( usel( "and" ), q_and );
-
-   prop. addtuple( { q_atom, q_all_char }, q_prop );
-   prop. addtuple( { q_neg, q_prop }, q_prop );
-
-   prop. addtuple( { q_implies, q_prop, q_prop }, q_prop );
-   prop. addtuple( { q_equiv, q_prop, q_prop }, q_prop );
-
-   // A multiset of props:
-
-   auto q_all_prop = prop. newstate( );
-   smap. insert( "[prop]", q_all_prop );
-   prop. addforall( q_prop, q_all_prop );
-
-   prop. addtuple( { q_or, q_all_prop }, q_prop );
-   prop. addtuple( { q_and, q_all_prop }, q_prop );
-}
-
-void tests::sim_prop( ) { 
-   auto prop = atm::simple( atm::state( ) );
-   auto smap = atm::statemap( );
-   gen_prop( prop, smap );
-   std::cout << smap << "\n";
-   std::cout << prop << "\n";
-
-   using namespace data;
-   std::vector< tree > data;
-
-   auto char_a = tree( tree_char, 'a' );
-   auto char_b = tree( tree_char, 'b' );
-   auto char_c = tree( tree_char, 'c' );
-   data. push_back( char_a );
-   data. push_back( char_b );
-   data. push_back( char_c );
-
-   auto array_char = tree( tree_array, { char_a, char_b, char_c } );
-   //data. push_back( array_char ); 
-
-   auto usel_atom = tree( tree_usel, usel( "atom" ) );
-   auto atom = tree( tree_tuple, { usel_atom, array_char } );
-   data. push_back( usel_atom );
-   data. push_back( atom );
-
-   auto usel_neg = tree( tree_usel, usel( "neg" ) );
-   auto neg = tree( tree_tuple, { usel_neg, atom } );
-   data. push_back( usel_neg );
-   data. push_back( neg );
-
-   auto usel_imply = tree( tree_usel, usel( "implies" ) );
-   auto usel_equiv = tree( tree_usel, usel( "equiv" ) );
-   auto imply = tree( tree_tuple, { usel_imply, atom, neg } );
-   auto equiv = tree( tree_tuple, { usel_equiv, atom, neg } );
-   data. push_back( usel_imply );  
-   data. push_back( usel_equiv );  
-   data. push_back( imply );  
-   data. push_back( equiv );
-
-
-   auto array_prop = tree( tree_array, { atom, neg, imply, equiv } );
-   data. push_back( array_prop );
-
-   auto usel_or = tree( tree_usel, usel( "or" ) );
-   auto usel_and = tree( tree_usel, usel( "and" ) );
-   auto lor = tree( tree_tuple, { usel_or, array_prop } );
-   auto land = tree( tree_tuple, { usel_and, array_prop } );
-   data. push_back( usel_or );
-   data. push_back( usel_and );
-   data. push_back( lor );
-   data. push_back( land );
-
-   auto usel_bad = tree( tree_usel, usel( "bad+usel" ) );
-   auto tuple_bad = tree( tree_tuple, { usel_bad, char_a } );
-   auto array_bad = tree( tree_array, { usel_bad, char_a } );
-   data. push_back( usel_bad );
-   data. push_back( tuple_bad );
-   data. push_back( array_bad );
-   
-   for( auto d : data ) {
-      std::cout << d << " ==> ";
-      std::cout << atm::simulate( prop, d );
-      //atm::pretty_print( std::cout, atm::simulate( prop, d ), smap );
-      std::cout << "\n";
-   }
-}
