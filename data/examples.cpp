@@ -22,6 +22,12 @@ data::tree data::term( tree name, const std::vector< tree > & sub )
 
 }
 
+data::tree data::not_( const tree& sub )
+{ 
+   return tree_tuple( { tree_usel( "not" ), sub } ); 
+}
+
+
 data::tree data::implies( const tree& sub1, const tree& sub2 )
 {
    return tree_tuple( { tree_usel( usel( "implies" )), sub1, sub2 } ); 
@@ -30,6 +36,16 @@ data::tree data::implies( const tree& sub1, const tree& sub2 )
 data::tree data::equiv( const tree& sub1, const tree& sub2 )
 {
    return tree_tuple( { tree_usel( usel( "equiv" )), sub1, sub2 } );
+}
+
+data::tree data::zero( )
+{ 
+   return tree_tuple( { tree_usel( usel( "zero" )) } ); 
+}
+
+data::tree data::succ( const tree& tr )
+{
+   return tree_tuple( { tree_usel( usel( "succ" )), tr  } ); 
 }
 
 
