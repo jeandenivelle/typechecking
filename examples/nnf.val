@@ -1,0 +1,43 @@
+
+type polarity = ?pos | ?neg
+
+polarity negate( p : polarity )
+   if( p == ?pos ) return ?neg
+   if( p == ?neg ) return ?pos 
+
+nnf( p : polarity, f : form )
+
+   switch( f. sel )
+   ?atom:
+   ?equals:
+      return apply( p, f )
+   ?not:
+      return nnf( negate(p), f. sub )
+
+   ?implies:
+      if( p == ?pos )
+         return ( ?or, nnf( ?neg, f. sub1 ), nnf( ?pos, f.sub2 )
+      else
+         return ( ?and, nnf( ?pos, f. sub1 ), nnf( ?neg, f. sub2 )
+
+   ?equiv:
+      s1p = nnf( ?pos, f. sub1 )
+      s1n = nnf( ?neg, f. sub1 )
+      s2p = nnf( ?pos, f. sub2 )
+      s2n = nnf( ?neg, f. sub2 )
+
+      if( p == ?pos )  
+         return ( ?and, ( ?or, s1n, s2p ), ( ?or, s1p, s2n ))
+      else
+         return ( ?or, ( ?and, s1p, s2n ), ( ?and, s1n, s2p ))
+
+   ?and:
+   ?or:
+      s = f. sel
+      if( pos == ?neg )
+         s = swap(s)
+      res = ( s, { } )
+      for( size_t i = 0; i != f. size; ++ i )
+         res. push_back( nnf( pol, f. sub(i) ))
+
+
