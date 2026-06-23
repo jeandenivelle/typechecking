@@ -15,7 +15,7 @@ bool equal( const mathexpr& expr, const rational& rat )
 // Push_back all of from into to:
 
 void push_back( from : Form / ( .sel == ?and | .sel == ?or ) ,
-                to : form / ( .sel == ?and | .sel == ?or ) 
+                to : form / ( .sel == ?and | .sel == ?or )) 
    for size_t i = 0; i != from. size; ++ i 
       to. push_back( from. sub(i) )
 
