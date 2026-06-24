@@ -1,0 +1,238 @@
+
+\section{Multiset Automata}
+\label{Sect_DMA}
+
+Preconditions and conditions in programs are represented by
+deterministic multiset automata (DMAs).
+A DMA has a finite set of states. 
+We use a standard bottom-up semantics (see \cite{TATA2007}),
+and we will assume that tree automata are \emph{complete}, i.e.
+never get stuck. 
+We will merge all preconditions and conditions into a single
+DMA. This automaton will use different sets of accepting states
+for different (pre)conditions, 
+so we do not make the accepting states part of the
+automaton. 
+
+On tuples, a DMA behaves as usual: For 
+$ ( t_1, \ldots, t_n ), $ once the states for the
+$ t_i $ are known, the state for the
+tuple can be determined. Since the possible states
+for the $ t_i $ are finite in number, and the maximal
+value of $ n $ is a priori known, the behaviour
+of a DMA on tuples can be finitely expressed.
+
+Arrays will be treated as multisets. In our observation,
+all types and subtypes that 
+we want to express, can be expressed as set properties
+(either at least one element, or all elements must have some property). 
+If a type property
+cannot be expressed as a set, this means that order matters.
+In that case, values at different positions have different meanings,
+which implies that they should have been in different fields.
+In order to define set transitions, it is sufficient to 
+define a state for the empty set, and a binary function for
+insertion of a single element. Insertion must be idempotent, 
+and order insensitive. This results in two axioms. However, it turned out
+that idempotence was not needed, so we omitted it.
+This results in a limited form of multiset semantics. 
+As a consequence, DMAs can count a bit, but 
+with an upperbound, because the set of states is always finite.
+
+\begin{definition}
+   \label{Def_DMA}
+   We define a \emph{deterministic multiset automaton (DMA)}
+   $ {\cal A} $ as a triple
+   $ ( Q, \delta, N ), $ where $ Q $ is a finite (nonempty) set of states,
+   and $ \delta $ is a transition function with the following
+   properties:
+   \begin{itemize}
+   \item
+      If $ c $ is a constant of one of the primitive types
+      defined in Definition~\ref{Def_primtype}, then
+      $ \delta(c) \in Q. $
+   \item
+      If $ q_1, \ldots, q_n \in Q $ and $ 0 \leq n \leq N, $
+      then
+      $ \delta( q_1, \ldots, q_n ) \in Q. $
+   \item
+      $ \delta( ) \in Q, $
+   \item
+      If $ q_1,q_2 \in Q, $ then
+      $ \delta( q_1; q_2 ) \in Q. $
+   \end{itemize}
+   The intended meaning of $ ; $ is multiset insertion, with
+   the inserted element to the right.
+   Technically, $ \delta $ should be viewed as distinct overloads,
+   namely
+   $ \delta_T $ for primitive type $ T, $ \
+   $ \delta_{()} $ for tuples,
+   $ \delta_{\emptyset} $ for the empty multiset, and $ \delta_{;} $
+   for multiset insertion.
+   W.r.t to multiset insertion,
+   $ \delta $ must have the following property,
+   expressing irrelevance of insertion order: \ 
+   $ 
+       \delta( \delta( q_1; q_2 ); q_3 ) =
+       \delta( \delta( q_1; q_3 ); q_2 ).
+   $ 
+\end{definition}
+As already said before, we are not requiring the property
+$ \delta( \delta( q_1, q_2 ); q_2 ) = \delta( q_1; q_2 ), $ which
+would enforce set semantics. 
+
+We implicitly assume that $ \delta_T $ on primitive types is
+easily representable. The problem is that on an infinite, primitive type,
+like $ T = {\bf integer}, \ \ \delta_T $ could represent an 
+undecidable property. We assume that on a primitive type $ T, $ 
+$ \delta_T $ can be represented by a finite set of values or intervals.
+
+Using a DMA $ {\cal A}, $ every term can be mapped to a state of
+$ {\cal A}. $ We will call the resulting function $ Q_{\cal A}: $
+\begin{definition}
+   For a deterministic tree automaton $ {\cal A} = ( Q, \delta, N ) $,
+   we define a function $ Q_{\cal A} $ from data terms to $ Q $
+   by recursion as follows:
+   \begin{itemize}
+   \item
+      If $ c $ is a constant of primitive type,
+      then $ Q_{\cal A}(c) = \delta(c) $.
+   \item
+      $ Q_{\cal A}( \ ( d_1, \ldots, d_n ) \ ) =
+         \delta( \, Q_{\cal A}(d_1),\ldots,Q_{\cal A}(d_n) \, ) $.
+   \item
+      $ Q_{\cal A}( \, [ \, ] \, ) = \delta( \, ) $.
+   \item
+     If $ n > 0, $ then
+     $ Q_{\cal A}( \, [ d_1, \ldots, d_n ] \, ) =
+          \delta( \, Q_{\cal A}( \, [ d_1, \ldots, d_{n-1} ] \, ); \,
+                     Q_{\cal A}(d_n) \, ). $
+   \end{itemize}
+\end{definition}
+Our definition of DMA does not include accepting states.
+Our type checking algorithm starts by collecting all possible overloads
+for each imprecise name in a translation unit.
+Each overload has a type/precondition which
+is defined by a DMA. We compute the product of all these automata,
+where each contributing automata defines a set of accepting states
+in the product automaton. As a consequene, we end up with a single
+DMA that is used with different sets of accepting states.
+
+\begin{definition}
+   \label{Def_acc_cond}
+   Let $ {\cal A} = ( Q, \delta, N ) $ be a DMA.
+   An \emph{acceptance condition} $ F $ is a unary predicate on $ Q. $
+   An \emph{acceptance relation} $ R $ is a binary predicate on $ Q. $
+\end{definition}
+Acceptance conditions are used for expressing conditions and
+preconditions. Acceptance relations are used for expressing 
+conditions only.
+\begin{example}
+   Propositional formulas are expressed by the following DMA using
+   acceptance condition $ \{ \state{form} \}: $ 
+   \[
+      \begin{array}{lll}
+         \delta( \sel{atom} ) & = & \state{atom} \\
+         \delta( \sel{neg} ) & = & \state{neg} \\
+         \delta( \sel{implies} ) = 
+            \delta( \sel{equiv} ) & = & \state{binary} \\
+         \delta( \sel{and} ) = 
+            \delta( \sel{or} ) & = & \state{nary} \\
+         \mbox{ for every {\bf char} } c : \ \ \delta( c ) & = & \state{char} \\
+         \\
+         \delta( \, ) & = & \state{empty} \\
+         \delta( \state{empty}; \state{char} ) = 
+         \delta( \state{allchar}; \state{char} ) & = & \state{allchar} \\
+         \delta( \state{empty}; \state{form} ) =
+         \delta( \state{allform}; \state{form} ) & = & \state{allform} \\
+         \\  
+         \delta( \state{atom}, \state{allchar} ) & = & \state{prop} \\
+         \delta( \state{neg}, \state{prop} ) & = & \state{prop} \\
+         \delta( \state{binary}, \state{prop}, \state{prop} ) & = & \state{prop} \\
+         \delta( \state{nary}, \state{allprop} ) & = & \state{prop} \\
+      \end{array}
+   \]
+   All transitions that are not listed go to a trap state $ \state{trap}. $ 
+\end{example} 
+In the example, there is a single trap state $ \state{trap}. $ In practice,
+it is convenient to use more than one state for data terms that are not part
+of a formula, so that not all information is lost when a formula
+is stored in some other data structure.
+
+\noindent
+Taking the product of two automata is easy in principle, but
+one has to deal with the case where the two automata have different
+width:
+
+\begin{definition}
+   \label{Def_inflation}
+   Let $ {\cal A} = ( Q, \delta, N ). $
+   Assume that $ N' > N. $
+   The result of \emph{inflating} $ {\cal A} $ to $ N' $
+   is the DMA $ {\cal A}' = ( Q', \delta', N' ), $ satisfying: 
+   \begin{itemize}
+   \item
+      $ Q' = \{ Q \} \cup \{ q' \}, $ with $ q' \not \in Q $ a new state.
+   \item
+      If $ n \leq N, $ then $ \delta'( q_1, \ldots, q_n ) = \delta(q_1, \ldots, q_n). $
+      If $ N < n \leq N', $ then $ \delta( q_1, \ldots, q_n ) = q'. $
+   \item
+      If one of the $ q_i = q', $ then $ \delta(q_1, \ldots, q_n ) = q'. $ 
+   \item
+      If $ q_1 = q' $ or $ q_2 = q', $ then $ \delta(q_1;q_2) = q'. $ 
+   \end{itemize}
+\end{definition}
+
+\begin{definition}
+   \label{Def_product_automaton}
+   Let $ {\cal A}_1 = ( Q_1, \delta_1, N_1) $ and
+   $ {\cal A}_2 = ( Q_2, \delta_2, N_2 ) $
+   be deterministic tree automata.
+   We define the product automaton
+   $ {\cal A}_1 \times {\cal A}_2 =
+        ( \, Q_1 \times Q_2, \ \delta', \ {\bf max}(N_1,N_2) \, ) \ $
+   as follows:
+   If $ N_1 \not = N_2, $ then first inflate the smaller
+   automata to $ \max(N_1,N_2). $
+   After that, construct $ \delta' $ as follows:
+   \begin{itemize}
+   \item
+      For a constant $c$ of primitive type,
+      $ \delta'(c) = ( \, \delta_1(c), \delta_2(c) \, ). $
+   \item
+      $ \delta'( \, (q_1,q'_1), \ldots, (q_n,q'_n) \, ) =
+      ( \, \delta_1( q_1, \ldots, q_n), \, \delta_2( q'_1, \ldots, q'_n ) \, ). $
+   \item
+      $ \delta'( ) = ( \, \delta_1( ), \delta_2( ) \, ). $
+   \item
+      $ \delta'( \, ( q_1,q'_1); ( q_2, q'_2) \, ) =
+        ( \, \delta_1( q_1; q_2), \delta_2( q'_1, q'_2) \, ). $ 
+    \end{itemize}
+\end{definition}
+The product can be straightforwardly generalized to more than two automata.
+If $ {\cal A}_1 $ or $ {\cal A}_2 $ has an acceptance condition,
+then this acceptance conditions gets 'inherited' by the product automaton
+as follows:
+\begin{definition}
+   \label{Def_acc_proj}
+   Let $ F $ be an acceptance condition.
+   $ {\bf proj}_i $ is an acceptance condition on tuples
+   of arity at least $ i, $ defined from
+   $ {\bf proj}_i( \, ( q_1, \ldots, q_n ) \, ) \Leftrightarrow
+     F(q_i). $
+\end{definition}
+Using projection, acceptance conditions can be carried over to the 
+product automaton. 
+This has one important consequence, namely that
+all Boolean combinations of properties definable
+by a DMA + acceptance condition can be decided
+by constructing the product automata, constructing
+a Boolean combination of projections, and verifying it for
+all states. At this point, we are relying on the fact that
+$ \delta_T $ has low complexity on primitive type $ T. $ 
+
+In particular, we will need to check inclusion between subtypes, 
+in cases where more than one overload candidate remains.
+In that case, one overload must be strictly more specific than
+all other overload candidates.
+

@@ -1,0 +1,114 @@
+
+
+\section{Data Terms}
+\label{Sect_data_terms}
+
+We assume that all data are trees over a fixed set of primitive
+types. Most primitive types are standard.
+We use 
+$ {\bf char}, {\bf u64}, {\bf bool}, {\bf integer}, $ and
+$ {\bf float}. $ Type $ {\bf u64} $ consists of 64-bit integers,
+which can be used to index arrays. Type $ {\bf integer} $ 
+consists of unbounded precision integers.  
+In addition to the standard primitive types, there is a type
+called $ {\bf selector}, $ which consists of named constants.
+It is similar to an enumeration type, but with two differences:
+Firstly, {\bf selectors} cannot be converted to (or obtained from) integers,
+and secondly, there is only one $ {\bf selector} $
+type. There is no need to allow
+the user to define new enumeration types, because our type
+system supports subtypes. Their intended use is to represent
+tags that determine the types of later fields, 
+like for examples the symbols in an attribute
+grammar, or logical operators.
+Compound trees are built using two constructors: The first
+constructor constructs trees of fixed width. Once constructed,
+the width cannot change.
+The second constructor constructs trees of unbounded width,
+with can grow and shrink like a vector. They are initially
+constructed empty, after which elements can be inserted later.
+\begin{definition}
+   \label{Def_primtype} 
+   We assume the following primitive types:
+      {\bf bool}, {\bf char}, {\bf selector},
+      {\bf u64}, {\bf integer}, {\bf double}.
+   We call {\bf bool}, {\bf char}, and {\bf selector}
+   \emph{tag types}, because they can be used as tags
+   for selecting options.
+   We assume that $ {\bf u64}, \ {\bf char} $ and $ {\bf bool} $
+   are ordered types with the usual order.
+\end{definition}
+
+\begin{definition}
+   \label{Def_data_term}
+   We define the set of \emph{data terms} 
+   by recursion as follows:
+   \begin{itemize}
+   \item
+      If $ d $ is an element of one of the primitive types
+      listed in Definition~\ref{Def_primtype},
+      then $ d $ is a data term.
+   \item
+      If $ d_1, \ldots, d_n $ with $ n \geq 0 $ are
+      data terms, then
+      $ ( d_1, \ldots, d_n ) $
+      and
+      $ [ d_1, \ldots, d_n ] $ are also data terms. 
+      We call $ ( d_1, \ldots, d_n ) $ a \emph{tuple}, and
+      $ [ d_1, \ldots, d_n ] $ an \emph{array}.
+   \end{itemize}
+\end{definition}
+The difference between $ (d_1, \ldots, d_n) $ and
+$ [ d_1, \ldots, d_n ] $ is that the former represents
+a fixed sized tuple, while the latter represents a vector.
+In a program, the elements of a tuple $ (d_1, \ldots, d_n) $ can be
+accessed by field access. For each field access instruction,
+it is known which field it accesses.
+At the same time, an array term $ [ d_1, \ldots, d_n ] $ can be indexed
+by a variable of type $ {\bf u64}. $ 
+\begin{definition}
+   \label{Def_width}
+   For a data term $ t, $ we define $ {\bf width}(t) $
+   as the maximal size of a tuple occurring in $ t. $
+   If $ t $ contains no tuples, then $ {\bf width}(t) = 0. $
+\end{definition}
+Because a program is always finite, 
+there exists, for every program, an upperbound on the size
+of the tuples that occur in it.
+Hence, there always exists a natural number $ n, $ s.t.
+all data terms that the program operates on, have
+width at most $ n. $
+
+\begin{example}
+   Assume that we want to represent logical formulas  
+   using operators $ \neg, \wedge, \vee, \rightarrow, \leftrightarrow, $ 
+   where $ \neg $ is unary, $ \wedge $ and $ \vee $ are $ n $-ary, 
+   and $ \leftrightarrow,\rightarrow $ are binary.
+   For simplicity, we assume that atoms are represented
+   by arrays of characters.
+
+   The atom $ v0 $ can be represented by
+   $ ( \sel{atom}, [ 'v', '0' ] ). $ 
+   It is a tuple consisting of the selector constant
+   \sel{atom} and an array, containing characters 'v' and '0'.
+   
+   The negation of $ v0 $ is $ ( \sel{neg}, v0 ). $ 
+   Formula $ v1 \rightarrow v2 $ can be represented as
+   $ ( \sel{implies}, ( \sel{atom}, [ 'v', '0' ] \, ), \,
+                      ( \sel{atom}, [ 'v', '1' ] )). $ 
+   Formula $ v_1 \wedge v_2 $ be be represented as
+   $ ( \sel{and}, [ ( \sel{atom}, [ 'v', '0' ] \, ), \, 
+                    ( \sel{atom}, [ 'v', '1' ] \, ) \, ] \, ). $ 
+   The second element after an \sel{and}, or \sel{or} is always an
+   array term. 
+\end{example}
+It can be seen from the example that, in constrast to most other
+programming languages, logical operators are not represented by
+constructors or function symbols, but by 
+{\bf selector} constants. All formulas are constructed by
+the same tuple constructor. For propositional formula,
+the biggest arity that a tuple
+can have, is three.
+$ n $-ary formulas are represented by a binary tuple, whose
+second element is an array.
+

@@ -1,0 +1,560 @@
+
+\section{Range States}
+\label{Sect_range_states}
+
+{\bf note} We will probably delete this section.
+
+We will map the values of variables into their states.
+Arrays will be mapped into states representing a multiset. 
+We want to be able to handle in-place array conversions, where
+one goes through an array with an index
+and changes the properties of the elements.
+In order to make this possible, it is not sufficient to 
+keep track of single variables, because for a given index $ i, $ 
+the values on positions before $ i $ may have different properties,
+than the values on positions after $ i. $ 
+We will therefore map pairs $ ( v, i ), $ where $ i $ is a potential
+index of $ v $ separately. We will map $ (v,i) $ into a triple
+of states, where the first element is the multiset of values before $ i, $ 
+the second element represents the multiset of values on $ i, $
+and the third element represents the multiset of values after $ i. $ 
+Since we are possibly working on $ v[i], $ its state has to be stored
+separately.
+
+We will keep track of the
+relative order between variables that are a potential index,
+as well as $ 0 $ and the sizes of arrays.
+The simplest ways to do this is by keeping a matrix of potential
+differences.
+If two indices are equal, their difference is zero.
+If the first index is bigger than the second, the difference is positive.
+\begin{definition}
+   \label{Def_diff_set}
+   A \emph{difference} has one of the following forms:
+   $ -2^{*}, -1, 0, 1, 2^{*}. $
+   A \emph{difference set} is a set of differences.
+   We write $ \top $ for the full difference set
+   $ \{ -2^{*}, -1, 0, 1, 2^{*} \}. $
+\end{definition}
+The intended meaning of $ -2^{*} $ is '-2 or less'.
+The intended meaning of $ 2^{*} $ is '2 or more'.
+Difference sets have two levels of uncertainty:
+The first is in the semantics of $ -2^{*} $ and $ 2^{*}, $
+which represent a set of possible difference values.
+The second is the the fact that a set may contain more than one
+element. This ugly asymmetry could be removed by replacing
+$ -2^{*} $ by $ -2,-3,-4, \ldots, $ but we want the difference
+sets to be finitely representable. We don't know a better
+alternative to Definition~\ref{Def_diff_set}.
+
+\begin{definition}
+   We define two operations on difference sets:
+   The first is \emph{negation}:
+   If $ D $ is a difference set, then
+   $ -D = \{ -d \mid d \in D \}, $
+   using $ - $ on differences as defined in Figure~\ref{Fig_negation_oplus}.
+
+   If $ D_1 $ and $ D_2 $ are difference sets, then
+   $ D_1 + D_2 $ is defined as
+   $ \bigcup \{ \, d_1 \oplus d_2 \mid
+                   d_1 \in D_1 \mbox{ and } d_2 \in D_2 \, \}, $
+   where $ \oplus $ is defined in Figure~\ref{Fig_negation_oplus}.
+   Note that the entries in the table are sets, so that it is possible
+   to take their union.
+\end{definition}
+
+\begin{figure}
+   \caption{Unary $-$ and binary $ \oplus $}
+   \label{Fig_negation_oplus}
+   \[
+      \begin{array}{l||c|c|c|c|c|}
+         - & -2^{*} & -1 & 0 & 1 & 2^{*} \\
+         \hline
+         \hline
+         & 2^{*} & 1 & 0 & -1 & -2^{*} \\
+         \hline
+      \end{array}
+      \hspace*{1.0cm}
+      \begin{array}{l||c|c|c|c|c|}
+         \oplus & -2^{*} & -1 & 0 & 1 & 2^{*} \\
+         \hline
+         \hline
+         -2^{*} & -2^{*} & -2^{*} & -2^{*} & -2^{*},-1 & \top \\
+         \hline
+         -1 & -2^{*} & -2^{*} & -1 & 0 & 1, 2^{*} \\
+         \hline
+         0 & -2^{*} & -1 & 0 & 1 & 2^{*} \\
+         \hline
+         1 & -2^{*}, -1 & 0 & 1 & 2^{*} & 2^{*} \\
+         \hline
+         2^{*} & \top & 1, 2^{*} & 2^{*} & 2^{*} & 2^{*} \\
+         \hline
+      \end{array}
+   \]
+   The entries in the table are always sets. Remember that $ \top $ denotes
+   the complete set $ \{ -2^{*}, -1, 0, 1, 2^{*} \}. $
+\end{figure}
+\begin{definition}
+   Let $ I $ be a finite set.
+   A \emph{difference matrix} $ \Delta $ \emph{over} $ I $
+   is a mapping of $ I \times I $ to
+   difference sets.
+   We write $ \Delta.{\bf at}(i_1,i_2) $ for
+   $ \Delta(i_1,i_2). $
+\end{definition}
+
+Possible indices are variables that can have type $ {\bf u64}, $
+as well as $ 0 $ and expressions of $ {\bf len}(s), $ where
+$ s $ is a variable that holds an array term.
+Note that the elements of $ I $ are symbolic: $ I $ consists
+of expressions, not of their values.
+
+We will now define a few operations on difference matrices.
+We define them imperatively, instead of declaratively.
+In other words, we define them as operations that modify
+an existing difference matrix, instead of functions
+that create a new one.
+The reason for this choice is the following:
+Below Definition~\ref{Def_range_state},
+we will define the effect of a statement on a range state.
+Due to overapproximation, and
+the essential non-deterministic nature of high-level computation,
+the effect of a statemenet is non-deterministic.
+After having tried several
+ways to specify the possible successor states, we concluded that
+a description using non-deterministic computation is the simplest.
+In an earlier version, we gave a recursive definition of the 
+effect relation $ \vdash $ by means of Horn clauses,
+but it turned out rather unreadable. Using imperative language
+is somewhat natural, because in the end we are modeling an imperative
+language.  
+
+\begin{definition}
+        \label{Def_operations_on_difference_matrix}
+   Let $ \Delta $ be a difference matrix over an index set $ I. $
+   \begin{itemize}
+   \item
+      $ \Delta. {\bf contains}(i) $ returns true if
+      $ \Delta $ has a difference set for $ i. $ 
+   \item
+      $ \Delta. {\bf at}(i) $ returns the difference
+      set for $ i. $ 
+   \item
+      If $ i \not \in I, $ then
+      $ \Delta. {\bf extend}(i) $ modifies $ \Delta $ into
+      a difference matrix $ \Delta' $ over $ I \cup \{ i \}, $ s.t.
+      whenever both $ i_1, i_2 \not = i, $ then $ \Delta'. {\bf at}(i_1,i_2) =
+      \Delta. {\bf at}( i_1,i_2). $
+      If either of $ i_1, i_2 = i, $ then $ \Delta'.{\bf at}(i_1,i_2) = \top. $
+   \item
+      $ \Delta. {\bf assign}( i_1, i_2, d ) $ changes $ \Delta $
+      into a difference matrix $ \Delta', $ s.t.
+      $ \Delta'.{\bf at}(i_1,i_2) = d, $ and
+      $ \Delta'.{\bf at}(i'_1,i'_2) = \Delta.{\bf at}(i'_1,i'_2), $
+      whenever $ i'_1 \not = i_1 $ or $ i'_2 \not = i_2. $
+   \item
+      If $ i \in I, $ then
+      $ \Delta. {\bf erase}(i) $ is obtained from $ \Delta $
+      by making $ \Delta.{\bf at}(i,i_2) $ and $ \Delta.{\bf at}(i_1,i) $
+      undefined, for all $ i_1,i_2 \in I. $ 
+   \item
+      $ \Delta. {\bf isconsistent}( ) $ returns true if
+      there are no $ i_1, i_2 \in I, $ s.t.
+      $ \Delta. {\bf at}(i_1,i_2) = \emptyset. $
+   \end{itemize}
+\end{definition}
+
+\begin{definition}
+   Let $ \Delta $ be a difference matrix. We define
+   a procedure $ {\bf close}( \Delta ) $ that
+   closes $ \Delta $ under reflexivity, transitivity and antisymmetry:
+   $ {\bf close}( \Delta ) $
+   is obtained by applying the following
+   operations, until no further change is obtained:
+   \begin{itemize}
+   \item
+      For every $ i, $ s.t. $ \Delta. {\bf contains}(i): $ \\
+      \hspace*{1.0cm} $ 
+         \begin{array}{l}
+            \Delta. {\bf assign}(i,i, \{ 0 \} ); \hspace*{1.0cm}
+            \Delta. {\bf assign}( 0, i, \,
+               \Delta. {\bf at}(0,i) \cap \{ 0,1,2^{*} \} ); \\ 
+            \Delta. {\bf assign}( i, {\bf len}(v),
+               \Delta. {\bf at}( i, {\bf len}(v)) \cap \{ 0,1,2^{*} \} \, ) \\
+         \end{array}
+      $ 
+   \item
+      For every $ i_1,i_2, $ s.t. $ \Delta. {\bf contains}(i_1) $ and
+      $ \Delta. {\bf contains}(i_2): $ \\
+      \hspace*{1.0cm}
+      $ 
+           \Delta. {\bf assign}(i_1,i_2, \,
+           \Delta. {\bf at}(i_1,i_2) \cap -\Delta. {\bf at}(i_2,i_1) \, ). 
+      $
+   \item
+      For every $ i_1,i_2,i_3, $ s.t. $ \Delta. {\bf contains}(i_1), \
+      \Delta. {\bf contains}(i_2), $ and $ \Delta. {\bf contains}(i_3): $ \\
+      \hspace*{1.0cm} 
+      $ \Delta.{\bf assign}(i_1,i_3), \
+           \Delta. {\bf at}(i_1,i_3) \cap (
+           \Delta. {\bf at}(i_1,i_2) + \Delta. {\bf at}(i_2,i_3)) \ ). $ 
+   \end{itemize}
+\end{definition}
+We now define state sequences and a couple of operations
+on them.
+As for difference matrixes, we define the operations imperatively.
+The operations on state sequences are not yet non-deterministic,
+but they can fail.
+\begin{definition}
+   \label{Def_state_seq}
+   Let $ {\cal A} = ( Q, \delta, N ) $ be a DMA.
+   A \emph{state sequence} over $ {\cal A} $ is a
+   (possibly empty) sequence of states of $ {\cal A}. $
+   We define the following operations on state sequences:
+   \begin{itemize}
+   \item
+      $ \overline{q}. {\bf push\_back}(q') $ replaces
+      $ \overline{q} = (q_1, \ldots, q_n ) $ by
+      $ (q_1, \ldots, q_n, q' ), $ and
+      $ \overline{q}. {\bf push\_front}(q') $ replaces
+      $ \overline{q} = (q_1, \ldots, q_n) $ by
+      $ ( q', q_1, \ldots, q_n ). $
+   \item
+      If $ \overline{q} $ has form $ ( q_1, \ldots, q_n ) $ with $ n > 0, $
+      then $ \overline{q}. {\bf pop\_back}( ) $ replaces
+      $ \overline{q} $ by $ ( q_1, \ldots, q_{n-1} ), $
+      and $ \overline{q}. {\bf pop\_front}( ) $ replaces
+      $ \overline{q} $ by $ ( q_2, \ldots, q_n ). $
+   \item
+      If $ \overline{q} $ has form $ ( q_1, \ldots, q_n ) $ with $ n > 0, $
+      then $ \overline{q}. {\bf back}( ) $ equals $ q_n, $
+      and $ \overline{q}. {\bf front}( ) $ equals $ q_1. $
+   \end{itemize}
+\end{definition}
+The purpose of a state sequence is to approximate the
+data terms at positions $ v[i], v[i+1], \ldots. $ 
+In fact, we currently do not use $ v[i+1], \ldots $ and looking at
+$ v[i] $ is optional. Technically, we could use a 
+single optional value. We defined Definition~\ref{Def_state_seq} a bit
+more general, than needed. 
+
+\begin{definition}
+        \label{Def_operations_on_DMA_states}
+   Let $ {\cal A} = ( Q, \delta, N ) $ be a DMA.
+   \begin{itemize}
+   \item
+      Let $ q $ be a state of $ {\cal A}. $
+      Operation $ q. {\bf insert}(q') $ replaces
+      $ q $ by $ \delta( q;q' ). $
+   \item
+      Method $ q. {\bf extract}( ) $ non-deterministically
+      does the following:
+      Find $ q', q_1, $ s.t. $ \delta(q';q_1) = q. $
+      Replace $ q $ by $ q' $ and return $ q_1. $
+   \end{itemize}
+\end{definition}
+The second operation is one of the sources of non-determinism
+in the effect of an operation, the other is uncertainty about the
+relative order of indices.
+\begin{definition}
+   \label{Def_range_state}
+   Let $ {\cal A} $
+   be a an abstraction automaton.
+   An \emph{range state} is a pair of form $ ( M, \Delta ), $
+   s.t.
+   \begin{itemize}
+   \item
+      $ M $ is a finite partial function, which
+      \begin{itemize}
+      \item
+         maps single variables to $ Q. $
+      \item
+         maps pairs $ (v,i) $ consisting of two variables $ v,i $ to
+         triples $ ( q_{1}, \overline{q}, q_{2} ). $
+      \end{itemize}
+      Both components can be partial.
+   \item
+      $ \Delta $ is a difference matrix over a set
+      $ I $ consisting of variables, $ 0, $
+      and expressions of form $ {\bf len}(v), $
+      with $ v $ a variable.
+   \end{itemize}
+   We define the following methods of $ M: $
+   \begin{itemize}
+   \item
+      $ M. {\bf contains}(v), \ M. {\bf contains}(v,i). $
+      True if $ M $ contains a value for variable $ v, $
+      or for the pair $ (v,i). $
+   \item
+      $ M. {\bf at}(v), \ M. {\bf at}(v,i). $ Returns the value
+      for the variable $ v $ or the pair $ (v,i) $ in $ M. $ 
+   \item
+      $ M. {\bf assign}(v,d), \ M. {\bf assign}(v,i,d). $ Sets the value
+      of variable $ v, $ or the pair $ (v,i) $ to $ d. $
+   \item
+      $ M. {\bf erase}(v), \ M. {\bf erase}(v,i). $ Remove the
+      value for variable $ v, $ or the pair $ (v,d). $
+   \end{itemize}
+\end{definition}
+The intended meaning of $ q_{1}, \overline{q}, q_{2} $
+is that they represent the multisets of values
+in $ v[ 0 \cdots i \rangle $, $ v[i] $, and $ v \langle i \cdots \rangle $, respectively.
+
+For each program point, we will construct a set of
+range states that are possible at that point,
+using Definition~\ref{Def_semantics}.
+As usual, it cannot be avoided that there will be abstract states
+attached to a program point that are in fact unreachable.
+
+\noindent
+For simplicity, we will always assume that all assignments to
+variables (not to a member) are initializations.
+We explain the relation between assignment and
+comparison. Since our computational model is non-deterministic,
+assignment can be viewed as a special case of comparison,
+where nothing is known about the assigned variable.
+More precisely, the assignment $ i \leftarrow 0 $ can be viewed
+as two statements: {\bf (1)} Initialize $ i $ with a random value.
+{\bf (2)} Verify that $ i $ equals $ 0, $ failing if it is not.
+Since computation is non-deterministic, $ i $ will be equal
+to $ 0 $ in a succesful computation.
+It is convenient to treat assignment as 
+comparison as much as possible, and to deal with
+known equalities in a postprocessing state. This has the advantage
+that the common parts of assignment and comparison can be treated
+by a single procedure.
+
+We list possible statements, and their effect on range states.
+Due to lack of space, the list is incomplete. 
+\begin{itemize}
+\item
+   The statement $ i \leftarrow 0 $ has the following effect: \\
+   \hspace*{1.0cm}
+   $ 
+      \Delta. {\bf extend}(i); \hspace*{0.5cm} 
+      \Delta. {\bf assign}(i,0, \{ 0 \} ); \hspace*{0.5cm}
+      {\bf close}( \Delta ); \hspace*{0.5cm}
+      M. {\bf assign}( i, Q_{\cal A}(0) );
+   $ 
+\item
+   A statement of form $ i \leftarrow {\bf len}(v) $
+   has the following effect: \\
+   \hspace*{1.0cm} 
+   $ 
+         \Delta. {\bf extend}(i); \hspace*{0.5cm}
+         \Delta. {\bf assign}(i, {\bf len}(v), \{ 0 \} ); \hspace*{0.5cm}
+         {\bf close}( \Delta );
+   $
+\item
+   A statement of form $ i \leftarrow j $ 
+   has the following effect: \\
+   \hspace*{1.0cm} 
+   $
+         \Delta. {\bf extend}(i); \hspace*{0.5cm}
+         \Delta. {\bf assign}(i, j, \{ 0 \} ); \hspace*{0.5cm}
+         {\bf close}( \Delta ); 
+   $
+\item
+   A statement of form $ w \leftarrow v[i] $
+   has the following effect: \\
+   \hspace*{1.0cm} 
+   $ \begin{array}{l}
+      {\rm let} \ ( q_1, \overline{q}, q_2 ) = M. {\bf at}(v,i) \\
+      \mbox{if} \ \| \overline{q} \| = 0 \ \mbox{then} \\
+      \hspace*{0.5cm} \overline{q}. {\bf push\_back}( q_2. {\bf extract}( )) \\
+      M. {\bf assign}( w, \overline{q}. {\bf front}( )) \\
+      M. {\bf assign}( v,i, ( q_1, \overline{q}, q_2 ) ) \\
+      \end{array}
+   $ \\ \\ 
+   If the triple at $ M. {\bf at}(v,i) $ has a value for
+   $ v[i], $ we can use it. Otherwise, we create it first. 
+\item
+   A statement of form $ j \leftarrow i + 1 $ has the following effect:
+   \[
+      \begin{array}{l}
+      \Delta. {\bf assign}( j,i, \{ 1 \} ); \ \ {\bf close}( \Delta ) \\
+      {\rm let} \ ( q_1, \overline{q}, q_2 ) = M. {\bf at}(v,i) \\
+      \mbox{if} \ \| \overline{q} \| = 0 \ \mbox{then} \\
+      \hspace*{0.5cm} \overline{q}. {\bf push\_back}( q_2. {\bf extract}( )) \\
+      M. {\bf assign}( v,j, ( \delta( q_1; \overline{q}. {\bf front}()), q_2 )) \\ 
+      \end{array}
+   \] 
+   We take $ M.{\bf at}(v,i), $ create the value at $ v[i] $ if it is not
+   present, and transfer it to $ v[ 0 \cdots j \rangle. $ 
+   Note that we are taking a slight shortcut.
+   The problem is that $ i + 1 $ is not a flatterm.
+   In reality, one must check for assignments of form
+   $ j \leftarrow i_1 + i_2, $ where either
+   $ \Delta.{\bf at}(i_1,0) = \{ 1 \}, $ or
+   $ \Delta.{\bf at}(i_2,0) = \{ 1 \}. $ 
+\item
+   A statement of form $ v[i] \leftarrow w $ has the following effect:
+   For every variable $ j $ that is a potential index of $ v, $ do: 
+   \[ 
+      \begin{array}{l} 
+         {\rm require} \ \Delta(i, {\bf len}(v)) \cap \{ 0,1,2^{*} \} \not = \emptyset \\
+         {\rm let} \ ( q_1, \overline{q}, q_2 ) = M. {\bf at}(v,j) \\
+         {\rm nondeterministic} \\ 
+         \hspace*{0.5cm} \bullet \ 
+              {\rm require} \ \Delta.{\bf at}( i,j ) \cap \{ -1, -2^{*} \} \not = \emptyset \\
+         \hspace*{0.8cm} q_1. {\bf extract}( ); \,
+                         q_1. {\bf insert}( Q_{\cal A}( M. {\bf at}(w))); \\
+         \hspace*{0.5cm} \bullet \ {\rm require} \
+             0 \in \Delta.{\bf at}(i,j) \mbox{ and } 
+                 \| \overline{q} \| = 1 \\
+         \hspace*{0.8cm} {\rm let} \ \overline{q} = Q_{\cal A}( M. {\bf at}(w)) \\
+         \hspace*{0.5cm} \bullet \  
+          {\rm require} \ \Delta(i,j) \cap \{ 1,2^{*} \} \not = \emptyset 
+                      \mbox{ or }
+                          0 \in \Delta( i, j ) \mbox{ and } 
+                          \| \overline{q} \| = 0 \\
+          \hspace*{0.8cm} q_2. {\bf extract}( ); \,
+                          q_2. {\bf insert}( Q_{\cal A}( M. {\bf at}(w))) \\
+          M. {\bf assign}( v, i, \, ( q_1, \overline{q}, q_2 ) \, ) \\ 
+       \end{array}
+   \] 
+   A require statement fails quietly if its condition is not met.
+   The nondetermistic statement branches into three options 
+   each of which can succeed or fail independently.
+   The code may be surprising at first. First observe that $ i $ 
+   will be included in the for loop. For $ i, $ the 
+   middle option is entered if $ \overline{q} $ is non-empty,
+   and $ \overline{q} $ will be replaced by 
+   $ Q_{\cal A}( M. {\bf at}(w)). $ If $ \overline{q} $ is empty,
+   the third option will be entered, and a random element from
+   $ q_2 $ wil be replaced by $ Q_{\cal A}( M. {\bf at}(w)). $ 
+   The assignment to $ v[i] $ may also affect 
+   $ v[ 0, \ldots j \rangle $ or $ v[ j \ldots \rangle \rangle $ 
+   for other variables $ j, $ for which the interval
+   $ [ 0, \ldots j \rangle $ or $ [ j, \ldots, \rangle $ might
+   contain $ i. $ 
+\item
+   A statement of form $ v \leftarrow w.f $ has the following effect:
+   Let 
+   $ i $ be the index of field $ f. $ 
+   Let $ q = Q_{\cal A}(w). $  
+   Non-deterministically pick a tuple $ ( q_1, \ldots, q_n ), $ for
+   which $ \delta( q_1, \ldots, q_n ) = q. $
+   $ M. {\bf assign}(v, q_i ). $ 
+\item
+   A statement of form $ v \leftarrow {\bf lt}(w_1,w_2) $
+   has the following effect:
+   \[
+       \begin{array}{l}
+          {\rm nondeterministic} \\
+             \hspace*{0.5cm} \bullet \ \Delta. {\bf assign}( w_1, w_2,
+               \Delta. {\bf at}( w_1, w_2 ) \cap \{ -2^{*}, -1 \} \, ); \ 
+            {\bf close}( \Delta ) \\
+            \hspace*{0.8cm} \mbox{require} \ \Delta. {\bf isconsistent}( )) \\
+            \hspace*{0.8cm} M. {\bf assign}(v, Q_{\cal A}( {\bf t} )) \\
+            \hspace*{0.5cm} \bullet \ \Delta. {\bf assign}( w_1, w_2,
+               \Delta. {\bf at}( w_1, w_2 ) \cap \{ 0,1,2^{*} \} \, ); \ 
+            {\bf close}( \Delta ) \\
+            \hspace*{0.8cm} \mbox{require} \ \Delta. {\bf isconsistent}( )) \\
+            \hspace*{0.8cm} M. {\bf assign}( v, Q_{\cal A}( {\bf f} )) \\
+         \end{array}
+      \]
+      The other comparison operators are analogeous.
+      Executing the code above results in either one or two successor states,
+      dependent on whether assuming $ w_1 < w_2 $ or $ w_1 \geq w_2 $ is consistent
+      with $ \Delta. $
+\item
+   A statement of form $ v \leftarrow F(w), $ with
+   $ F $ a unary state condition has the following effect: \\
+   \hspace*{1.0cm}
+   $ \begin{array}{l}
+         \mbox{if } F( Q_{\cal A}(w)) \\
+         \hspace*{0.5cm} M. {\bf assign}(v, Q_{\cal A}({\bf t})) \\
+         \mbox{else} \\
+         \hspace*{0.5cm} M. {\bf assign}(v, Q_{\cal A}({\bf f})) \\
+      \end{array}
+   $ 
+\end{itemize}
+It remains to define a postprocessing procedure that must be called
+after every operation on a range state.
+Its purpose is to check for equalities inside the
+difference matrix $ \Delta, $ and apply them. 
+Similar to the description of the effect of a statement, we
+describe the procedure in imperative fashion. 
+\begin{definition}
+   \label{Def_postproc}
+   First define a function $ {\bf part}( q_1, \overline{q}, q_2 ) $ as
+   follows: \\ 
+   \hspace*{0.5cm}
+   $ 
+         \begin{array}{l}
+            q = q_2; \ 
+            \mbox{for} \ q' \in \overline{q} \mbox{ do} \\
+            \hspace*{0.5cm}
+               q = \delta( q'; q ) \\
+            {\rm return} \ ( q_1, q ) 
+         \end{array}
+   $ \\ 
+   The purpose of function $ {\bf part} $ is to partition
+   the triple $ (q_1, \overline{q}, q_2) $ by pushing the middle component
+   $ \overline{q} $ back into $ q_2. $ We use {\bf part} when
+   comparing different $ M. {\bf at}(v,i), $ where we want
+   to ignore the middle components.
+   \begin{itemize}
+   \item
+      For every variable $ i, $ s.t.
+      $ \Delta. {\bf at}(i,0) = \{ 0 \}, $ for every variable $ v, $
+      s.t. $ M. {\bf contains}(v), $ do the following: 
+      If $ M.{\bf contains}(v,i), $ then 
+      require that $ {\bf part}( M. {\bf at}(v,i)) $ is equal to
+      $ ( \delta( ), M. {\bf at}(v)). $ 
+      Otherwise, $ M. {\bf assign}(v,i, ( \delta( ), ( ), M. {\bf at}(v)). $ 
+   \item
+      For every pair of variables $ i $ and $ v, $ s.t 
+      $ \Delta. {\bf at}(i, {\bf end}(v)) = \{ 0 \} $ do the following:
+      If $ M. {\bf contains}(v,i), $ then require that
+      $ {\bf part}( M. {\bf at}(v,i)) $ is equal to
+      $ ( M. {\bf at}(i), \delta()). $
+      Otherwise,  
+      $ M. {\bf assign}( v,i, ( M. {\bf at}(v), ( \, ), \delta( )). $ 
+   \item
+      For every pair of variables $ i, j, $ s.t.
+      $ \Delta.{\bf at}(i,j) = \{ 0 \}, $ for every
+      $ v, $ s.t. $ M. {\bf contains}(v), $ do the following:
+
+      If $ M. {\bf contains}(v,i) $ holds, but not
+         $ M. {\bf contains}(v,j), $ then 
+      $ M. {\bf assign}(v,j, M. {\bf at}(v,i)). $ 
+      Similarly, if
+      $ M. {\bf contains}(v,j) $ holds, but
+      $ M. {\bf contains}(v,i) $ does not hold, then
+      $ M. {\bf assign}(v,i, M. {\bf at}(v,j)). $
+      Otherwise, require that 
+      $ {\bf part}( M. {\bf at}(v,i)) $ equals 
+      $ {\bf part}( M. {\bf at}(v,j)). $ 
+   \item
+      For every variable $ v, $ s.t. $ M. {\bf contains}(v), $ 
+      but $ v $ does not occur in $ {\bf live}_{\bf out}( \pi ), $
+      call $ M. {\bf erase}(v). $
+      For every pair of variables $ v,i, $ s.t.
+      $ M. {\bf contains}(v,i), $ but
+      either $ v $ or $ i $ does not occur in $ {\bf live}_{\bf out}(\pi), $
+      call $ M. {\bf erase}(v,i). $
+   \end{itemize}
+\end{definition}
+The description of the effects of statements that we gave is necessarily
+incomplete, due to lack of space. In addition, there are many small 
+variations possible. What we presented should be viewed as a toolbox
+from which type checking procedures can be obtained.
+
+We did not explain the type checking procedure itself. 
+We give a short, intuitive overview. 
+Initially, for every ambiguous statement, all candidate overloads
+are inserted into the statement, joined by a {\bf resolve} statement.
+We use Definition~\ref{Def_semantics} combined
+with the range state transformations in Section~\ref{Sect_range_states}
+to obtain a fixpoint containing combinations of possible states. 
+After that, we cut out non-viable overloads 
+from the flow graph and repeat the procedure until we reach
+a fixed point where all overloads are viable. 
+At this point, it must be the case that every
+resolve statement is non-empty, and contain one candidate 
+that is strictly more specific than all of the other candidates.
+This can be checked with the procedure sketced below 
+Definition~\ref{Def_acc_proj}.
+

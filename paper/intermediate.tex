@@ -1,0 +1,299 @@
+
+\section{Intermediate Code Representation} 
+\label{Sect_intermediate}
+
+We introduce a format for representation of intermediate code.
+For our type system, intermediate code cannot be generated in the
+standard way.
+Standard compilers create intermediate code immediately
+after type checking. In the intermediate representation, all operations
+have become unambiguous. This is possible because every variable
+receives its type at the moment of initialization. 
+Both LLVM (\cite{LLVM2004}) and GIMPLE (the intermediate representation
+used by GCC, \cite{GIMPLE}) rely on unambiguous types for every value.
+Unfortunately, this is not possible for our type system, 
+because subtypes in general cannot be read off from declarations.
+In the presence of loops, subtypes have to be obtained by means
+of a fixed point computation. 
+
+When an operation is ambiguous, all candidate overloads have to 
+be inserted into the intermediate representation, after which 
+those overloads whose preconditions are not met, need to be removed during
+fixed point computation. 
+
+\begin{definition}
+   \label{Def_flatterm}
+   We define \emph{flatterms}:
+   \begin{itemize}
+   \item
+      If $ v $ is a local variable, then $ v $ is a flatterm.
+   \item
+      If $ c $ is a constant of a primitive type,
+      then $ c $ is a flatterm.
+   \item
+      If $ {\cal A} $ is a DMA, and $ F $ is a state
+      condition of $ {\cal A}, $ then $ {\bf some}({\cal A}, F ) $ is
+      a flatterm.
+   \item
+      If $ v_1, \ldots, v_n $, are variables, $ f $ is an identifier,
+      then $ f(v_1, \ldots, v_n) $ is a flatterm.
+   \item
+      If $ v $ is a variable, then
+      $ {\bf len}(v), \ {\bf not}(v), \ {\bf neg}(v) $ 
+      are flatterms.
+   \item
+      If $ v_1 $ and $ v_2 $ are variables,
+      then 
+      $ {\bf eq}(v_1,v_2), \ {\bf ne}(v_1,v_2), \
+         {\bf lt}(v_1,v_2), \ {\bf gt}(v_1,v_2), $ \\
+      $ {\bf le}(v_1,v_2), \ {\bf ge}(v_1,v_2), \
+        {\bf add}(v_1,v_2), \ {\bf sub}(v_1,v_2)  $
+      are flatterms.
+  \item
+      If $ v $ is a variable,
+      $ {\cal A} $ is a DMA, and $ F $ is a state condition, then
+      $ {\bf check}( v, {\cal A}, F ) $ is a flatterm.
+   \item
+          if $ v $ and $ w $ are variables,
+          then $ {\bf ind}(v,w) $ is a flatterm.
+   \item
+      If $ v $ is a variable, and $ f $ is an identifier,
+      then $ {\bf fld}_f(v) $ is a flatterm.
+   \item
+      If $ v_1, \ldots, v_n $ are variables with $ n \geq 0 $,
+          then $ ( v_1, \ldots, v_n ) $ and
+                   $ [ v_1, \ldots, v_n ] $ are flatterms.
+   \end{itemize}
+\end{definition}
+
+\noindent
+The meanings are as follows: If $ v $ is an array, then $ {\bf len}(v) $
+equals its size. The intuitive meaning of $ {\bf ind}(v,w) $ is $ v[w]. $
+The intuitive meaning of $ {\bf fld}_f(v) $ is $ v.f. $
+Flatterm $ {\bf some}( {\cal A}, F ) $ non-deterministically creates a
+data term $ t, $ s.t. $ F( \, Q_{\cal A}(t) \, ), $ while
+$ {\bf check}( t, {\cal A}, F ) $ returns a boolean representing
+truth of $ F( \, Q_{\cal A}(t) \, ). $
+\begin{definition}
+   \label{Def_program_point}
+   We assume a countable set $ \Pi $ of program points.
+\end{definition}
+It is not very important how program points are represented.
+Since statements defined below are trees, one can represent them as
+paths.
+\begin{definition}
+   \label{Def_statement}
+   We recursively define \emph{statements}:
+   For a given statement, we assume that every substatement
+   has a unique program point.
+   A statement has one of the following forms:
+   \begin{itemize}
+   \item
+      A scalar assignment of $ v \leftarrow t, $ in which $ v $ is a variable
+      and $ t $ is a flatterm.
+   \item
+      A array assignment of $ v[w] := t $, in which
+      $ v $ and $ w $ are variables,
+      and $ t $ is a flatterm.
+      Note that array assignment is a single operation
+      with three arguments.
+   \item
+      If $ s_1, \ldots, s_n $ are statements, then
+      $ \statblock(s_1, \ldots, s_n), \
+        \statrepeat(s_1, \ldots, s_n), $ and 
+        $ \statbranch(s_1, \ldots, s_n) $ are also statements.
+   \item
+      If $ v $ is a variable and
+      $ s $ is a statement, then
+      $ \statistrue \, v $ and $ \statisfalse \, v $ are also statements.
+   \item
+      $ \statnop $ is a statement.
+  \item
+      If $ v $ is a variable, then $ {\bf return} \, v  $ is a statement.
+   \item
+      $ v. {\rm push\_back}( w ) $
+      with $ v,w $ variables is a statement.
+   \item
+      $ v. {\rm pop\_back}( ) $ is a statement.
+   \item
+      A field assignment $ w_1. f := w_2, $
+      where $ f $ is a scalar field name,
+      and $ w_1,w_2 $ are variables.
+   \item
+      If $ \overline{v} $ is a sequence of variables,
+      and for each $ i $ with $ 1 \leq i \leq n, $ \ \
+      $ {\cal A}_i $ is a sequence of automata,
+      $ F_i $ is a sequence of state conditions,
+      s.t. $ \| v \| = \| {\cal A}_i \| = \| F_i \|, $
+      each $ s_i $ is a statement, then \\
+      $ \statresolve( \overline{v}, ( {\cal A}_1, F_1 ) / s_1, \ldots,
+                                    ( {\cal A}_n, F_n ) / s_n ) \, ) $
+      is also a statement.
+   \item
+      If $ v $ is a variable, then $ \staterase \, v $ is a statement.
+   \end{itemize}
+\end{definition}
+
+\noindent
+Both $ \statrepeat $ and $ \statbranch $ are non-deterministic.
+The $ \statrepeat $ statement non-deterministically skips
+$ s_1, \ldots, s_n $ or starts at $ s_1. $
+Similarly, $ \statbranch $ non-deterministically executes one of its
+$ s_i. $ We chose for non-determinism because analyzing
+non-deterministic code is not harder than deterministic code,
+due to the fact that overapproximation will introduce non-determinism anyway.
+In order to model deterministic code, one has to put
+a $ \statistrue $ or $ \statisfalse $ at the beginning of every branch,
+at the beginning of very \statrepeat, and immediately after every
+\statrepeat.
+Both statements quietly fail when the condition is not met.
+
+In the $ \statresolve $ statement, the variables $ \overline{v} $ are used
+for type checking. Overload $ ( {\cal A}_i, F_i ) / s_i $ is viable,
+if for each variable in $ \overline{v}, $ the value, when
+run with the corresponding automaton in $ {\cal A}_i, $ reaches a state
+that satisfies the state corresponding condition.
+\noindent
+The difference between {\bf abort} and {\bf error} is
+that $ {\bf error} $ is checked during type checking,
+while $ {\bf abort} $ is checked at run time.
+
+\begin{definition}
+   \label{Def_state}
+   A \emph{state} $ \sigma $ is a finite mapping from variables to
+   data terms.
+\end{definition}
+
+We now define a function $ {\bf eval}_{\sigma}(t) $
+that evaluates a flatterm $ t $ in state $ \sigma. $
+Because the semantics of flatterms is non-deterministic,
+$ {\bf eval}_{\sigma}(t) $ defines a set of possible values.
+
+\begin{definition}
+   \label{Def_semantics}
+   For a given statement $ s, $ we assume two functions
+   $ \Phi_{\bf in} $ and $ \Phi_{\bf out} $ that map
+   program points to set of states.
+   Both functions are defined for the program points occurring
+   in $ s. $ They are defined together as the least fixed point
+   satisfying the following conditions:
+\begin{itemize}
+\item
+   If $ \pi $ contains a $ \statnop, $ then
+   $ \Phi_{\bf in}( \pi ) \subseteq \Phi_{\bf out}( \pi ). $
+\item
+   If $ \pi $ contains $ \statblock( s_1, \ldots, s_n), $
+   then let $ \pi_1, \ldots, \pi_n $ be the positions of
+   $ s_1, \ldots, s_n. $
+   We have $ \Phi_{\bf in}( \pi ) \subseteq \Phi_{\bf in}( \pi_1). $
+   For every $ i $ with $ 1 \leq i \leq n-1, $ we have
+   $ \Phi_{\bf out}( \pi_i ) \subseteq \Phi_{\bf in}( \pi_{i+1} ), $ and
+   $ \Phi_{\bf out}(\pi_n) \subseteq \Phi_{\bf out}(\pi). $
+\item
+   If $ \pi $ contains $ \statrepeat( s_1, \ldots, s_n ), $ then
+   let $ \pi_1, \ldots, \pi_n $ be the positions of
+   $ s_1, \ldots, s_n. $
+   We have $ \Phi_{\bf in}( \pi ) \subseteq \Phi_{\bf in}( \pi_1). $
+   For every $ i $ with $ 1 \leq i \leq n-1, $ we have
+   $ \Phi_{\bf out}( \pi_i ) \subseteq \Phi_{\bf in}( \pi_{i+1} ). $
+   In addition we have $ \Phi_{\bf in}(\pi) \subseteq \Phi_{\bf out}(\pi), $ and
+   $ \Phi_{\bf out}( \pi_n ) \subseteq \Phi_{\bf in}(\pi). $
+\item
+   If $ \pi $ contains $ \statbranch( s_1, \ldots, s_n ), $
+   then let $ \pi_1, \ldots, \pi_n $ be the positions of
+   $ s_1, \ldots, s_n. $
+   For every $ i, $ we have
+   $ \Phi_{\bf in}( \pi ) \subseteq \Phi_{\bf in}( \pi_i ), $ and
+   $ \Phi_{\bf out}( \pi_i ) \subseteq \Phi_{\bf out}(\pi). $
+\item
+   If $ \pi $ contains $ \statistrue \, v, $ then
+   $ \Phi_{\bf in}( \pi ) \cap
+     \{ \sigma \mid \sigma(v) = {\bf t} \} \subseteq
+     \Phi_{\bf out}( \pi). $
+\item
+   $ \statisfalse $ is analogous to $ \statistrue. $
+\item
+   If $ \pi $ contains a statement of form $ v \leftarrow t $ with
+   $ t $ a flatterm, then
+   \[ \{ \sigma \cup \{ v := d \} \, \} \mid
+           \sigma \in \Phi_{\bf in}(\pi) \mbox{ and }
+           d \in {\bf eval}_{\sigma}(t) \, \} \subseteq
+           \Phi_{\bf out}( \pi ). \]
+   Function $ {\bf eval}_{\sigma}(t) $ is a function
+   that (nondeterministically) evaluates flatterms. 
+\item
+   If $ \pi $ contains $ \statresolve( c_1/s_1, \ldots, c_n/s_n ), $
+   then let $ \pi_1, \ldots, \pi_n $ be the positions of
+   $ s_1, \ldots, s_n. $ Similary, let $ \rho_1, \ldots, \rho_n $
+   be the positions of $ c_1, \ldots, c_n. $
+   We have $ \Phi_{\bf in}(\pi) \subseteq \Phi_{\bf in}( \pi_i ) $ and
+   $ \Phi_{\bf in}( \pi ) \subseteq \Phi( \rho_i ). $
+
+   We also have
+   \[ \bigcap \Phi_{\bf out}( \pi_i ) \subseteq \Phi_{\bf out}( \pi ). \]
+\end{itemize}
+\end{definition}
+The last condition is a bit tricky.
+It is possible that some of the $ s_i $ use temporary
+variables that other $ s_i $ do not use.
+In that case, the resulting state will always be unique,
+and not in the intersection. This problem can be solved by
+erasing temporary variables. In fact, this is the reason
+that $ \staterase $ was created.
+
+We do not store any scope
+information for local variables in statements.
+This implies that local variables
+in principle remain visible, once initialized.
+This may lead to
+space inefficiency when statements are naively translated into $ C $ or
+$ C^{++}, $ which allow more restricted scopes. This
+problem can be solved by
+doing a stack based liveness analysis before translation.
+\begin{definition}
+   \label{Def_live}
+   We define $ {\bf live}_{\bf in}(\pi) $ and
+   $ {\bf live}_{\bf out}(\pi) $ as the least
+   fixed points of the propagation rules below. The intuitive
+   meaning is: $ {\bf live}(\pi)_{\bf in/out} $ are
+   the variables whose value may be later used in a computation
+   that passes through $ \pi. $
+   \begin{itemize}
+   \item
+      If $ \pi $ contains a statement of form
+      $ v \leftarrow t, $ then let $ V $ be the
+      set of variables occurring in flatterm $ t. $
+      \[ \Phi_{\bf in}(\pi) =
+         ( \Phi_{\bf out}(\pi) \backslash \{ v \} ) \cup V. \]
+   \item
+      If $ \pi $ contains a statement of form
+      $ \statisfalse \, v, \ \statistrue \, v, \ \statreturn \, v $
+      then
+      \[ {\bf live}_{\bf in}( \pi ) =
+                {\bf live}_{\bf out}( \pi ) \cup \{ v \}. \]
+
+   \item
+      If $ \pi $ contains a statement of form
+      $ v. {\rm push\_back}( w ), $ then
+      \[ {\bf live}_{\bf in}(\pi) = {\bf live}_{\bf out}(\pi) \cup
+              \{ w, v \}. \]
+   \item
+      If $ \pi $ contains $ \statnop, $ then
+      $ {\bf live}_{\bf out}( \pi ) \subseteq {\bf live}_{\bf in} ( \pi ). $
+   \item
+      If $ \pi $ contains $ \statbranch( s_1, \ldots, s_n ), $
+      then let $ \pi_1, \ldots, \pi_n $ be the positions of
+      $ s_1, \ldots, s_n. $
+      For every $ i, $ we have
+      $ \Phi_{\bf in}(\pi_i) \subseteq \Phi_{\bf in}( \pi ), $ and
+      $ \Phi_{\bf out}( \pi ) \subseteq \Phi_{\bf out}(\pi_i). $
+
+   \end{itemize}
+  A variable $ v $ is \emph{live} at some program point $ \pi $
+   if $ v \in {\bf live}_{\bf in}(\pi). $
+\end{definition}
+Instead of defining $ {\bf live}(\pi) $ as a set of variables, one can also
+define $ {\bf use}(\pi) $ as a set of pairs $ ( v, \pi'), $
+indicating that $ \pi' $ is a point where the value of $ v $ is potentially used.
+The definition is only slightly more complicated than Definition~\ref{Def_live} above.
+

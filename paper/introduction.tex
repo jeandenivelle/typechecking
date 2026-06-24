@@ -1,0 +1,149 @@
+
+\section{Introduction}
+
+This paper originates from a project to design and implement
+a programming language for the implementation
+of logical algorithms, as they occur for example in theorem provers
+or interactive verification systems.
+In programming, one often has a situation where a 
+{\bf struct} (or record) type has a tree-like type definition:
+The type of the first field is fixed, but the 
+types of later fields depends on the values of the 
+fields that occur before it. 
+The simplest such case is \verb|std::optional|, which consists
+of a boolean that indicates whether the value is there.
+Second simplest case is \verb|std::variant<T1, ..., Tn>|, which contains
+an integer indicating which type \verb|Ti| is currently present.
+A third case appears in parsing, when one uses attribute grammars.
+Symbols in an attribute grammar consist of a tag (specifying
+which symbol is present), optionally followed by an attribute, whose
+type depends on the symbol tag. For example if the symbol tag is 
+string, identifier, or scan error, 
+the attribute will have type \verb|std::string|. 
+If the symbol tag is double, the attribute must be \verb|double|. 
+The fourth case arises from implementation of logic: A propositional
+formula consists of a logical operator, followed by either a string, a
+single formula, two formulas, or a sequence of formulas,
+dependent on the logical operator in front. 
+Current static type systems do not support such type dependencies. 
+After checking the first field, access to the following fields has take
+place through operations that can fail at run time. 
+The access of these fields can be dynamically type checked, but
+it is beyond current static type systems. 
+
+We want to design and implement type checking
+procedures that can check such dependent 
+types for realistic programs. In this paper, we present a design
+that we believe will work in practice. 
+It uses a novel type of tree-automata,
+that we call \emph{deterministic multiset automata}. Their
+distinguishing feature is that they are able to process multisets, 
+up to a limit. The limit is a result of the finite number of states.
+We use DMA-s to model array ranges.
+If one uses an index variable $ i $ to change the values in an
+array $ A $ with a for-loop, we will model $ A[ 0 \ldots i \rangle $ 
+and $ A[ i \ldots \rangle $ as states of a DMA.
+
+In Section~\ref{Sect_data_terms}, we introduce the data 
+that our procedure works on. These are trees over a small
+set of primitive types. Proper trees are constructed by a tuple
+operator, and by an array operator. 
+Our type system does not aim to analyze arithmetical properties
+of numeric types, as done in \cite{JhaVaz2021ref}. 
+DMA's can handle properties of form `$i$ is interval $ [2,5] $'
+but not '$i$ is even'. Also, they don't support arithmetic,
+so a DMA would not be able to determine that $ j := i + 1 $ 
+implies that `$j$ will be in the interval $ [3,6]. $' 
+
+During type checking, every function body is checked independently.
+Type checking is always combined with overload resolution. 
+The source code contains imprecise names, which can be mapped
+to zero, one or any number of candidate implementations.
+The typechecker checks which available implementations are 
+guaranteed to succeed (whose preconditions are guaranteed to be met).
+It removes the candidates whose preconditions are not met. 
+If no implementation remains, the type checker reports an error. 
+If more than one available implementation remains, the type checker
+has to pick the most specific implementation. If no implementation
+is most specific, the result is a type checking error (ambiguous overload).
+
+Standard compilers perform type checking and intermediate code generation
+at the same time.
+Expressions are type checked, the overloads are resolved, and the 
+expression is translated into intermediate code. 
+(See \cite{WiSe2023})
+For our type system, this is not possible, because
+subtypes can change (disappear)
+during loop iteration. As a consequence, we need to
+use an intermediate
+representation in which overloads are not resolved. Instead, 
+for every imprecise statement, we
+insert all overload candidates into the intermediate representation. 
+Consider for example:
+\begin{verbatim}
+   x = 0
+   while ...
+      print(x)
+         // There are two overloads printE (for even numbers),
+         // and print (for arbitrary numbers). 
+      x = ( ?succ, ( ?succ, x )).
+\end{verbatim}
+In order to resolve \verb| print(x) |into \verb| printE(x) |, 
+one must know that all
+operations on \verb|x| in the loop preserve evenness.
+Some of the operations appear after the print statement in the code.
+So, we will insert both versions of \verb|print| into the 
+intermediate representation,
+approximate all values that $ x $ can have using DMAs, and verify
+that $ x $ is always even. In the end, both versions of
+\verb|print| are eligible, but \verb|printE| is more specific,
+so that it can be picked. 
+
+Unfortunately, approximating values of variables is more
+complicated than we sketched above. It is not sufficient
+to collect all possible values of all variables at each program point
+and map them into DMA states.
+We need to collect combinations of possible values of variables. 
+This is due to the fact that there may be dependencies between variables,
+that would otherwise get lost in the process.
+For example, if one compares two propositional formulas, one
+typically starts by comparing the operators. If the operators are distinct,
+the formulas are not equal. After that, one can do a case analysis
+on the operator. If one formula has a binary operator on top,
+one can safely access the left and right subformula in both formulas,
+because one knows that the operators are equal. 
+This information would be lost, if one would keep at each
+program point only possible
+values, instead of tuples of combinations of values.
+
+In the next section, we define \emph{data terms}. 
+Their definition is straightforward. They are built-up
+from primitive types using a tuple constructor, and an array constructor. 
+
+In the next section~\ref{Sect_DMA}, we define
+deterministic multiset automata. 
+They are a straightforward generalization of standard,
+deterministic tree automata (DFTA in \cite{TATA2007})
+to include multiset nodes. Evaluation is always bottom-up. 
+
+In Section~\ref{Sect_intermediate}, we present an intermediate
+representation. It uses flattened expressions, which
+is quite common in compilers, see e.g.
+\cite{LLVM2004}, \cite{Muchnick_CDI_1997}, or \cite{WiSe2023}.
+Different from the standard approach, it uses a 
+$ \statresolve $ statement, which for a given imprecise
+statement, contains all candidate overloads, together with 
+their preconditions, encoded as DMAs. 
+The representation does not use flow graphs,
+because the resolve statement is not naturally represented in
+flow graphs. Our recursively defined format is slightly more
+complicated than standard flow graphs, but much more flexible.
+In Section~\ref{Sect_range_states}, we approximate states by 
+mappings from variables to states of multiset automata. 
+In addition, for every variable that can serve as an index of an array, 
+a state keeps track of the values before the index and after the index
+as separate multisets. The approximations are called 
+\emph{range states} because they keep track of ranges in
+arrays. We explain the effect of different statements
+on range states. 
+
