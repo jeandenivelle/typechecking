@@ -21,7 +21,7 @@ type mathufun =
   | Sqrt
 
 type mathexpr =
-  | Pi
+  Pi
   | E
   | Num of num 
   | Var of string
@@ -54,7 +54,15 @@ let rec deriv e v =
                                        es
                                        [] in
                             ArNop(Plus, ds)
-  | ArNop(Mult, es)      -> failwith "not implemented"
+  | ArNop(Mult, es)      ->
+     (match es with
+     | []        -> Num (Int 1)
+     | [e1]      -> deriv e1 v
+     | e1::e2::t ->
+        let (de1,de2) = (deriv e1 v, deriv  (ArNop(Mult,e2::t)) v) in
+        let prod1 = ArNop (Mult, [de1;e2]) in
+        let prod2 = ArNop (Mult, [e1;de2]) in
+        ArNop (Plus, [prod1;prod2])) 
   | Pow(e1, n)           -> let de1 = deriv e1 v in
                             ArNop (Mult, [Num n; Pow(e1, n -/ (Int 1)); de1])
   | Ufun(Sin, e1)        -> let de1 = deriv e1 v in
@@ -62,3 +70,39 @@ let rec deriv e v =
   | Ufun(Cos, e1)        -> let de1 = deriv e1 v in
                             ArNop (Mult, [Num(Int (-1)); Ufun(Sin, e1); de1])
   |_                     -> failwith "not implemented"
+
+
+let parens s = "("^s^")"
+let string_of_mathufun = function
+  | Sin -> "sin "
+  | Cos -> "cos "
+  | Ln -> "ln "
+  | Exp -> "exp "
+  | Sqrt -> "sqrt "
+
+let rec string_of_mathexpr = function
+  | Pi -> "π"
+  | E  -> "e"
+  | Num n -> string_of_num n
+  | Var x -> x
+  | Unop (Neg, e1)  -> "-("^(string_of_mathexpr e1)^")"
+  | Unop (Recipr, e1)-> "("^(string_of_mathexpr e1)^")⁻¹"
+  | Binop(Minus, e1, e2) -> "("^(string_of_mathexpr e1)^
+                              ") - ("^(string_of_mathexpr e2)^")"
+  | Binop(Div, e1, e2) -> "("^(string_of_mathexpr e1)^
+                            ") / ("^(string_of_mathexpr e2)^")"
+  | ArNop(Plus, [])    -> "0"
+  | ArNop(Plus, e::es) -> parens @@
+                            List.fold_left
+                              (fun s e -> s^" + "^(string_of_mathexpr e))
+                              (string_of_mathexpr e)
+                              es
+  | ArNop(Mult, [])    -> "1"
+  | ArNop(Mult, e::es) -> parens @@
+                            List.fold_left
+                              (fun s e -> s^" * "^(string_of_mathexpr e))
+                              (string_of_mathexpr e)
+                              es
+  | Pow(e1, n)           -> (parens (string_of_mathexpr e1)) ^"^"^
+                              string_of_num n
+  | Ufun(f, e1)     -> (string_of_mathufun f) ^ (string_of_mathexpr e1)
