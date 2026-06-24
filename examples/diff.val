@@ -1,5 +1,4 @@
 
-
 // True if Nary term arN contains sel
 
 bool contains( sel : selector sel, arN : Form / ( .sel == ?and | .sel == ?or )
@@ -31,39 +30,37 @@ namespace efficient
       { }
 
    mathexpr operator( ) ( simp: simplifier, expr : mathexpr )
-      if( expr. sel == ?add )
+      if expr. sel == ?add : 
 
             bool contains0 = false;
-            for( size_t i = 0; i != expr. size; ++ i )
-            {
-               if( equal( expr. sub(i), rational(0)) )
+            size_t i = 0; i != expr. size; ++ i : 
+               if equal( expr. sub(i), rational(0)) : 
                   contains0 = true;
-            }
 
-            if( contains0 )
+            if contains0 : 
             {
-               auto res = mathexpr_add( {} );
-               for( size_t i = 0; i != expr. size; ++ i )
+               auto res = mathexpr( ?add, {} );
+               size_t i = 0; i != expr. size; ++ i : 
                {
-                  if( !equal( expr. sub(i), rational(0)) ) 
-                     res. view_arithN( ). push_back( expr. sub(i));
+                  if !equal( expr. sub(i), rational(0)) :
+                     res. push_back( expr. sub(i) );
                }
                ++ nruses; 
                return res;
             }
          }
 
-         if( expr. sel == sel_mul )
+         if( expr. sel == ?mul : 
          {  
             bool contains0 = false;
             bool contains1 = false;
-            for( size_t i = 0; i != expr. size; ++ i )
+            for size_t i = 0; i != expr. size; ++ i : 
             {
-               if( equal( expr. sub(i), rational(1)))
-                  contains1 = true;
+               if( equal( expr. sub(i), rational(1)) )
+                  contains1 = true 
 
                if( equal( expr. sub(i), rational(0)))
-                  contains0 = true; 
+                  contains0 = true  
             }
 
             if( contains0 )
@@ -78,22 +75,16 @@ namespace efficient
                for( size_t i = 0; i != expr. size; ++ i )
                {
                   if( !equal( expr. sub(i), rational(1)))
-                     res. view_arithN( ). push_back( expr. sub(i));
+                     res. push_back( expr. sub(i));
                }
                ++ nruses; 
                return res;
             }
          }
        
-         if( expr. sel == sel_neg )
-         {
-            auto ar1 = expr. view_arith1( );
-            if( ar1. sub( ). sel == sel_neg )
-            {
-               auto ar1a = ar1. sub( ). view_arith1( );
-               return ar1a. sub( );
-            }
-         }
+         if( expr. sel == ?neg &&
+             expr. sub. sel == ?neg : 
+                return expr. sub. sub  
  
          return expr;
       }   
@@ -103,27 +94,23 @@ namespace efficient
 
    struct flattener
    {
-      uint64_t nruses;
+      nruses : uint64_t;
 
       flattener( ) 
          : nruses(0)
       { }
+
  
       mathexpr operator( ) ( mathexpr expr ) 
-      {
-         if( expr. sel == sel_add && expr. view_arithN( ). size == 0 )
-         {
+         if( expr. sel == ?add && expr. size == 0 :
             ++ nruses; 
             return mathexpr_rat(0);
-         }
 
-         if( expr. sel == sel_mul && expr. view_arithN( ). size == 0 )
-         {
+         if( expr. sel == ?mul && expr. size == 0 :
             ++ nruses; 
             return mathexpr_rat(1);
-         }
 
-         if( expr. sel == sel_add || expr. sel == sel_mul )
+         if( expr. sel == ?add || expr. sel == ?mul )
          {
             if( expr. size == 1 )
                return expr. sub(0);   // Trivial case +(N) or *(N).
@@ -134,12 +121,9 @@ namespace efficient
                for( size_t i = 0; i != expr. size; ++ i )
                {
                   if( expr. sub(i). sel == expr. sel )
-                  {
-                     push_back( expr. sub(i). view_arithN( ), 
-                                res. view_arithN( ));
-                  }
+                     push_back( expr. sub(i), res );
                   else
-                     res. view_arithN( ). push_back( expr. sub(i)); 
+                     res. push_back( expr. sub(i)); 
                }
                ++ nruses; 
                return res; 
@@ -165,18 +149,18 @@ mathexpr deriv( expr : mathexpr, var : std::string )
       else
          return mathexpr( ?rat, 0 )
 
-   case sel_sub:
+   case ?sub:
          return mathexpr( ?diff, deriv( ar2. sub1, var ),
                                  deriv( ar2. sub2, var ))
  
-   case sel_add:
+   case ?add:
          auto res = mathexpr( ?add, { } )
          for size_t i = 0; i != expr. size; ++ i : 
             res. push_back( deriv( expr. sub(i), var ));
 
          return res;
 
-   case sel_mul:
+   case ?mul:
          auto sum = mathexpr( ?add, {} );
 
          for size_t i = 0; i != expr. size; ++ i : 
@@ -191,7 +175,7 @@ mathexpr deriv( expr : mathexpr, var : std::string )
 
          return sum;
 
-   case sel_truediv:
+   case ?truediv:
          auto& sub1 = expr. sub1;
          auto& sub2 = expr. sub2;
          auto deriv1 = deriv( sub1, var );
@@ -203,7 +187,7 @@ mathexpr deriv( expr : mathexpr, var : std::string )
                mathexpr( ?mul, { sub1, deriv2 } )),
             mathexpr( ?mul, { sub2, sub2 } ));
 
-   case sel_pow:
+   case ?pow:
       if( expr. sub1. sel == ?var && expr. sub2. sel == ?rat )
          if( expr. sub1. name( ) != var )
             return mathexpr( ?rat, 0 )
@@ -214,11 +198,11 @@ mathexpr deriv( expr : mathexpr, var : std::string )
             return mathexpr( ?mul, { mathexpr( ?rat, exp ), 
                       mathexpr( ?pow, spec2, mathexpr( ?rat, exp - 1 )) } );
 
-   case sel_sin:
+   case ?sin:
       return mathexpr( ?mul, { 
          cos( ?cos, expr. sub ), deriv( expr. sub, var ) } );
 
-   case sel_cos:
+   case ?cos:
       return mathexpr( ?mul, { 
          mathexpr( ?neg, 
             mathexpr( ?sin, expr. sub )),
@@ -235,10 +219,10 @@ int main( int argc, char *argv[] )
    bigint num = 10;
    bigint denom = 21;
 
-   auto expr = mathexpr_mul( 
-               { mathexpr_sin( mathexpr_var( "xx" )), 
-                 mathexpr_cos( mathexpr_var( "xx" )), 
-                 mathexpr_pow( mathexpr_var( "xx" ), mathexpr_rat(2)) } );
+   auto expr = mathexpr( ?mul, 
+               { mathexpr( ?sin, mathexpr_var( "xx" )), 
+                 mathexpr( ?cos, mathexpr_var( "xx" )), 
+                 mathexpr( ?pow, mathexpr_var( "xx" ), mathexpr_rat(2)) } );
 
    expr = deriv( expr, "xx" );
    std::cout << "derivative: " << expr << "\n\n";
@@ -251,22 +235,21 @@ int main( int argc, char *argv[] )
  
    return 0;
 
-   expr = mathexpr( sel_truediv, 
-             mathexpr_sin( mathexpr_var( "x" )),
-             mathexpr_cos( mathexpr_var( "x" )) );
-
+   expr = mathexpr( ?sub, 
+             mathexpr( ?sin, mathexpr_var( "x" )),
+             mathexpr( ?cos, mathexpr_var( "x" )) );
 
    auto x = mathexpr_var( "x" ); 
    auto e = mathexpr_add( 
-      { mathexpr_sin( mathexpr_neg( mathexpr_neg( x ))),
-        mathexpr_cos( mathexpr_neg( mathexpr_neg( x ))) } );
+      { mathexpr( ?sin, mathexpr( ?neg, mathexpr( ?neg, x ))),
+        mathexpr( ?cos, mathexpr( ?neg, mathexpr( ?neg, x ))) } );
+
    std::cout << e << "\n";
    efficient::simplifier simpl;
    e = outermost( simpl, std::move(e) );
    std::cout << "after simplification: " << e << "\n";
 
    efficient::concat< efficient::flattener, efficient::simplifier > red;
-
 
    return 0; 
 }
