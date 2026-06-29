@@ -55,3 +55,6 @@ and eq_forms fs1 fs2 = match fs1, fs2 with
   | [],[] -> true
   | f1::fs1, f2::fs2 -> eq_form f1 f2 && eq_forms fs1 fs2
   | _ -> false
+
+let( ) = print_endline ( nnf_list Pos [] )
+

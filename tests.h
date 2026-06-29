@@ -4,7 +4,6 @@
 
 #include "fieldmap.h"
 #include "regexp/defmap.h"
-#include "atm/simple.h"
 
 #include "intermediate/function.h"
 
@@ -17,7 +16,7 @@ namespace tests
    intermediate::function arrayconv( ); 
    intermediate::function repeated( );
 
-   atm::simple prop( );
+   // atm::simple prop( );
       // Produce a non-deterministic automaton that
       // recognizes propositional formulas.
 

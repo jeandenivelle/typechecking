@@ -5,17 +5,32 @@
 #include "usel.h"
 #include "data/tree.h"
 
-#include "atm/simple.h"
+#include "partition.h"
+#include "finfunc.h"
+
 #include "tests.h"
 
 int main( int argc, char* arcgv[] ) {
+   finfunc< char, int > part( 44 );
+   part. assign( 'c', 1 );
+   part. assign( 'f', 5 );
+
+   std::cout << part << "\n";
+   for( char c = 'a'; c < 'k'; ++ c )
+      std::cout << c << "/" << part(c) << "\n";
+
+   return 0;
+
    std::cout << data::variable( data::string( "abcdef" )) << "\n";
    auto f1 = data::term( data::string( "lessthan" ), {
              data::variable( data::string( "x0" )),
              data::variable( data::string( "x1" )) } );
 
    auto f2 = data::variable( data::string( "P" ));
-   std::cout << data::implies( f1, f2 ) << "\n";
+   f2 = implies( f2, equiv( f2, f2 ));
+   std::cout << f2 << "\n";
+
+   std::cout << data::succ( data::succ( data::zero( ))) << "\n";
 
    return 0;
 

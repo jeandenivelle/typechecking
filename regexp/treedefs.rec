@@ -15,10 +15,10 @@
 %option type_double    { type_double } => 
 %option type_iter      { type_iter } =>
 
+%option sel_sel        { sel_fin } => fin : finfunc< char, int > 
+
 %option bool_const     { bool_const } => # b : bool  
-%option char_const     { char_const } => # c : char
-%option char_range     { char_range } => # c1 : char, c2 : char 
-%option sel_const      { sel_const } => # s : usel
+%option char_part      { char_part } => part : partition< char, int > 
 
 %option ident          { ident } => # id : exactident
 

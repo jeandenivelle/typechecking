@@ -7,7 +7,6 @@
 
 namespace atm
 {
-
    // C must be a usual less_than relation on D. 
    // E is an equality relation on R. It is used for checking
    // whether two adjacent intervales go to the same r,

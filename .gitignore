@@ -20,6 +20,15 @@ regexp/selector.cpp
 regexp/expr.h
 regexp/expr.cpp
 
+paper/*.aux
+paper/*.dvi
+paper/*.out
+paper/*.ps
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.pag
+paper/*.pdf
 
 
 
