@@ -43,6 +43,8 @@ type term =
 (* f t vardepth returns an optional term. If there is *)
 (* a value, we return it, otherwise, we recurse.      *)
 
+(* We first try to rewrite here in tm, otherwise we descend into subterms. *)
+
 let rec outermost f tm vardepth =
    let here = f tm vardepth in
    match here with
@@ -68,9 +70,15 @@ let rec outermost f tm vardepth =
               TermForall( vars, outermost f body ( vardepth + List.length vars ))
          | TermExists( vars, body ) ->
               TermExists( vars, outermost f body ( vardepth + List.length vars )) 
-         | TermApply( func, args ) ->
-              TermApply( 
-              
+         | TermLet( var, def, body ) ->
+              TermLet( var, outermost f def vardepth, 
+                       outermost f body ( vardepth + 1 ))
+         | TermApply( func1, args1 ) ->
+              let func2 = outermost f func1 vardepth and 
+                  args2 = List.map ( fun t -> outermost f t vardepth ) args1 in
+              TermApply( func2, args2 ) 
+         | TermLambda( vars, body ) ->
+              TermLambda( vars, outermost f body ( vardepth + List.length vars ))
          | _ -> tm
 ;;
 
@@ -104,7 +112,46 @@ let subst values =
                None
       | _ -> None
 ;;
- 
+
+
+(* These are defined in 5.3, but I have only 4.14:  *)
+(* I need them because PHOLI has incomplete         *)
+(* beta reduction.                                  *)
+
+let rec take lst ind =
+   if ind <= 0 then [] 
+   else
+      match lst with
+      | [] -> []
+      | first :: rest -> first :: ( take rest ( ind - 1 ))
+;;
+
+let rec drop lst ind =
+   if ind <= 0 then lst
+   else
+      match lst with
+      | [] -> []
+      | first :: rest -> drop rest ( ind - 1 )
+;;
+
+(* Beta reduction, shows deeper matching in action: *)
+
+let beta =
+   fun tm vardepth ->
+      match tm with 
+      | TermApply( TermLambda( vars, body ), args ) ->
+           let vlen = List.length vars and
+               vargs = List.length args in  
+           if vlen <= vargs then
+              let front = take args vlen and  
+                  rest = drop args ( vargs - vlen ) in 
+                  Some( TermApply( outermost ( subst front ) body 0, rest ))
+                  
+           else
+               None 
+      | _ -> None
+;;
+
 let tm = TermEquals ( TermDeBruijn 4, TermExact ( Exact 4 )) ;;
 
 
