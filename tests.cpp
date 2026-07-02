@@ -29,10 +29,16 @@ intermediate::function tests::mixing( )
 
    variable succ = { 's', 0 };
 
+   auto ffunc = finfunc< usel, bool, usel::hash, usel::equal_to > 
+      ( false, {{ usel( "succ" ), true }} );
+
+   
+#if 0
    auto propSucc = regexp::expr( regexp::tuple, 
-      { regexp::expr( regexp::sel_const, usel( "succ" )),
+      { regexp::expr( regexp::flt_sel, ffunc ) 
         regexp::expr( regexp::ident, exactident( identifier( ) + "nat", 0 )) } );
 
+#endif
    auto propEven = regexp::expr( regexp::ident, 
       exactident( identifier( ) + "even", 0 ));
 
@@ -275,22 +281,22 @@ void tests::add_nat( regexp::defmap& prp, fieldmap& flds )
 
    using namespace regexp;
 
-   auto zero = expr( sel_const, usel( "zero" ));
+   auto zero = expr( flt_sel, { false, {{ usel( "zero" ), true }} } );
    zero = expr( tuple, { zero } );
  
-   auto succ = expr( sel_const, usel( "succ" ));
+   auto succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
    succ = expr( tuple, 
       { succ, expr( ident, { identifier( ) + "nat", 0 } ) } );
 
    auto nat = exactident( identifier( ) + "nat", 0 );
    prp. insert( nat, expr( log_or, { zero, succ } ));
 
-   succ = expr( sel_const, usel( "succ" ));
+   succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
    succ = expr( tuple, { succ, expr( ident, { identifier( ) + "odd", 0 } ) } );
    auto even = exactident( identifier( ) + "even", 0 );
    prp. insert( even, expr( log_or, { zero, succ } ));
   
-   succ = expr( sel_const, usel( "succ" )); 
+   succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } ); 
    succ = expr( tuple, { succ, expr( ident, { identifier( ) + "even", 0 } ) } );
    auto odd = exactident( identifier( ) + "odd", 0 );
    prp. insert( odd, succ );
@@ -300,7 +306,7 @@ void tests::add_nat( regexp::defmap& prp, fieldmap& flds )
                         expr( ident, { identifier( ) + "nat", 0 } ), 0 ));
 }
 
-
+#if 0
 void tests::add_fol( regexp::defmap& prp, fieldmap& flds )
 {
    std::cout << "\n";
@@ -344,14 +350,14 @@ void tests::add_fol( regexp::defmap& prp, fieldmap& flds )
 
    {
       auto prim = expr( log_or, 
-               { expr( sel_const, usel( "truthval" )),
-                 expr( sel_const, usel( "obj" )),
-                 expr( sel_const, usel( "set" )) } );
+               { expr( flt_sel, { false, {{ usel( "truthval" ), true }} } ),
+                 expr( flt_sel, { false, {{ usel( "obj" ), true }} } ),
+                 expr( flt_sel, { false, {{ usel( "set" ), true }} } ) } );
 
       prim = expr( tuple, { prim } );
 
       auto named = expr( tuple,  
-         { expr( sel_const, usel( "named" )),
+         { expr( flt_sel, { false, {{ usel( "named" ), true }} } ),
            expr( regexp::ident, ident ) } );
 
       prp. insert( sort, expr( log_or, { prim, named } )); 
@@ -366,7 +372,7 @@ void tests::add_fol( regexp::defmap& prp, fieldmap& flds )
    flds. insert( exactident( identifier( ) + "name", 0 ),
       fielddef( fld_scalar,
          expr( tuple,
-            { expr( sel_const, usel( "named" )),
+            { expr( flt_sel, { false, {{ usel( "named" ), true }} } ),
               expr( regexp::ident, ident )
             }), 1 ));
 
@@ -374,13 +380,14 @@ void tests::add_fol( regexp::defmap& prp, fieldmap& flds )
  
    auto fol = exactident( identifier( ) + "fol", 0 );
 
-   auto atom = expr( tuple, { expr( sel_const, usel( "atom" )),
+   auto atom = expr( tuple, { 
+        expr( flt_sel, { false, {{ usel( "atom" ), true }} } ),
         expr( regexp::ident, ident ), 
         expr( log_forall, expr( regexp::ident, term )) 
       } );
 
    auto negated = expr( tuple,
-      { expr( sel_const, usel( "not" )),
+      { expr( flt_sel, { flase, {{ usel( "not" ), true }} } ),
         expr( regexp::ident, fol )
       } );
 
@@ -525,7 +532,7 @@ void tests::add_fol( regexp::defmap& prp, fieldmap& flds )
             }), 3 ));
 
 }
-
+#endif
 
 #if 0
 

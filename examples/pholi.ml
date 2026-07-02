@@ -152,8 +152,9 @@ let beta =
       | _ -> None
 ;;
 
-let tm = TermEquals ( TermDeBruijn 4, TermExact ( Exact 4 )) ;;
+(* Just an example term: *)
 
+let tm = TermEquals ( TermDeBruijn 4, TermExact ( Exact 4 )) ;;
 
 let apply (p: polarity) (f: formula) =
   match p with

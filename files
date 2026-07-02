@@ -27,12 +27,12 @@
 
 %dir Source/regexp
 %sources
-   expr.cpp
    selector.cpp
+   expr.cpp
+   printing.cpp
 
 %dir Source/atm
 %sources
-   simple.cpp
 
 %dir Source/intermediate
 %sources
@@ -89,4 +89,5 @@
    flatterm.cpp
    statement.h
    statement.cpp
+
 
