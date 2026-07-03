@@ -18,7 +18,8 @@
 %option filter_bool    { flt_bool } => # b : bool  
 %option filter_sel     { flt_sel } => 
               fin : finfunc< usel, bool, usel::hash, usel::equal_to > 
-%option filter_char    { flt_char } => part : partition< char, bool > 
+%option filter_char    { flt_char } => 
+              part : partition< char, bool > 
 
 %option ident          { ident } => # id : exactident
 
@@ -27,8 +28,8 @@
 
 %option logical        { log_and, log_or } => [ sub : expr ]
 
-%option empty  { empty, nonempty } => 
-%option quant  { log_exists, log_forall } => sub : expr
+%option simple    { emptyset, nonemptyset, everything, nothing } => 
+%option quant     { log_exists, log_forall } => sub : expr
 
 %h_incl {
 	#include "exactident.h"

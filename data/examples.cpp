@@ -10,9 +10,14 @@ data::tree data::string( std::string_view str )
    return res; 
 }
 
-data::tree data::variable( const tree& sub )
+data::tree data::variable( std::string_view str )
 {
-   return tree_tuple( { tree_usel( usel( "var" )), sub } );
+   return tree_tuple( { tree_usel( usel( "name" )), string( str ) } );
+}
+
+data::tree data::debruijn( size_t ind )
+{
+   return tree_tuple( { tree_usel( usel( "debruijn" )), tree( sel_u64, ind ) } );
 }
 
 data::tree data::term( tree name, const std::vector< tree > & sub )
@@ -22,7 +27,7 @@ data::tree data::term( tree name, const std::vector< tree > & sub )
 
 }
 
-data::tree data::not_( const tree& sub )
+data::tree data::negate( const tree& sub )
 { 
    return tree_tuple( { tree_usel( "not" ), sub } ); 
 }
@@ -36,6 +41,12 @@ data::tree data::implies( const tree& sub1, const tree& sub2 )
 data::tree data::equiv( const tree& sub1, const tree& sub2 )
 {
    return tree_tuple( { tree_usel( usel( "equiv" )), sub1, sub2 } );
+}
+
+data::tree data::conj( const std::vector< tree > & sub )
+{
+   return tree_tuple( { tree_usel( usel( "and" )), 
+                        tree_array( sub. begin( ), sub. end( )) } );
 }
 
 data::tree data::zero( )

@@ -306,20 +306,18 @@ void tests::add_nat( regexp::defmap& prp, fieldmap& flds )
                         expr( ident, { identifier( ) + "nat", 0 } ), 0 ));
 }
 
-#if 0
-void tests::add_fol( regexp::defmap& prp, fieldmap& flds )
+void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 {
    std::cout << "\n";
-   std::cout << "Constructing definition of simply typed first-order logic:\n\n";
-      // The definition was copied from an unfinished (hardly started)
-      // implementation of geo.
+   std::cout << "Constructing regular expression of simply typed first-order logic:\n\n";
 
    using namespace regexp;
- 
+    
    auto ident = exactident( identifier( ) + "ident", 0 );
 
-   prp. insert( ident, expr( tuple, { expr( log_forall, expr( type_char )) } ));
+   defs. insert( ident, expr( tuple, { expr( log_forall, expr( type_char )) } ));
 
+#if 0
    flds. insert( exactident( identifier( ) + "c", 0 ),
       fielddef( fld_vector, expr( regexp::ident, ident ), 0 ));   
 
@@ -332,7 +330,7 @@ void tests::add_fol( regexp::defmap& prp, fieldmap& flds )
            expr( log_forall, expr( regexp::ident, ident ))
          } );
 
-      prp. insert( term, tm );
+      defs. insert( term, tm );
    }
 
    flds. insert( exactident( identifier( ) + "func", 0 ),
@@ -360,7 +358,7 @@ void tests::add_fol( regexp::defmap& prp, fieldmap& flds )
          { expr( flt_sel, { false, {{ usel( "named" ), true }} } ),
            expr( regexp::ident, ident ) } );
 
-      prp. insert( sort, expr( log_or, { prim, named } )); 
+      defs. insert( sort, expr( log_or, { prim, named } )); 
    };
   
    // op gets index 1, because 'op' of nat has index 0.
@@ -417,7 +415,7 @@ void tests::add_fol( regexp::defmap& prp, fieldmap& flds )
         expr( log_forall, expr( regexp::ident, sort )),
       } );
 
-   prp. insert( fol, expr( log_or, { atom, eq, negated, bin, nary, quant } ));
+   defs. insert( fol, expr( log_or, { atom, eq, negated, bin, nary, quant } ));
 
 
    flds. insert( exactident( identifier( ) + "op", 2 ),
@@ -531,8 +529,8 @@ void tests::add_fol( regexp::defmap& prp, fieldmap& flds )
               expr( log_forall, expr( regexp::ident, sort ))
             }), 3 ));
 
-}
 #endif
+}
 
 #if 0
 

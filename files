@@ -10,10 +10,10 @@
    Util = /home/nivelle/programs
 
 %dir Source
-%exec checking
+%exec types
 
 %sources
-   checking.cpp
+   types.cpp
    identifier.cpp
    fieldmap.cpp
    tests.cpp

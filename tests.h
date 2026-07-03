@@ -9,8 +9,8 @@
 
 namespace tests
 {
-   void add_nat( regexp::defmap& prp, fieldmap& flds );
-   void add_fol( regexp::defmap& prp, fieldmap& flds );
+   void add_nat( regexp::defmap& defs, fieldmap& flds );
+   void add_fol( regexp::defmap& defs, fieldmap& flds );
 
    intermediate::function mixing( );
    intermediate::function arrayconv( ); 

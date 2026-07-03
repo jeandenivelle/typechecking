@@ -11,28 +11,18 @@
 #include "tests.h"
 
 int main( int argc, char* arcgv[] ) {
-   finfunc< char, int > part( 44 );
-   part. assign( 'c', 1 );
-   part. assign( 'f', 5 );
 
-   std::cout << part << "\n";
-   for( char c = 'a'; c < 'k'; ++ c )
-      std::cout << c << "/" << part(c) << "\n";
-
-   return 0;
-
-   std::cout << data::variable( data::string( "abcdef" )) << "\n";
+   std::cout << data::variable( "abcdef" ) << "\n";
    auto f1 = data::term( data::string( "lessthan" ), {
-             data::variable( data::string( "x0" )),
-             data::variable( data::string( "x1" )) } );
+             data::variable( "x0" ),
+             data::variable( "x1" ) } );
 
-   auto f2 = data::variable( data::string( "P" ));
-   f2 = implies( f2, equiv( f2, f2 ));
+   auto f2 = data::debruijn( 333 );
+   f2 = implies( f2, data::conj( { f1, f2 } ));
    std::cout << f2 << "\n";
 
    std::cout << data::succ( data::succ( data::zero( ))) << "\n";
 
-   return 0;
 
 /*
    diff::approxset set1 = diff::approxset::empty( );
@@ -112,17 +102,6 @@ int main( int argc, char* arcgv[] ) {
 #endif
 
    return 0;
-
-   // adj::overloadmap adjover;
-
-   // natural( types, adjmap, fields, adjover );
-   // firstorder( compmap, adjmap, fields, adjover );
-
-   // std::cout << simpmap << "\n";
-   // std::cout << compmap << "\n";
-   // std::cout << adjmap << "\n";
-   // std::cout << fields << "\n";
-   //  std::cout << adjover << "\n";
 
 #if 0
    types. insert( { "modal", modal( ) } ); 

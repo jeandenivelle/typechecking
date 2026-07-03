@@ -1,0 +1,19 @@
+
+struct beta
+{
+
+   term apply( tm : term, vardepth : u64 ) 
+      if tm. op == ?lambda && tm. body. op == ?apply :
+         vlen = List.length vars and
+         vargs = List.length args in
+         if vlen <= vargs :
+                let front = take args vlen and
+                    rest = drop args ( vargs - vlen ) in
+                    Some( TermApply( outermost ( subst front ) body 0, rest ))
+  
+             else
+                 None
+        | _ -> None
+  
+}
+

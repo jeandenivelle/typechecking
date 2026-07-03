@@ -71,8 +71,10 @@ regexp::expr::print( std::ostream& out ) const
          }
          return; 
 
-      case empty:
-      case nonempty:
+   case emptyset:
+   case nonemptyset:
+   case everything:
+   case nothing:
          out << sel( );
          return;
 
