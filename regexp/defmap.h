@@ -1,44 +1,37 @@
 
+// Written by Hans de Nivelle, July 2026.
+
 #ifndef REGEXP_DEFMAP_
 #define REGEXP_DEFMAP_
 
 #include <unordered_map>
 #include <iostream>
 
-#include "exactident.h"
+#include "identifier.h"
+#include "expr.h"
 
 namespace regexp
 {
-   struct defmap
+   class defmap
    {
-      exactidentmap< expr > mp;
+      using maptype = 
+         std::unordered_map< identifier, expr, 
+                             identifier::hash, identifier::equal_to > ;
+      maptype mp; 
 
+   public:
       defmap( ) noexcept = default;
 
-      bool contains( exactident id ) const;
+      bool contains( const identifier& ident ) const;
 
-      // True if the insertion happened. We refuse to overwrite:
+      // True if the insertion happened. We stubbornly refuse to overwrite:
 
-      bool insert( exactident id, const expr& e )
-      {
-         auto& forid = mp[ id. id ];
-         auto p = forid. insert( std::pair< size_t, expr > ( id. ind, e ));
-         return p. second;
-      }
-
-      void print( std::ostream& out ) const
-      {
-         out << "Property definitions:\n";
-         for( const auto& id : mp )
-            for( const auto& ind : id. second )
-            {
-               out << "   ";
-               out << exactident( id. first, ind. first );
-               out << " := " << ind. second << "\n";
-            }
-      }
+      bool insert( const identifier& ident, const expr& e );
 
       size_t size( ) const { return mp. size( ); } 
+
+      void print( std::ostream& out ) const;
+
    };
 };
 

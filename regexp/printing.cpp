@@ -31,7 +31,7 @@ regexp::expr::print( std::ostream& out ) const
       return;
 
       case ident:
-         out << view_ident( ). id( ); 
+         out << view_ident( ). ident( ); 
          return;
 
       case tuple:
@@ -54,8 +54,8 @@ regexp::expr::print( std::ostream& out ) const
          out << view_concat( ). first( ) << " @ " << view_concat( ). second( ); 
          return; 
 
-      case log_and:
-      case log_or:
+      case set_union:
+      case set_intersect:
          {
             auto log = view_logical( );
             out << sel( ) << "{";
@@ -73,27 +73,26 @@ regexp::expr::print( std::ostream& out ) const
 
    case emptyset:
    case nonemptyset:
-   case everything:
-   case nothing:
-         out << sel( );
-         return;
+      out << sel( );
+      return;
 
-      case log_exists:
-      case log_forall:
+   case log_exists:
+   case log_forall:
+      {
+         switch( sel( ))
          {
-            switch( sel( ))
-            {
-            case log_exists:
-               out << "exists"; break;
-            case log_forall:
-               out << "forall"; break;
-            default:
-               out << "???"; break;
-            }
-            out << "( " << view_quant( ). sub( ) << " )";
-            return; 
+         case log_exists:
+            out << "exists"; break;
+         case log_forall:
+            out << "forall"; break;
+         default:
+            out << "???"; break;
          }
+         out << "( " << view_quant( ). sub( ) << " )";
+         return; 
       }
    }
+
+}
 
 

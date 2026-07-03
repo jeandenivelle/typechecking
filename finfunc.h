@@ -59,12 +59,13 @@ struct finfunc
 
    void print( std::ostream& out ) const
    {
-      out << "<def> -> " << def;
+      out << "finfunc( <def> -> " << def;
       for( const auto& p : func )
       {
          out << ", ";
          out << p. first << " -> " << p. second;
       }
+      out << " )";
    }
 
    void clear() { func. clear(); }

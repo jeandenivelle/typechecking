@@ -17,22 +17,22 @@
 
 %option filter_bool    { flt_bool } => # b : bool  
 %option filter_sel     { flt_sel } => 
-              fin : finfunc< usel, bool, usel::hash, usel::equal_to > 
+               fin : finfunc< usel, bool, usel::hash, usel::equal_to > 
 %option filter_char    { flt_char } => 
-              part : partition< char, bool > 
+               part : partition< char, bool > 
 
-%option ident          { ident } => # id : exactident
+%option ident          { ident } => # ident : identifier
 
 %option tuple          { tuple } => [ sub : expr ]
 %option concat         { concat } => first : expr, second : expr 
 
-%option logical        { log_and, log_or } => [ sub : expr ]
+%option logical        { set_intersect, set_union } => [ sub : expr ]
 
-%option simple    { emptyset, nonemptyset, everything, nothing } => 
+%option simple    { emptyset, nonemptyset } => 
 %option quant     { log_exists, log_forall } => sub : expr
 
 %h_incl {
-	#include "exactident.h"
+	#include "identifier.h"
         #include "finfunc.h"
         #include "partition.h"
 	#include "util/print.h"
@@ -40,9 +40,25 @@
 	#include "usel.h"
 }
 
-
 %h_methods {
 	void print( std::ostream& ) const;
+}
+
+%h_after
+{
+   expr selectors( const std::vector< usel > & sels );
+}
+
+%cpp_back
+{
+   regexp::expr regexp::selectors( const std::vector< usel > & sels )
+   {
+      auto f = finfunc< usel, bool, usel::hash, usel::equal_to > ( false );
+      for( auto& s : sels )
+         f. assign( s, true );       
+      return expr( flt_sel, std::move(f));
+   }
+
 }
 
 

@@ -39,8 +39,7 @@ intermediate::function tests::mixing( )
         regexp::expr( regexp::ident, exactident( identifier( ) + "nat", 0 )) } );
 
 #endif
-   auto propEven = regexp::expr( regexp::ident, 
-      exactident( identifier( ) + "even", 0 ));
+   auto propEven = regexp::expr( regexp::ident, identifier( ) + "even" );
 
    std::vector< statement > res;
       // It will be collected into a single block at the end. 
@@ -216,8 +215,8 @@ intermediate::function tests::arrayconv( )
    auto d0 = variable( 'd', 0 );
    auto e0 = variable( 'e', 0 );
 
-   auto propA = regexp::expr( regexp::ident, exactident( identifier( ) + "A", 0 ));
-   auto propB = regexp::expr( regexp::ident, exactident( identifier( ) + "B", 0 ));
+   auto propA = regexp::expr( regexp::ident, identifier( ) + "A" );
+   auto propB = regexp::expr( regexp::ident, identifier( ) + "B" );
    auto propAllA = regexp::expr( regexp::log_forall, propA );
    auto propAllB = regexp::expr( regexp::log_forall, propB );
 
@@ -285,25 +284,24 @@ void tests::add_nat( regexp::defmap& prp, fieldmap& flds )
    zero = expr( tuple, { zero } );
  
    auto succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
-   succ = expr( tuple, 
-      { succ, expr( ident, { identifier( ) + "nat", 0 } ) } );
+   succ = expr( tuple, { succ, expr( ident, identifier( ) + "nat" ) } );
 
-   auto nat = exactident( identifier( ) + "nat", 0 );
-   prp. insert( nat, expr( log_or, { zero, succ } ));
+   auto nat = identifier( ) + "nat";
+   prp. insert( nat, expr( set_union, { zero, succ } ));
 
    succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
-   succ = expr( tuple, { succ, expr( ident, { identifier( ) + "odd", 0 } ) } );
-   auto even = exactident( identifier( ) + "even", 0 );
-   prp. insert( even, expr( log_or, { zero, succ } ));
+   succ = expr( tuple, { succ, expr( ident, identifier( ) + "odd" ) } );
+   auto even = identifier( ) + "even";
+   prp. insert( even, expr( set_union, { zero, succ } ));
   
    succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } ); 
-   succ = expr( tuple, { succ, expr( ident, { identifier( ) + "even", 0 } ) } );
-   auto odd = exactident( identifier( ) + "odd", 0 );
+   succ = expr( tuple, { succ, expr( ident, identifier( ) + "even" ) } );
+   auto odd = identifier( ) + "odd";
    prp. insert( odd, succ );
 
    flds. insert( exactident( identifier( ) + "op", 0 ), 
                      fielddef( fld_scalar, 
-                        expr( ident, { identifier( ) + "nat", 0 } ), 0 ));
+                        expr( ident, identifier( ) + "nat" ), 0 ));
 }
 
 void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
@@ -313,10 +311,17 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 
    using namespace regexp;
     
-   auto ident = exactident( identifier( ) + "ident", 0 );
+   auto var = identifier( ) + "variable";
 
-   defs. insert( ident, expr( tuple, { expr( log_forall, expr( type_char )) } ));
+   defs. insert( var, expr( tuple, 
+       { selectors( { usel( "?var" ) } ), 
+         expr( log_forall, expr( type_char )) } ));
 
+   defs. insert( identifier( ) + "fol" + "binary",
+      expr( tuple, { selectors( { usel( "?implies" ), usel( "?equiv" ) } ),
+                     expr( ident, identifier( ) + "fol" ),
+                     expr( ident, identifier( ) + "fol" ) } ));
+ 
 #if 0
    flds. insert( exactident( identifier( ) + "c", 0 ),
       fielddef( fld_vector, expr( regexp::ident, ident ), 0 ));   
@@ -347,7 +352,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    auto sort = exactident( identifier( ) + "sort", 0 );
 
    {
-      auto prim = expr( log_or, 
+      auto prim = expr( set_union, 
                { expr( flt_sel, { false, {{ usel( "truthval" ), true }} } ),
                  expr( flt_sel, { false, {{ usel( "obj" ), true }} } ),
                  expr( flt_sel, { false, {{ usel( "set" ), true }} } ) } );
@@ -358,7 +363,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
          { expr( flt_sel, { false, {{ usel( "named" ), true }} } ),
            expr( regexp::ident, ident ) } );
 
-      defs. insert( sort, expr( log_or, { prim, named } )); 
+      defs. insert( sort, expr( set_union, { prim, named } )); 
    };
   
    // op gets index 1, because 'op' of nat has index 0.
@@ -396,26 +401,26 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
       } );
 
    auto bin = expr( tuple,
-      { expr( log_or, { expr( sel_const, usel( "implies" )),
-                                    expr( sel_const, usel( "equiv" )) } ),
+      { expr( set_union, { expr( sel_const, usel( "implies" )),
+                                   expr( sel_const, usel( "equiv" )) } ),
         expr( regexp::ident, fol ),
         expr( regexp::ident, fol ) 
       } );
 
    auto nary = expr( tuple,
-      { expr( log_or, { expr( sel_const, usel( "and" )),
+      { expr( set_union, { expr( sel_const, usel( "and" )),
                                     expr( sel_const, usel( "or" )) } ),
         expr( log_forall, expr( regexp::ident, fol )) 
       } );
 
    auto quant = expr( tuple,
-      { expr( log_or, { expr( sel_const, usel( "forall" )),
+      { expr( set_union, { expr( sel_const, usel( "forall" )),
                                     expr( sel_const, usel( "exists" )) } ), 
         expr( log_forall, expr( regexp::ident, ident )),
         expr( log_forall, expr( regexp::ident, sort )),
       } );
 
-   defs. insert( fol, expr( log_or, { atom, eq, negated, bin, nary, quant } ));
+   defs. insert( fol, expr( set_union, { atom, eq, negated, bin, nary, quant } ));
 
 
    flds. insert( exactident( identifier( ) + "op", 2 ),
@@ -449,7 +454,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 
    flds. insert( exactident( identifier( ) + "sub1", 1 ),
       fielddef( fld_scalar,
-         expr( tuple, { expr( log_or,
+         expr( tuple, { expr( set_union,
                  { expr( sel_const, usel( "implies" )),
                    expr( sel_const, usel( "equiv" ))
                  }
@@ -461,7 +466,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    flds. insert( exactident( identifier( ) + "sub2", 1 ),
       fielddef( fld_scalar,
          expr( tuple,
-            { expr( log_or,
+            { expr( set_union,
                  { expr( sel_const, usel( "implies" )),
                    expr( sel_const, usel( "equiv" ))
                  }
@@ -475,7 +480,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    flds. insert( exactident( identifier( ) + "sub", 1 ),
       fielddef( fld_vector,
          expr( tuple,
-            { expr( log_or,
+            { expr( set_union,
                  { expr( sel_const, usel( "and" )),
                    expr( sel_const, usel( "or" ))
                  }
@@ -488,7 +493,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    flds. insert( exactident( identifier( ) + "body", 1 ),
       fielddef( fld_scalar,
          expr( tuple,
-            { expr( log_or,
+            { expr( set_union,
                  { expr( sel_const, usel( "forall" )),
                    expr( sel_const, usel( "exists" ))
                  }
@@ -503,7 +508,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    flds. insert( exactident( identifier( ) + "pref", 1 ),
       fielddef( fld_vector,
          expr( tuple,
-            { expr( log_or,
+            { expr( set_union,
                  { expr( sel_const, usel( "forall" )),
                    expr( sel_const, usel( "exists" ))
                  }
@@ -519,7 +524,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    flds. insert( exactident( identifier( ) + "srt", 1 ),
       fielddef( fld_vector,
          expr( tuple,
-            { expr( log_or,
+            { expr( set_union,
                  { expr( sel_const, usel( "forall" )),
                    expr( sel_const, usel( "exists" ))
                  }

@@ -29,6 +29,7 @@
 %sources
    selector.cpp
    expr.cpp
+   defmap.cpp
    printing.cpp
 
 %dir Source/atm

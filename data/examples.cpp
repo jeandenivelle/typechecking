@@ -12,7 +12,7 @@ data::tree data::string( std::string_view str )
 
 data::tree data::variable( std::string_view str )
 {
-   return tree_tuple( { tree_usel( usel( "name" )), string( str ) } );
+   return tree_tuple( { tree_usel( usel( "var" )), string( str ) } );
 }
 
 data::tree data::debruijn( size_t ind )

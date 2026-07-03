@@ -1,7 +1,8 @@
-checking
+
 Makefile
 *.o
 */*.o
+types
 
 data/selector.h
 data/selector.cpp
