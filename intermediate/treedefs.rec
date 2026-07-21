@@ -31,7 +31,7 @@
                  flat_le, flat_ge,
                  flat_add, flat_sub } => # v1 : variable, v2 : variable
 
-%option field { flat_field } => # v : variable, fname : exactident, 
+%option field { flat_field } => # v : variable, fname : size_t, 
                                 ind : std::optional< variable >  
    // We don't store the offset, because it can be looked up from the name.
 
@@ -45,7 +45,7 @@
    // and specify how many repeated fields there are. The repeated
    // fields are initially empty. 
 
-%option call { flat_call } => func : exactident, [ v : variable ]
+%option call { flat_call } => [ v : variable ], # func: size_t
    // A function returning nothing, in fact returns a unit.
 
 %h_incl {
@@ -58,7 +58,6 @@
    #include "util/print.h"
    #include "util/hexprint.h"
    #include "usel.h" 
-   #include "exactident.h" 
 }
 
 %h_methods {
@@ -89,7 +88,7 @@
    // from the statements. The statements are either a field access,
    // a field assignment, a function call, or a return statement. 
 
-%option update   { stat_update } => v : variable, fname : exactident, 
+%option update   { stat_update } => v : variable, fname : size_t, 
                           ind : std::optional< variable >, val : variable 
    // We are not storing the offset, because it can be determined from the name.
 

@@ -27,9 +27,11 @@
 %option concat         { concat } => first : expr, second : expr 
 
 %option logical        { set_intersect, set_union } => [ sub : expr ]
+   // everything and nothing can be modeled by empty insersect and
+   // empty union.
 
-%option simple    { emptyset, nonemptyset } => 
-%option quant     { log_exists, log_forall } => sub : expr
+%option multiset  { emptyset, nonemptyset } => 
+%option quant     { set_exists, set_forall } => sub : expr
 
 %h_incl {
 	#include "identifier.h"

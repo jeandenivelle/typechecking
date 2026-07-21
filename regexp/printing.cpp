@@ -76,14 +76,14 @@ regexp::expr::print( std::ostream& out ) const
       out << sel( );
       return;
 
-   case log_exists:
-   case log_forall:
+   case set_exists:
+   case set_forall:
       {
          switch( sel( ))
          {
-         case log_exists:
+         case set_exists:
             out << "exists"; break;
-         case log_forall:
+         case set_forall:
             out << "forall"; break;
          default:
             out << "???"; break;

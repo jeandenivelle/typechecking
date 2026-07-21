@@ -2,8 +2,8 @@
 #ifndef FIELDMAP_
 #define FIELDMAP_
 
+#include "overloadmap.h"
 #include "regexp/expr.h"
-#include "exactident.h"
 
 enum fieldtype { fld_scalar, fld_vector, fld_list };
 
@@ -36,13 +36,13 @@ struct fielddef
 
 class fieldmap
 {
-   exactidentmap< fielddef > mp; 
+   std::vector< fielddef > fields;
+   overloadmap overloads;
 
 public:
    fieldmap( ) noexcept = default;
 
-   bool insert( exactident id, const fielddef& def );
-      // True if the insertion happened, we refuse to overwrite. 
+   size_t insert( const identifier& ident, fielddef def );
 
    void print( std::ostream& out ) const; 
 };

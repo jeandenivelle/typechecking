@@ -9,6 +9,7 @@
 #include "finfunc.h"
 
 #include "tests.h"
+#include "overloadmap.h"
 
 int main( int argc, char* arcgv[] ) {
 
@@ -22,7 +23,6 @@ int main( int argc, char* arcgv[] ) {
    std::cout << f2 << "\n";
 
    std::cout << data::succ( data::succ( data::zero( ))) << "\n";
-
 
 /*
    diff::approxset set1 = diff::approxset::empty( );
@@ -62,7 +62,6 @@ int main( int argc, char* arcgv[] ) {
 
 
 #if 0
-#if 0
    parsing::parser prs( simpmap, compmap, adjmap, funcmap, 
                         errors, toplevelspace, filespace, tok ); 
  
@@ -83,7 +82,6 @@ int main( int argc, char* arcgv[] ) {
    tvm::printselectorenum( std::cout );
 
    return 0;
-#endif
 #endif  
    fieldmap flds;
    regexp::defmap prp;

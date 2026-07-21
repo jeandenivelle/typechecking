@@ -48,6 +48,7 @@ intermediate::function tests::mixing( )
    rep. push_back( statement( stat_assign, p ++, alpha0, 
                              flatterm( flat_some_bool )));
 
+#if 0
    rep. push_back( statement( stat_nop, p ++ ));
    rep. push_back( statement( stat_assign, p ++, beta0, 
                     flatterm( flat_field, m0, exactident( identifier( ) + "op", 0 ), { } )));
@@ -56,12 +57,12 @@ intermediate::function tests::mixing( )
                              flatterm( flat_selconst, usel( "zero" ))));
 
    rep. push_back( statement( stat_assign, p ++, gamma1, 
-                             flatterm( flat_eq, beta0, gamma0 )));
+                              flatterm( flat_eq, beta0, gamma0 )));
 
    std::vector< statement > bl1;
    bl1. push_back( statement( stat_istrue, p ++, alpha0 ));
    bl1. push_back( statement( stat_istrue, p ++, gamma1 ));
-
+#endif
 #if 0
 
    {
@@ -217,8 +218,8 @@ intermediate::function tests::arrayconv( )
 
    auto propA = regexp::expr( regexp::ident, identifier( ) + "A" );
    auto propB = regexp::expr( regexp::ident, identifier( ) + "B" );
-   auto propAllA = regexp::expr( regexp::log_forall, propA );
-   auto propAllB = regexp::expr( regexp::log_forall, propB );
+   auto propAllA = regexp::expr( regexp::set_forall, propA );
+   auto propAllB = regexp::expr( regexp::set_forall, propB );
 
    std::vector< statement > res;
       // It will be collected into a single block at the end. 
@@ -234,24 +235,28 @@ intermediate::function tests::arrayconv( )
       // Will be a repeat.
 
    rep. push_back( statement( stat_isfalse, p ++, g0 ));
- 
+
+#if 0 
    rep. push_back( statement( stat_resolve, p ++, { statement( stat_assign, p ++, d0, 
                               flatterm( flat_field, x0, 
                                   exactident( identifier( ) + "f", 0 ), i0 )) } ));
 
-  
+#endif
    {
+#if 0 
       auto call = statement( stat_assign, p ++, e0, flatterm( flat_call,
                              exactident( identifier( ) + "F", 0 ), { d0 } )); 
-
+#endif
       std::vector< variable > var = { d0 };
       std::vector< regexp::expr > prec = { propA };
 
-      rep. push_back( statement( stat_resolve, p ++, { call } ));
-      
+      // rep. push_back( statement( stat_resolve, p ++, { call } ));
+
+#if 0
       rep. push_back( statement( stat_update, p ++, x0, 
                                  exactident( identifier() + "f", 0 ),
                                  { i0 }, e0 ));
+#endif
 
       rep. push_back( statement( stat_assign, p ++, j0, 
                               flatterm( flat_u64const, (size_t) 1 )));
@@ -274,7 +279,7 @@ intermediate::function tests::arrayconv( )
 
 // Add natural numbers, even and odd numbers:
 
-void tests::add_nat( regexp::defmap& prp, fieldmap& flds )
+void tests::add_nat( regexp::defmap& defs, fieldmap& flds )
 {
    std::cout << "Constructing Natural Numbers:\n";
 
@@ -287,19 +292,19 @@ void tests::add_nat( regexp::defmap& prp, fieldmap& flds )
    succ = expr( tuple, { succ, expr( ident, identifier( ) + "nat" ) } );
 
    auto nat = identifier( ) + "nat";
-   prp. insert( nat, expr( set_union, { zero, succ } ));
+   defs. insert( nat, expr( set_union, { zero, succ } ));
 
    succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
    succ = expr( tuple, { succ, expr( ident, identifier( ) + "odd" ) } );
    auto even = identifier( ) + "even";
-   prp. insert( even, expr( set_union, { zero, succ } ));
+   defs. insert( even, expr( set_union, { zero, succ } ));
   
    succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } ); 
    succ = expr( tuple, { succ, expr( ident, identifier( ) + "even" ) } );
    auto odd = identifier( ) + "odd";
-   prp. insert( odd, succ );
+   defs. insert( odd, succ );
 
-   flds. insert( exactident( identifier( ) + "op", 0 ), 
+   flds. insert( identifier( ) + "op", 
                      fielddef( fld_scalar, 
                         expr( ident, identifier( ) + "nat" ), 0 ));
 }
@@ -310,34 +315,41 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    std::cout << "Constructing regular expression of simply typed first-order logic:\n\n";
 
    using namespace regexp;
-    
-   auto var = identifier( ) + "variable";
+   
+   auto term = identifier( ) + "term";
 
-   defs. insert( var, expr( tuple, 
+   {
+      auto appl = 
+         expr( tuple, { selectors( { usel( "?appl" ) } ),
+                   expr( set_forall, expr( type_char )),
+                   expr( set_forall, expr( ident, identifier( ) + "term" )) } 
+           );
+      auto db = expr( tuple, { selectors( { usel( "?debruijn" ) } ), 
+                               expr( type_u64 ) } );
+      defs. insert( term, expr( set_union, { appl, db } )); 
+   } 
+ 
+   auto fol = identifier( ) + "fol";
+
+   defs. insert( fol + "variable", expr( tuple, 
        { selectors( { usel( "?var" ) } ), 
-         expr( log_forall, expr( type_char )) } ));
+         expr( set_forall, expr( type_char )) } ));
 
-   defs. insert( identifier( ) + "fol" + "binary",
+   defs. insert( fol + "binary",
       expr( tuple, { selectors( { usel( "?implies" ), usel( "?equiv" ) } ),
                      expr( ident, identifier( ) + "fol" ),
                      expr( ident, identifier( ) + "fol" ) } ));
- 
+
+   defs. insert( fol + "nary",
+      expr( tuple, { selectors( { usel( "?and" ), usel( "?or" ) } ),
+              expr( set_forall, expr( ident, identifier( ) + "fol" )) } ));
+
+   defs. insert( fol + "atom", 
+      expr( tuple, { selectors( { usel( "?atom" ) } ), 
+                     expr( set_forall, expr( type_char )), 
+                     expr( set_forall, expr( ident, identifier( ) + "term" )) } ));
+
 #if 0
-   flds. insert( exactident( identifier( ) + "c", 0 ),
-      fielddef( fld_vector, expr( regexp::ident, ident ), 0 ));   
-
-   //// term:
-
-   auto term = exactident( identifier( ) + "term", 0 );
-
-   {
-      auto tm = expr( tuple, { expr( regexp::ident, ident ),
-           expr( log_forall, expr( regexp::ident, ident ))
-         } );
-
-      defs. insert( term, tm );
-   }
-
    flds. insert( exactident( identifier( ) + "func", 0 ),
       fielddef( fld_scalar,
          expr( regexp::ident, term ), 0 ));  
@@ -386,7 +398,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    auto atom = expr( tuple, { 
         expr( flt_sel, { false, {{ usel( "atom" ), true }} } ),
         expr( regexp::ident, ident ), 
-        expr( log_forall, expr( regexp::ident, term )) 
+        expr( set_forall, expr( regexp::ident, term )) 
       } );
 
    auto negated = expr( tuple,
@@ -407,21 +419,14 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
         expr( regexp::ident, fol ) 
       } );
 
-   auto nary = expr( tuple,
-      { expr( set_union, { expr( sel_const, usel( "and" )),
-                                    expr( sel_const, usel( "or" )) } ),
-        expr( log_forall, expr( regexp::ident, fol )) 
-      } );
-
    auto quant = expr( tuple,
       { expr( set_union, { expr( sel_const, usel( "forall" )),
                                     expr( sel_const, usel( "exists" )) } ), 
-        expr( log_forall, expr( regexp::ident, ident )),
-        expr( log_forall, expr( regexp::ident, sort )),
+        expr( set_forall, expr( regexp::ident, ident )),
+        expr( set_forall, expr( regexp::ident, sort )),
       } );
 
    defs. insert( fol, expr( set_union, { atom, eq, negated, bin, nary, quant } ));
-
 
    flds. insert( exactident( identifier( ) + "op", 2 ),
       fielddef( fld_scalar,
@@ -433,7 +438,6 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
             { expr( sel_const, usel( "not" )),
               expr( regexp::ident, fol )
             }), 1 ));
-
    flds. insert( exactident( identifier( ) + "sub1", 0 ),
       fielddef( fld_scalar,
          expr( tuple,
@@ -452,28 +456,14 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 
    // sub1,sub2 of binary logical operator:
 
-   flds. insert( exactident( identifier( ) + "sub1", 1 ),
-      fielddef( fld_scalar,
-         expr( tuple, { expr( set_union,
-                 { expr( sel_const, usel( "implies" )),
-                   expr( sel_const, usel( "equiv" ))
-                 }
-              ),
-              expr( regexp::ident, fol ),
-              expr( regexp::ident, fol )
-            }), 1 ));
+#endif
+   flds. insert( identifier( ) + "sub1",
+      fielddef( fld_scalar, expr( regexp::ident, fol + "binary" ), 1 ));
 
-   flds. insert( exactident( identifier( ) + "sub2", 1 ),
-      fielddef( fld_scalar,
-         expr( tuple,
-            { expr( set_union,
-                 { expr( sel_const, usel( "implies" )),
-                   expr( sel_const, usel( "equiv" ))
-                 }
-              ),
-              expr( regexp::ident, fol ),
-              expr( regexp::ident, fol )
-            }), 2 ));
+   flds. insert( identifier( ) + "sub2",
+      fielddef( fld_scalar, expr( regexp::ident, fol + "binary" ), 2 ));
+
+#if 0
 
    // sub of n-ary logical operator:
 
@@ -485,7 +475,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
                    expr( sel_const, usel( "or" ))
                  }
               ),
-              expr( log_forall, expr( regexp::ident, fol )) 
+              expr( set_forall, expr( regexp::ident, fol )) 
             }), 1 ));
 
    // body of quantifier:
@@ -499,8 +489,8 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
                  }
               ),
               expr( expr( regexp::ident, fol )),
-              expr( log_forall, expr( regexp::ident, ident )),
-              expr( log_forall, expr( regexp::ident, sort )) 
+              expr( set_forall, expr( regexp::ident, ident )),
+              expr( set_forall, expr( regexp::ident, sort )) 
             }), 1 ));
 
    // Preferred name of quantified variable: 
@@ -514,8 +504,8 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
                  }
               ),
               expr( expr( regexp::ident, fol )),
-              expr( log_forall, expr( regexp::ident, ident )),
-              expr( log_forall, expr( regexp::ident, sort ))
+              expr( set_forall, expr( regexp::ident, ident )),
+              expr( set_forall, expr( regexp::ident, sort ))
             }), 2 ));
 
 
@@ -530,8 +520,8 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
                  }
               ),
               expr( expr( regexp::ident, fol )),
-              expr( log_forall, expr( regexp::ident, ident )),
-              expr( log_forall, expr( regexp::ident, sort ))
+              expr( set_forall, expr( regexp::ident, ident )),
+              expr( set_forall, expr( regexp::ident, sort ))
             }), 3 ));
 
 #endif

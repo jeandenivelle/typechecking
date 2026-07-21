@@ -18,28 +18,24 @@ const char* getcstring( fieldtype tp )
 
 void fielddef::print( std::ostream& out ) const
 {
-   out << tp << " " << precond << " / " << ind;
+   out << tp << " on " << precond << " with index " << ind;
 }
 
-bool fieldmap::insert( exactident id, const fielddef& def )
+
+size_t fieldmap::insert( const identifier& ident, fielddef def )
 {
-   auto& forid = mp[ id. id ];
-   auto p = forid. insert( { id. ind, def } );
-   return p. second; 
+   size_t s = fields. size( );
+   overloads. add( ident, s );
+   fields. push_back( std::move( def ));  
+   return s; 
 }
 
 void fieldmap::print( std::ostream& out ) const
 {
    out << "Fieldmap:\n";
-   for( const auto& id : mp )
-   {
-      for( const auto& ind : id. second )
-      {
-         out << "   ";
-         out << exactident( id. first, ind. first );
-         out << " : " << ind. second << "\n";
-      }
-   }
+   for( size_t i = 0; i != fields. size( ); ++ i )
+      out << "   " << i << " : " << fields[i] << "\n";
+   out << overloads << "\n";
 }
 
  
