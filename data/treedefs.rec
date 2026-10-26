@@ -17,7 +17,7 @@
 
 %option tuple { sel_tuple } => [ val : tree ]
    // We are agnostic about the question whether
-   // the tuple is in place, or under a pointer.
+   // the tuple is stored in place, or below a pointer.
 
 %option array { sel_array } => [ val : tree ] 
    // Always under a pointer. 

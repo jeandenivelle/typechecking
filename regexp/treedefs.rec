@@ -23,15 +23,14 @@
 
 %option ident          { ident } => # ident : identifier
 
-%option tuple          { tuple } => [ sub : expr ]
-%option concat         { concat } => first : expr, second : expr 
+%option tuple          { tup_constr } => [ sub : expr ]
+%option concat         { tup_concat } => first : expr, second : expr 
 
-%option logical        { set_intersect, set_union } => [ sub : expr ]
-   // everything and nothing can be modeled by empty insersect and
-   // empty union.
+%option logical        { log_and, log_or } => [ sub : expr ]
+   // everything and nothing can be modeled by 
+   //    empty and and empty union.
 
-%option multiset  { emptyset, nonemptyset } => 
-%option quant     { set_exists, set_forall } => sub : expr
+%option set            { set_forall, set_exists } => sub : expr
 
 %h_incl {
 	#include "identifier.h"
@@ -49,6 +48,7 @@
 %h_after
 {
    expr selectors( const std::vector< usel > & sels );
+   expr tuple( const std::vector< expr > & e );
 }
 
 %cpp_back
@@ -59,6 +59,11 @@
       for( auto& s : sels )
          f. assign( s, true );       
       return expr( flt_sel, std::move(f));
+   }
+
+   regexp::expr regexp::tuple( const std::vector< expr > & e )
+   {
+      return expr( tup_constr, e. begin( ), e. end( ));
    }
 
 }

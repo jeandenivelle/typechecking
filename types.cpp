@@ -24,7 +24,7 @@ int main( int argc, char* arcgv[] ) {
 
    std::cout << data::succ( data::succ( data::zero( ))) << "\n";
 
-/*
+#if 0
    diff::approxset set1 = diff::approxset::empty( );
    set1. insert( -2 );
    set1. insert( -1 );
@@ -58,7 +58,7 @@ int main( int argc, char* arcgv[] ) {
    std::cout << mat. at( "cc", "bb" ) << "\n";
    mat. erase( "bb" );
    std::cout << mat << "\n";
-*/
+#endif
 
 
 #if 0

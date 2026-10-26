@@ -37,8 +37,8 @@ intermediate::function tests::mixing( )
    auto propSucc = regexp::expr( regexp::tuple, 
       { regexp::expr( regexp::flt_sel, ffunc ) 
         regexp::expr( regexp::ident, exactident( identifier( ) + "nat", 0 )) } );
-
 #endif
+
    auto propEven = regexp::expr( regexp::ident, identifier( ) + "even" );
 
    std::vector< statement > res;
@@ -149,6 +149,7 @@ intermediate::function tests::mixing( )
                      regexp::expr( regexp::type_unit ));
 
 }
+
 
 intermediate::function tests::repeated( )
 {
@@ -286,21 +287,21 @@ void tests::add_nat( regexp::defmap& defs, fieldmap& flds )
    using namespace regexp;
 
    auto zero = expr( flt_sel, { false, {{ usel( "zero" ), true }} } );
-   zero = expr( tuple, { zero } );
+   zero = tuple( { zero } );
  
    auto succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
-   succ = expr( tuple, { succ, expr( ident, identifier( ) + "nat" ) } );
+   succ = tuple( { succ, expr( ident, identifier( ) + "nat" ) } );
 
    auto nat = identifier( ) + "nat";
-   defs. insert( nat, expr( set_union, { zero, succ } ));
+   defs. insert( nat, expr( log_or, { zero, succ } ));
 
    succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
-   succ = expr( tuple, { succ, expr( ident, identifier( ) + "odd" ) } );
+   succ = tuple( { succ, expr( ident, identifier( ) + "odd" ) } );
    auto even = identifier( ) + "even";
-   defs. insert( even, expr( set_union, { zero, succ } ));
+   defs. insert( even, expr( log_or, { zero, succ } ));
   
-   succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } ); 
-   succ = expr( tuple, { succ, expr( ident, identifier( ) + "even" ) } );
+   succ = selectors( { usel( "succ" ) } ); 
+   succ = tuple( { succ, expr( ident, identifier( ) + "even" ) } );
    auto odd = identifier( ) + "odd";
    defs. insert( odd, succ );
 
@@ -315,216 +316,76 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    std::cout << "Constructing regular expression of simply typed first-order logic:\n\n";
 
    using namespace regexp;
-   
-   auto term = identifier( ) + "term";
+ 
+   auto fol = identifier( ) + "fol"; 
+   defs. insert( fol + "variable", expr( set_forall, expr( type_char )) );
+
+   auto term = fol + "term";
 
    {
       auto appl = 
-         expr( tuple, { selectors( { usel( "?appl" ) } ),
-                   expr( set_forall, expr( type_char )),
-                   expr( set_forall, expr( ident, identifier( ) + "term" )) } 
+         tuple( { selectors( { usel( "?appl" ) } ),
+                  expr( ident, fol + "variable" ),
+                  expr( set_forall, expr( ident, fol + "term" )) } 
            );
-      auto db = expr( tuple, { selectors( { usel( "?debruijn" ) } ), 
-                               expr( type_u64 ) } );
-      defs. insert( term, expr( set_union, { appl, db } )); 
+      auto db = tuple( { selectors( { usel( "?debruijn" ) } ), 
+                         expr( type_u64 ) } );
+
+      defs. insert( term, expr( log_or, { appl, db } )); 
    } 
- 
-   auto fol = identifier( ) + "fol";
-
-   defs. insert( fol + "variable", expr( tuple, 
-       { selectors( { usel( "?var" ) } ), 
-         expr( set_forall, expr( type_char )) } ));
-
-   defs. insert( fol + "binary",
-      expr( tuple, { selectors( { usel( "?implies" ), usel( "?equiv" ) } ),
-                     expr( ident, identifier( ) + "fol" ),
-                     expr( ident, identifier( ) + "fol" ) } ));
-
-   defs. insert( fol + "nary",
-      expr( tuple, { selectors( { usel( "?and" ), usel( "?or" ) } ),
-              expr( set_forall, expr( ident, identifier( ) + "fol" )) } ));
-
-   defs. insert( fol + "atom", 
-      expr( tuple, { selectors( { usel( "?atom" ) } ), 
-                     expr( set_forall, expr( type_char )), 
-                     expr( set_forall, expr( ident, identifier( ) + "term" )) } ));
-
-#if 0
-   flds. insert( exactident( identifier( ) + "func", 0 ),
-      fielddef( fld_scalar,
-         expr( regexp::ident, term ), 0 ));  
-
-   flds. insert( exactident( identifier( ) + "args", 0 ),
-      fielddef( fld_vector,
-         expr( regexp::ident, term ), 1 ));  
-
-
-   //// sort:
-
-   auto sort = exactident( identifier( ) + "sort", 0 );
 
    {
-      auto prim = expr( set_union, 
-               { expr( flt_sel, { false, {{ usel( "truthval" ), true }} } ),
-                 expr( flt_sel, { false, {{ usel( "obj" ), true }} } ),
-                 expr( flt_sel, { false, {{ usel( "set" ), true }} } ) } );
+      auto prim = expr( log_or, 
+      {
+         selectors( { usel( "?prop" ) } ), 
+         tuple( { selectors( { usel( "?named" ) } ), expr( set_forall, expr( type_char )) } ) 
+      });
 
-      prim = expr( tuple, { prim } );
+      auto sort = tuple( { prim, expr( set_forall, prim ) } );
+      defs. insert( fol + "sort", sort );
+   } 
 
-      auto named = expr( tuple,  
-         { expr( flt_sel, { false, {{ usel( "named" ), true }} } ),
-           expr( regexp::ident, ident ) } );
+   defs. insert( fol + "atom", 
+      tuple( { selectors( { usel( "?atom" ) } ), 
+               expr( ident, fol + "variable" ), 
+               expr( set_forall, expr( ident, fol + "term" )) } ));
 
-      defs. insert( sort, expr( set_union, { prim, named } )); 
-   };
-  
-   // op gets index 1, because 'op' of nat has index 0.
- 
-   flds. insert( exactident( identifier( ) + "op", 1 ),
-      fielddef( fld_scalar,
-         expr( regexp::ident, sort ), 0 ));
+   defs. insert( fol + "binary",
+      tuple( { selectors( { usel( "?implies" ), usel( "?equiv" ) } ),
+               expr( ident, fol + "form" ),
+               expr( ident, fol + "form" ) } ));
 
-   flds. insert( exactident( identifier( ) + "name", 0 ),
-      fielddef( fld_scalar,
-         expr( tuple,
-            { expr( flt_sel, { false, {{ usel( "named" ), true }} } ),
-              expr( regexp::ident, ident )
-            }), 1 ));
+   defs. insert( fol + "nary",
+      tuple( { selectors( { usel( "?and" ), usel( "?or" ) } ),
+               expr( set_forall, expr( ident, fol + "form" )) } ));
 
-   /// fol :
- 
-   auto fol = exactident( identifier( ) + "fol", 0 );
+   defs. insert( fol + "equals",
+      tuple( { selectors( { usel( "?equals" ) } ),
+               expr( ident, fol + "term" ),
+               expr( ident, fol + "term" ) } ));
 
-   auto atom = expr( tuple, { 
-        expr( flt_sel, { false, {{ usel( "atom" ), true }} } ),
-        expr( regexp::ident, ident ), 
-        expr( set_forall, expr( regexp::ident, term )) 
-      } );
+   auto vartype = tuple( { expr( ident, fol + "variable" ),
+                           expr( ident, fol + "sort" ) } );
 
-   auto negated = expr( tuple,
-      { expr( flt_sel, { flase, {{ usel( "not" ), true }} } ),
-        expr( regexp::ident, fol )
-      } );
+   defs. insert( fol + "quant",
+      tuple( { selectors( { usel( "?forall" ), usel( "?exists" ) } ),
+               expr( set_forall, vartype ),
+               expr( ident, fol + "form" ) } ));
 
-   auto eq = expr( tuple,
-      { expr( sel_const, usel( "equals" )),
-        expr( regexp::ident, fol ),
-        expr( regexp::ident, fol )
-      } );
+   defs. insert( fol + "form",
+      expr( log_or, { expr( ident, fol + "atom" ),
+                      expr( ident, fol + "equals" ),
+                      expr( ident, fol + "binary" ),
+                      expr( ident, fol + "nary" ),
+                      expr( ident, fol + "quant" ) } ));
 
-   auto bin = expr( tuple,
-      { expr( set_union, { expr( sel_const, usel( "implies" )),
-                                   expr( sel_const, usel( "equiv" )) } ),
-        expr( regexp::ident, fol ),
-        expr( regexp::ident, fol ) 
-      } );
-
-   auto quant = expr( tuple,
-      { expr( set_union, { expr( sel_const, usel( "forall" )),
-                                    expr( sel_const, usel( "exists" )) } ), 
-        expr( set_forall, expr( regexp::ident, ident )),
-        expr( set_forall, expr( regexp::ident, sort )),
-      } );
-
-   defs. insert( fol, expr( set_union, { atom, eq, negated, bin, nary, quant } ));
-
-   flds. insert( exactident( identifier( ) + "op", 2 ),
-      fielddef( fld_scalar,
-         expr( regexp::ident, fol ), 0 ));
-
-   flds. insert( exactident( identifier( ) + "sub", 0 ),
-      fielddef( fld_scalar,
-         expr( tuple,
-            { expr( sel_const, usel( "not" )),
-              expr( regexp::ident, fol )
-            }), 1 ));
-   flds. insert( exactident( identifier( ) + "sub1", 0 ),
-      fielddef( fld_scalar,
-         expr( tuple,
-            { expr( sel_const, usel( "equals" )),
-              expr( regexp::ident, term ),
-              expr( regexp::ident, term )
-            }), 1 ));
-
-   flds. insert( exactident( identifier( ) + "sub2", 0 ),
-      fielddef( fld_scalar,
-         expr( tuple,
-            { expr( sel_const, usel( "equals" )),
-              expr( regexp::ident, term ),
-              expr( regexp::ident, term )
-            }), 2 ));
-
-   // sub1,sub2 of binary logical operator:
-
-#endif
    flds. insert( identifier( ) + "sub1",
       fielddef( fld_scalar, expr( regexp::ident, fol + "binary" ), 1 ));
 
    flds. insert( identifier( ) + "sub2",
       fielddef( fld_scalar, expr( regexp::ident, fol + "binary" ), 2 ));
 
-#if 0
-
-   // sub of n-ary logical operator:
-
-   flds. insert( exactident( identifier( ) + "sub", 1 ),
-      fielddef( fld_vector,
-         expr( tuple,
-            { expr( set_union,
-                 { expr( sel_const, usel( "and" )),
-                   expr( sel_const, usel( "or" ))
-                 }
-              ),
-              expr( set_forall, expr( regexp::ident, fol )) 
-            }), 1 ));
-
-   // body of quantifier:
-
-   flds. insert( exactident( identifier( ) + "body", 1 ),
-      fielddef( fld_scalar,
-         expr( tuple,
-            { expr( set_union,
-                 { expr( sel_const, usel( "forall" )),
-                   expr( sel_const, usel( "exists" ))
-                 }
-              ),
-              expr( expr( regexp::ident, fol )),
-              expr( set_forall, expr( regexp::ident, ident )),
-              expr( set_forall, expr( regexp::ident, sort )) 
-            }), 1 ));
-
-   // Preferred name of quantified variable: 
-
-   flds. insert( exactident( identifier( ) + "pref", 1 ),
-      fielddef( fld_vector,
-         expr( tuple,
-            { expr( set_union,
-                 { expr( sel_const, usel( "forall" )),
-                   expr( sel_const, usel( "exists" ))
-                 }
-              ),
-              expr( expr( regexp::ident, fol )),
-              expr( set_forall, expr( regexp::ident, ident )),
-              expr( set_forall, expr( regexp::ident, sort ))
-            }), 2 ));
-
-
-   // Sort of quantified variable: 
-
-   flds. insert( exactident( identifier( ) + "srt", 1 ),
-      fielddef( fld_vector,
-         expr( tuple,
-            { expr( set_union,
-                 { expr( sel_const, usel( "forall" )),
-                   expr( sel_const, usel( "exists" ))
-                 }
-              ),
-              expr( expr( regexp::ident, fol )),
-              expr( set_forall, expr( regexp::ident, ident )),
-              expr( set_forall, expr( regexp::ident, sort ))
-            }), 3 ));
-
-#endif
+   
 }
 
 #if 0

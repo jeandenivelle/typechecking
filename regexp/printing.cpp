@@ -34,7 +34,7 @@ regexp::expr::print( std::ostream& out ) const
          out << view_ident( ). ident( ); 
          return;
 
-      case tuple:
+      case tup_constr:
          {
             auto tup = view_tuple( ); 
             out << "tuple("; 
@@ -50,12 +50,12 @@ regexp::expr::print( std::ostream& out ) const
          }
          return; 
 
-      case concat:
+      case tup_concat:
          out << view_concat( ). first( ) << " @ " << view_concat( ). second( ); 
          return; 
 
-      case set_union:
-      case set_intersect:
+      case log_or:
+      case log_and:
          {
             auto log = view_logical( );
             out << sel( ) << "{";
@@ -71,11 +71,6 @@ regexp::expr::print( std::ostream& out ) const
          }
          return; 
 
-   case emptyset:
-   case nonemptyset:
-      out << sel( );
-      return;
-
    case set_exists:
    case set_forall:
       {
@@ -88,7 +83,7 @@ regexp::expr::print( std::ostream& out ) const
          default:
             out << "???"; break;
          }
-         out << "( " << view_quant( ). sub( ) << " )";
+         out << "( " << view_set( ). sub( ) << " )";
          return; 
       }
    }

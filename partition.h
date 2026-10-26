@@ -19,7 +19,8 @@
 
 // C must be a strict less_than relation on D. 
 
-// The function does not need to be monotone.
+// The function does not need to be monotone (order preserving).
+
 
 template< typename D, typename R, 
           typename C = std::less<D>, 

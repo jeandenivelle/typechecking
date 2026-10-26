@@ -19,6 +19,7 @@ namespace data
 
    tree negate( const tree& sub );
       // 'not' is a reserved word.
+
    tree implies( const tree& sub1, const tree& sub2 );
    tree equiv( const tree& sub1, const tree& sub2 );
 
