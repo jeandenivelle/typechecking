@@ -24,7 +24,7 @@
    tree.cpp
    selector.cpp
    printing.cpp
-   examples.cpp
+   constructors.cpp
 
 %dir Source/regexp
 %sources
@@ -35,6 +35,8 @@
 
 %dir Source/atm
 %sources
+   stateset.cpp
+   simple.cpp
 
 %dir Source/intermediate
 %sources

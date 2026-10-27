@@ -1,7 +1,7 @@
 
 #include <iostream>
 
-#include "data/examples.h"
+#include "data/constructors.h"
 #include "usel.h"
 #include "data/tree.h"
 
@@ -11,18 +11,25 @@
 #include "tests.h"
 #include "overloadmap.h"
 
-int main( int argc, char* arcgv[] ) {
+#include "atm/stateset.h"
 
-   std::cout << data::variable( "abcdef" ) << "\n";
-   auto f1 = data::term( data::string( "lessthan" ), {
-             data::variable( "x0" ),
-             data::variable( "x1" ) } );
+int main( int argc, char* arcgv[] ) 
+{
+   std::cout << tests::formula( ) << "\n\n";
 
-   auto f2 = data::debruijn( 333 );
-   f2 = implies( f2, data::conj( { f1, f2 } ));
-   std::cout << f2 << "\n";
+   auto e = regexp::expr( regexp::set_union,
+      { 
+         regexp::expr( regexp::tup_constr, 
+            { regexp::expr( regexp::def_ident, identifier( ) + "hallo" ) } ),
+         regexp::expr( regexp::tup_constr, 
+            { regexp::expr( regexp::def_ident, identifier( ) + "world" ) } )
+      }
+   );
 
-   std::cout << data::succ( data::succ( data::zero( ))) << "\n";
+   e = regexp::expr( regexp::set_single, e ); 
+   std::cout << e << "\n";
+
+   return 0;
 
 #if 0
    diff::approxset set1 = diff::approxset::empty( );
@@ -60,29 +67,6 @@ int main( int argc, char* arcgv[] ) {
    std::cout << mat << "\n";
 #endif
 
-
-#if 0
-   parsing::parser prs( simpmap, compmap, adjmap, funcmap, 
-                        errors, toplevelspace, filespace, tok ); 
- 
-   prs. debug = 3; 
-   std::cout << "not even started\n";
-
-   parsing::symbol sym = prs. parse( parsing::sym_File ); 
-   std::cout << "parser returned " << sym << "\n";
-
-   for( const auto& e : errors )
-      std::cout << e << "\n";
-
-   if( filespace ) 
-      std::cout << "filespace = " << filespace. value( ) << "\n";
-   else
-      std::cout << "no filespace was set\n";
-
-   tvm::printselectorenum( std::cout );
-
-   return 0;
-#endif  
    fieldmap flds;
    regexp::defmap prp;
 

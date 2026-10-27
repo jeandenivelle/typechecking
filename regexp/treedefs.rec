@@ -1,4 +1,6 @@
 
+// Definition of regexp on data trees. Hans de Nivelle July (Oct) 2026.
+
 %dir regexp
 
 %namespace regexp
@@ -15,22 +17,31 @@
 %option type_double    { type_double } => 
 %option type_iter      { type_iter } =>
 
-%option filter_bool    { flt_bool } => # b : bool  
-%option filter_sel     { flt_sel } => 
-               fin : finfunc< usel, bool, usel::hash, usel::equal_to > 
+%option filter_bool    { flt_bool } => b : bool
 %option filter_char    { flt_char } => 
                part : partition< char, bool > 
+%option filter_sel     { flt_sel } => 
+               fin : finfunc< usel, bool, usel::hash, usel::equal_to > 
+%option filter_u64     { flt_u64 } =>
+               part : partition< size_t, bool >
+%option filter_integer { flt_integer } =>
+               part : partition< bigint, bool > 
 
-%option ident          { ident } => # ident : identifier
+%option ident          { def_ident } => # ident : identifier
+   // We are referring to a defined identifier.
 
-%option tuple          { tup_constr } => [ sub : expr ]
-%option concat         { tup_concat } => first : expr, second : expr 
+%option tuple          { tup_constr, tup_concat } => [ sub : expr ]
 
 %option logical        { log_and, log_or } => [ sub : expr ]
-   // everything and nothing can be modeled by 
-   //    empty and and empty union.
+   // everything = log_and( ), and nothing = log_or( ).
 
-%option set            { set_forall, set_exists } => sub : expr
+// (Multiset) operations are a bit confusing because we 
+// are constructing set of sets. If you call an operator for example
+// 'union' there is confusion on which level the union takes place.
+// In the case below, it is on the lower level.
+
+%option set_unary      { set_single, set_repeat } => sub : expr
+%option set_union      { set_union } => [ sub : expr ] 
 
 %h_incl {
 	#include "identifier.h"
@@ -39,6 +50,7 @@
 	#include "util/print.h"
 	#include "tvm/includes.h"
 	#include "usel.h"
+        #include "util/bigint.h"
 }
 
 %h_methods {

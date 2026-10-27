@@ -53,7 +53,8 @@ namespace atm
    };
 
    inline std::ostream& 
-   operator<< ( std::ostream& out, const state& s ) {
+   operator<< ( std::ostream& out, const state& s ) 
+   {
       s. print( out );
       return out;
    }

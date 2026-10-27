@@ -1,7 +1,7 @@
 
-#include <list>
 
 #include "tests.h"
+#include "data/constructors.h"
 
 intermediate::function tests::mixing( )
 {
@@ -36,10 +36,10 @@ intermediate::function tests::mixing( )
 #if 0
    auto propSucc = regexp::expr( regexp::tuple, 
       { regexp::expr( regexp::flt_sel, ffunc ) 
-        regexp::expr( regexp::ident, exactident( identifier( ) + "nat", 0 )) } );
+        regexp::expr( regexp::def_ident, exactident( identifier( ) + "nat", 0 )) } );
 #endif
 
-   auto propEven = regexp::expr( regexp::ident, identifier( ) + "even" );
+   auto propEven = regexp::expr( regexp::def_ident, identifier( ) + "even" );
 
    std::vector< statement > res;
       // It will be collected into a single block at the end. 
@@ -217,10 +217,10 @@ intermediate::function tests::arrayconv( )
    auto d0 = variable( 'd', 0 );
    auto e0 = variable( 'e', 0 );
 
-   auto propA = regexp::expr( regexp::ident, identifier( ) + "A" );
-   auto propB = regexp::expr( regexp::ident, identifier( ) + "B" );
-   auto propAllA = regexp::expr( regexp::set_forall, propA );
-   auto propAllB = regexp::expr( regexp::set_forall, propB );
+   auto propA = regexp::expr( regexp::def_ident, identifier( ) + "A" );
+   auto propB = regexp::expr( regexp::def_ident, identifier( ) + "B" );
+   auto propAllA = regexp::expr( regexp::set_repeat, propA );
+   auto propAllB = regexp::expr( regexp::set_repeat, propB );
 
    std::vector< statement > res;
       // It will be collected into a single block at the end. 
@@ -278,8 +278,6 @@ intermediate::function tests::arrayconv( )
 }
 
 
-// Add natural numbers, even and odd numbers:
-
 void tests::add_nat( regexp::defmap& defs, fieldmap& flds )
 {
    std::cout << "Constructing Natural Numbers:\n";
@@ -290,25 +288,26 @@ void tests::add_nat( regexp::defmap& defs, fieldmap& flds )
    zero = tuple( { zero } );
  
    auto succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
-   succ = tuple( { succ, expr( ident, identifier( ) + "nat" ) } );
+   succ = tuple( { succ, expr( def_ident, identifier( ) + "nat" ) } );
 
    auto nat = identifier( ) + "nat";
    defs. insert( nat, expr( log_or, { zero, succ } ));
 
    succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
-   succ = tuple( { succ, expr( ident, identifier( ) + "odd" ) } );
+   succ = tuple( { succ, expr( def_ident, identifier( ) + "odd" ) } );
    auto even = identifier( ) + "even";
    defs. insert( even, expr( log_or, { zero, succ } ));
   
    succ = selectors( { usel( "succ" ) } ); 
-   succ = tuple( { succ, expr( ident, identifier( ) + "even" ) } );
+   succ = tuple( { succ, expr( def_ident, identifier( ) + "even" ) } );
    auto odd = identifier( ) + "odd";
    defs. insert( odd, succ );
 
    flds. insert( identifier( ) + "op", 
                      fielddef( fld_scalar, 
-                        expr( ident, identifier( ) + "nat" ), 0 ));
+                        expr( def_ident, identifier( ) + "nat" ), 0 ));
 }
+
 
 void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 {
@@ -318,15 +317,16 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    using namespace regexp;
  
    auto fol = identifier( ) + "fol"; 
-   defs. insert( fol + "variable", expr( set_forall, expr( type_char )) );
+   defs. insert( fol + "variable", 
+       expr( set_repeat, expr( set_single, expr( type_char ))) );
 
    auto term = fol + "term";
 
    {
       auto appl = 
          tuple( { selectors( { usel( "?appl" ) } ),
-                  expr( ident, fol + "variable" ),
-                  expr( set_forall, expr( ident, fol + "term" )) } 
+                  expr( def_ident, fol + "variable" ),
+                  expr( set_repeat, expr( def_ident, fol + "term" )) } 
            );
       auto db = tuple( { selectors( { usel( "?debruijn" ) } ), 
                          expr( type_u64 ) } );
@@ -338,52 +338,53 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
       auto prim = expr( log_or, 
       {
          selectors( { usel( "?prop" ) } ), 
-         tuple( { selectors( { usel( "?named" ) } ), expr( set_forall, expr( type_char )) } ) 
+         tuple( { selectors( { usel( "?def" ) } ), 
+                  expr( def_ident, fol + "variable" ) } ) 
       });
 
-      auto sort = tuple( { prim, expr( set_forall, prim ) } );
+      auto sort = tuple( { prim, expr( set_repeat, prim ) } );
       defs. insert( fol + "sort", sort );
    } 
 
    defs. insert( fol + "atom", 
       tuple( { selectors( { usel( "?atom" ) } ), 
-               expr( ident, fol + "variable" ), 
-               expr( set_forall, expr( ident, fol + "term" )) } ));
+               expr( def_ident, fol + "variable" ), 
+               expr( set_repeat, expr( def_ident, fol + "term" )) } ));
 
    defs. insert( fol + "binary",
       tuple( { selectors( { usel( "?implies" ), usel( "?equiv" ) } ),
-               expr( ident, fol + "form" ),
-               expr( ident, fol + "form" ) } ));
+               expr( def_ident, fol + "form" ),
+               expr( def_ident, fol + "form" ) } ));
 
    defs. insert( fol + "nary",
       tuple( { selectors( { usel( "?and" ), usel( "?or" ) } ),
-               expr( set_forall, expr( ident, fol + "form" )) } ));
+               expr( set_repeat, expr( def_ident, fol + "form" )) } ));
 
    defs. insert( fol + "equals",
       tuple( { selectors( { usel( "?equals" ) } ),
-               expr( ident, fol + "term" ),
-               expr( ident, fol + "term" ) } ));
+               expr( def_ident, fol + "term" ),
+               expr( def_ident, fol + "term" ) } ));
 
-   auto vartype = tuple( { expr( ident, fol + "variable" ),
-                           expr( ident, fol + "sort" ) } );
+   auto vartype = tuple( { expr( def_ident, fol + "variable" ),
+                           expr( def_ident, fol + "sort" ) } );
 
    defs. insert( fol + "quant",
       tuple( { selectors( { usel( "?forall" ), usel( "?exists" ) } ),
-               expr( set_forall, vartype ),
-               expr( ident, fol + "form" ) } ));
+               expr( set_repeat, vartype ),
+               expr( def_ident, fol + "form" ) } ));
 
    defs. insert( fol + "form",
-      expr( log_or, { expr( ident, fol + "atom" ),
-                      expr( ident, fol + "equals" ),
-                      expr( ident, fol + "binary" ),
-                      expr( ident, fol + "nary" ),
-                      expr( ident, fol + "quant" ) } ));
+      expr( log_or, { expr( def_ident, fol + "atom" ),
+                      expr( def_ident, fol + "equals" ),
+                      expr( def_ident, fol + "binary" ),
+                      expr( def_ident, fol + "nary" ),
+                      expr( def_ident, fol + "quant" ) } ));
 
    flds. insert( identifier( ) + "sub1",
-      fielddef( fld_scalar, expr( regexp::ident, fol + "binary" ), 1 ));
+      fielddef( fld_scalar, expr( regexp::def_ident, fol + "binary" ), 1 ));
 
    flds. insert( identifier( ) + "sub2",
-      fielddef( fld_scalar, expr( regexp::ident, fol + "binary" ), 2 ));
+      fielddef( fld_scalar, expr( regexp::def_ident, fol + "binary" ), 2 ));
 
    
 }
@@ -409,5 +410,40 @@ void modaladjectives( adj::map& sys )
 }
 
 #endif
+
+data::tree tests::formula( )
+{
+   // forall x : p(x,0).
+
+   auto zero = data::string( "zero" );
+   std::cout << data::usel( "?appl" ) << "\n\n";
+
+   zero = data::tuple( 
+      { data::usel( "?appl" ), zero, 
+        data::array( {} ) } );
+
+   auto db = data::u64(0);
+   db = data::tuple( { data::usel( "?debruijn" ), db } );
+
+   auto p = data::string( "p" );
+
+   p = data::tuple( 
+      { data::usel( "?atom" ), p, 
+        data::array( { zero, db } ) } );
+
+   // We need the sort of natural numbers:
+
+   auto s = data::tuple(
+      { data::usel( "?def" ), 
+        data::string( "Nat" )
+      } );
+
+   auto vt = data::tuple( { data::string( "x" ), s } );
+
+   return data::tuple( 
+      { data::usel( "?forall" ),
+        data::array( { vt } ), 
+        p } );
+}
 
 

@@ -30,62 +30,64 @@ regexp::expr::print( std::ostream& out ) const
       out << view_filter_char( ). part( );
       return;
 
-      case ident:
-         out << view_ident( ). ident( ); 
-         return;
+   case def_ident:
+      out << view_ident( ). ident( ); 
+      return;
 
-      case tup_constr:
-         {
-            auto tup = view_tuple( ); 
-            out << "tuple("; 
-            for( size_t i = 0; i != tup. size( ); ++ i )
-            {
-               if(i) 
-                  out << ", ";
-               else
-                  out << " ";
-               out << tup. sub(i);
-            }
-            out << " )"; 
-         }
-         return; 
-
-      case tup_concat:
-         out << view_concat( ). first( ) << " @ " << view_concat( ). second( ); 
-         return; 
-
-      case log_or:
-      case log_and:
-         {
-            auto log = view_logical( );
-            out << sel( ) << "{";
-            for( size_t i = 0; i != log. size( ); ++i )
-            {
-               if(i)  
-                  out << ", ";
-               else
-                  out << " ";
-               out << log. sub(i);
-            }
-            out << " }"; 
-         }
-         return; 
-
-   case set_exists:
-   case set_forall:
+   case tup_constr:
+   case tup_concat:
       {
-         switch( sel( ))
+         auto tp = view_tuple( ); 
+         out << sel( ) << "(";
+         for( size_t i = 0; i != tp. size( ); ++ i )
          {
-         case set_exists:
-            out << "exists"; break;
-         case set_forall:
-            out << "forall"; break;
-         default:
-            out << "???"; break;
+            if(i) 
+               out << ", ";
+            else
+               out << " ";
+            out << tp. sub(i);
          }
-         out << "( " << view_set( ). sub( ) << " )";
-         return; 
+         out << " )"; 
       }
+      return; 
+
+   case log_or:
+   case log_and:
+      {
+         auto log = view_logical( );
+         out << sel( ) << "{";
+         for( size_t i = 0; i != log. size( ); ++i )
+         {
+            if(i)  
+               out << ", ";
+            else
+               out << " ";
+            out << log. sub(i);
+         }
+         out << " }"; 
+      }
+      return; 
+
+   case set_single:
+   case set_repeat:
+      out << sel( ) << "( " << view_set_unary( ). sub( ) << " )";
+      return;
+
+   case set_union:
+      {
+         out << sel( ) << "(";
+         auto un = view_set_union( );
+         for( size_t i = 0; i != un. size( ); ++i )
+         {
+            if(i)   
+               out << ", ";
+            else
+               out << " ";
+            out << un. sub(i);
+         }
+         out << " )";   
+      }
+      return; 
    }
 
 }

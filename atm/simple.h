@@ -6,8 +6,8 @@
 #include <map>
 #include <set>
 
-#include "finitefunction.h"
-#include "intervalfunction.h"
+#include "finfunc.h"
+#include "partition.h"
 #include "state.h"
 #include "usel.h"
 #include "util/bigint.h"
@@ -17,25 +17,23 @@ namespace atm
    struct simple
    {
 
-      // Types that have no natural order:
-
-      finitefunction<bool,state> delta_bool;
-      finitefunction<usel,state, usel::hash, usel::equal_to> delta_usel;
-
-      // Ordered types:
-      
       state delta_unit; 
-      intervalfunction< char, state > delta_char;
-      intervalfunction< size_t, state > delta_u64;
-      intervalfunction< bigint, state > delta_bigint;
-      intervalfunction< double, state > delta_double;
+
+      state delta_bool_false;
+      state delta_bool_true; 
+      partition< char, state > delta_char;
+      finfunc< usel, state, usel::hash, usel::equal_to > delta_usel;
+      partition< size_t, state > delta_u64;
+      partition< bigint, state > delta_integer;
+      state delta_double;
 
       state collapsed;     // The state that forgets absolutely everything. 
+
       state empty_tup;
       state empty_mset;
 
-      // In both cases, we assume right insertion, so the
-      // the first parameter is the tuple of multiset, and
+      // In both cases, we assume right insertion, so that the
+      // the first parameter is the state of the tuple/multiset, and
       // the second parameter is the appended or inserted element.
 
       std::map< state, std::map< state, state, state::less >, state::less >
@@ -44,8 +42,8 @@ namespace atm
       std::map< state, std::map< state, state, state::less >, state::less >
          delta_mset;
 
-      // We do not store inverses of delta. They can be created when they are
-      // needed.
+      // We do not store inverses of delta. Inverse indices
+      // can be created when they are needed.
 
       std::map< state, std::set< state, state::less >, state::less > delta_eps;
          // If epsilon is empty, then the automaton is deterministic. 
@@ -55,10 +53,10 @@ namespace atm
       state nextstate;
  
       explicit simple( state nextstate ) noexcept 
-         : collapsed( nextstate ++ ),
-           empty_tup( nextstate ++ ),
-           empty_mset( nextstate ++ ),
-           nextstate( nextstate )
+         : delta_char( state( )), 
+           delta_usel( state( )),  
+           delta_u64( state( )),
+           delta_integer( state( ))  
       { } 
 
       state newstate( ) 

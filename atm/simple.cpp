@@ -1,9 +1,8 @@
 
 #include "simple.h"
 
-#include <optional>
-
-void atm::simple::addtuple( const std::vector< state > & tup, state goal )
+void 
+atm::simple::addtuple( const std::vector< state > & tup, state goal )
 {
    std::cout << "adding tuple transition:";
    for( auto s : tup ) std::cout << s << " ";
@@ -30,10 +29,11 @@ void atm::simple::addtuple( const std::vector< state > & tup, state goal )
 
    std::cout << "reached " << partial << "\n";
 
-   delta_eps[ partial ]. insert( goal );
+   // We create an epsilon transition to goal:
 
-   // We need to create an epsilon transition to goal. 
+   delta_eps[ partial ]. insert( goal );
 }
+
 
 void atm::simple::print( std::ostream& out ) const
 {

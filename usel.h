@@ -3,13 +3,14 @@
 #define USEL_
 
 #include <string>
+
 #include <iostream>
 #include "util/normalized.h"
 
 // Written by Hans de Nivelle, sept 2025. 
 // Selector constants are normally printed with a '?' in front of them.
 // In this class usel, we do not store the '?' nowhere in this class 
-// and will also not print it.
+// and will also not print it. 
 
 class usel
 {

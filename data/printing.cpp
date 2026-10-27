@@ -26,7 +26,7 @@ void data::tree::print ( std::ostream& out ) const
       return; 
 
    case sel_usel:
-      out << '?' << view_usel( ). s( );
+      out << view_usel( ). s( );
       return;
 
    case sel_u64:
