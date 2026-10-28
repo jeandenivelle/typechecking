@@ -34,8 +34,8 @@ regexp::expr::print( std::ostream& out ) const
       out << view_filter_char( ). part( );
       return;
 
-   case def_ident:
-      out << view_ident( ). ident( ); 
+   case ref_ident:
+      out << view_reference( ). ident( ); 
       return;
 
    case tup_constr:
@@ -104,14 +104,14 @@ regexp::exprtype::print( std::ostream& out ) const
 {
    switch( sel( ))
    {     
-   case exprtype_onevalue:
-      out << "onevalue";
+   case exprtype_singleval:
+      out << "singleval";
       return;
    case exprtype_tuple:
-      out << "tuple( " << view_tuple( ). arity( ) << ")";
+      out << "tuple(" << view_tuple( ). arity( ) << ")";
       return;
-   case exprtype_array:
-      out << "array";
+   case exprtype_set:
+      out << "set";
       return;
    }
 

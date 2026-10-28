@@ -27,7 +27,7 @@
 %option filter_integer { flt_integer } =>
                part : partition< bigint, bool > 
 
-%option ident          { def_ident } => # ident : identifier
+%option reference      { ref_ident } => # ident : identifier
    // We are referring to a defined identifier.
 
 %option tuple          { tup_constr, tup_concat } => [ sub : expr ]
@@ -81,11 +81,12 @@
 }
 
 
-%define exprtype ( exprtype_onevalue )
+%define exprtype ( exprtype_singleval )
 
-%option onevalue    { exprtype_onevalue } =>
+%option singleval   { exprtype_singleval } =>
 %option tuple       { exprtype_tuple } =>  arity : size_t 
-%option array       { exprtype_array } =>
+%option set         { exprtype_set } =>
+   // Actually 'multiset'.
 
 %h_incl
 {
@@ -98,4 +99,22 @@
    void print( std::ostream& ) const;
 }
 
+%h_after
+{
+   bool operator == ( exprtype tp1, exprtype tp2 ); 
+}
+
+%cpp_back
+{
+   bool regexp::operator == ( exprtype tp1, exprtype tp2 )
+   {
+      if( tp1. sel( ) != tp2. sel( ))
+         return false; 
+
+      if( tp1. sel( ) == exprtype_tuple ) 
+         return tp1. view_tuple( ). arity( ) == tp2. view_tuple( ). arity( );
+      else
+         return true; 
+   }
+}
 

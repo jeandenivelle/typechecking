@@ -13,27 +13,11 @@
 
 #include "atm/stateset.h"
 
-#include "regexp/exprtype.h"
+#include "regexp/algorithms.h"
 
 int main( int argc, char* arcgv[] ) 
 {
-   std::cout << regexp::exprtype( regexp::exprtype_tuple, 100 ) << "\n";
-
    std::cout << tests::formula( ) << "\n\n";
-
-   auto e = regexp::expr( regexp::set_union,
-      { 
-         regexp::expr( regexp::tup_constr, 
-            { regexp::expr( regexp::def_ident, identifier( ) + "hallo" ) } ),
-         regexp::expr( regexp::tup_constr, 
-            { regexp::expr( regexp::def_ident, identifier( ) + "world" ) } )
-      }
-   );
-
-   e = regexp::expr( regexp::set_single, e ); 
-   std::cout << e << "\n";
-
-   return 0;
 
 #if 0
    diff::approxset set1 = diff::approxset::empty( );
@@ -79,6 +63,19 @@ int main( int argc, char* arcgv[] )
 
    std::cout << prp << "\n";
    std::cout << flds << "\n";
+ 
+   for( const auto& p : prp )
+   {
+      std::cout << p. first << " -> " << p. second << "\n";
+      identifier::set ids;
+      size_t cntr = 0;
+      collect( p. second, ids, cntr );
+      for( const auto& id : ids )
+         std::cout << id << "\n";
+      std::cout << cntr << "\n";
+      std::cout << "\n";
+   } 
+
 #if 0
    auto f = tests::mixing( );
    // auto f = tests::repeated( );

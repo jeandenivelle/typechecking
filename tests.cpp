@@ -36,10 +36,10 @@ intermediate::function tests::mixing( )
 #if 0
    auto propSucc = regexp::expr( regexp::tuple, 
       { regexp::expr( regexp::flt_sel, ffunc ) 
-        regexp::expr( regexp::def_ident, exactident( identifier( ) + "nat", 0 )) } );
+        regexp::expr( regexp::ref_ident, exactident( identifier( ) + "nat", 0 )) } );
 #endif
 
-   auto propEven = regexp::expr( regexp::def_ident, identifier( ) + "even" );
+   auto propEven = regexp::expr( regexp::ref_ident, identifier( ) + "even" );
 
    std::vector< statement > res;
       // It will be collected into a single block at the end. 
@@ -217,8 +217,8 @@ intermediate::function tests::arrayconv( )
    auto d0 = variable( 'd', 0 );
    auto e0 = variable( 'e', 0 );
 
-   auto propA = regexp::expr( regexp::def_ident, identifier( ) + "A" );
-   auto propB = regexp::expr( regexp::def_ident, identifier( ) + "B" );
+   auto propA = regexp::expr( regexp::ref_ident, identifier( ) + "A" );
+   auto propB = regexp::expr( regexp::ref_ident, identifier( ) + "B" );
    auto propAllA = regexp::expr( regexp::set_repeat, propA );
    auto propAllB = regexp::expr( regexp::set_repeat, propB );
 
@@ -288,24 +288,24 @@ void tests::add_nat( regexp::defmap& defs, fieldmap& flds )
    zero = tuple( { zero } );
  
    auto succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
-   succ = tuple( { succ, expr( def_ident, identifier( ) + "nat" ) } );
+   succ = tuple( { succ, expr( ref_ident, identifier( ) + "nat" ) } );
 
    auto nat = identifier( ) + "nat";
    defs. insert( nat, expr( log_or, { zero, succ } ));
 
    succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
-   succ = tuple( { succ, expr( def_ident, identifier( ) + "odd" ) } );
+   succ = tuple( { succ, expr( ref_ident, identifier( ) + "odd" ) } );
    auto even = identifier( ) + "even";
    defs. insert( even, expr( log_or, { zero, succ } ));
   
    succ = selectors( { usel( "succ" ) } ); 
-   succ = tuple( { succ, expr( def_ident, identifier( ) + "even" ) } );
+   succ = tuple( { succ, expr( ref_ident, identifier( ) + "even" ) } );
    auto odd = identifier( ) + "odd";
    defs. insert( odd, succ );
 
    flds. insert( identifier( ) + "op", 
                      fielddef( fld_scalar, 
-                        expr( def_ident, identifier( ) + "nat" ), 0 ));
+                        expr( ref_ident, identifier( ) + "nat" ), 0 ));
 }
 
 
@@ -325,8 +325,8 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    {
       auto appl = 
          tuple( { selectors( { usel( "?appl" ) } ),
-                  expr( def_ident, fol + "variable" ),
-                  expr( set_repeat, expr( def_ident, fol + "term" )) } 
+                  expr( ref_ident, fol + "variable" ),
+                  expr( set_repeat, expr( ref_ident, fol + "term" )) } 
            );
       auto db = tuple( { selectors( { usel( "?debruijn" ) } ), 
                          expr( type_u64 ) } );
@@ -339,7 +339,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
       {
          selectors( { usel( "?prop" ) } ), 
          tuple( { selectors( { usel( "?def" ) } ), 
-                  expr( def_ident, fol + "variable" ) } ) 
+                  expr( ref_ident, fol + "variable" ) } ) 
       });
 
       auto sort = tuple( { prim, expr( set_repeat, prim ) } );
@@ -348,43 +348,43 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 
    defs. insert( fol + "atom", 
       tuple( { selectors( { usel( "?atom" ) } ), 
-               expr( def_ident, fol + "variable" ), 
-               expr( set_repeat, expr( def_ident, fol + "term" )) } ));
+               expr( ref_ident, fol + "variable" ), 
+               expr( set_repeat, expr( ref_ident, fol + "term" )) } ));
 
    defs. insert( fol + "binary",
       tuple( { selectors( { usel( "?implies" ), usel( "?equiv" ) } ),
-               expr( def_ident, fol + "form" ),
-               expr( def_ident, fol + "form" ) } ));
+               expr( ref_ident, fol + "form" ),
+               expr( ref_ident, fol + "form" ) } ));
 
    defs. insert( fol + "nary",
       tuple( { selectors( { usel( "?and" ), usel( "?or" ) } ),
-               expr( set_repeat, expr( def_ident, fol + "form" )) } ));
+               expr( set_repeat, expr( ref_ident, fol + "form" )) } ));
 
    defs. insert( fol + "equals",
       tuple( { selectors( { usel( "?equals" ) } ),
-               expr( def_ident, fol + "term" ),
-               expr( def_ident, fol + "term" ) } ));
+               expr( ref_ident, fol + "term" ),
+               expr( ref_ident, fol + "term" ) } ));
 
-   auto vartype = tuple( { expr( def_ident, fol + "variable" ),
-                           expr( def_ident, fol + "sort" ) } );
+   auto vartype = tuple( { expr( ref_ident, fol + "variable" ),
+                           expr( ref_ident, fol + "sort" ) } );
 
    defs. insert( fol + "quant",
       tuple( { selectors( { usel( "?forall" ), usel( "?exists" ) } ),
                expr( set_repeat, vartype ),
-               expr( def_ident, fol + "form" ) } ));
+               expr( ref_ident, fol + "form" ) } ));
 
    defs. insert( fol + "form",
-      expr( log_or, { expr( def_ident, fol + "atom" ),
-                      expr( def_ident, fol + "equals" ),
-                      expr( def_ident, fol + "binary" ),
-                      expr( def_ident, fol + "nary" ),
-                      expr( def_ident, fol + "quant" ) } ));
+      expr( log_or, { expr( ref_ident, fol + "atom" ),
+                      expr( ref_ident, fol + "equals" ),
+                      expr( ref_ident, fol + "binary" ),
+                      expr( ref_ident, fol + "nary" ),
+                      expr( ref_ident, fol + "quant" ) } ));
 
    flds. insert( identifier( ) + "sub1",
-      fielddef( fld_scalar, expr( regexp::def_ident, fol + "binary" ), 1 ));
+      fielddef( fld_scalar, expr( regexp::ref_ident, fol + "binary" ), 1 ));
 
    flds. insert( identifier( ) + "sub2",
-      fielddef( fld_scalar, expr( regexp::def_ident, fol + "binary" ), 2 ));
+      fielddef( fld_scalar, expr( regexp::ref_ident, fol + "binary" ), 2 ));
 
    
 }

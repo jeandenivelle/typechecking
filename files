@@ -31,8 +31,9 @@
    selector.cpp
    expr.cpp
    exprtype.cpp
-   defmap.cpp
    printing.cpp
+   defmap.cpp
+   algorithms.cpp
 
 %dir Source/atm
 %sources

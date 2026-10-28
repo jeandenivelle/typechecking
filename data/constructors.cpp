@@ -22,7 +22,6 @@ data::tree data::string( std::string_view str )
 
 data::tree data::tuple( const std::vector< tree > & sub )
 {
-   std::cout << "entered tuple " << sub. size( ) << "\n";
    data::tree res = tree( sel_tuple, { } );
    for( const auto& s : sub )
       res. view_tuple( ). push_back(s);

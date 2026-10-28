@@ -14,10 +14,7 @@ namespace regexp
 {
    class defmap
    {
-      using maptype = 
-         std::unordered_map< identifier, expr, 
-                             identifier::hash, identifier::equal_to > ;
-      maptype mp; 
+      identifier::map< expr > mp; 
 
    public:
       defmap( ) noexcept = default;
@@ -28,12 +25,19 @@ namespace regexp
 
       bool insert( const identifier& ident, const expr& e );
 
+      const expr& at( const identifier& id ) const 
+         { return mp. at( id ); }
+
       size_t size( ) const { return mp. size( ); } 
 
-      void print( std::ostream& out ) const;
+      using const_iterator = identifier::map< expr > :: const_iterator;
+      const_iterator begin( ) const { return mp. begin( ); }
+      const_iterator end( ) const { return mp. end( ); }
 
+      void print( std::ostream& out ) const;
    };
-};
+
+}
 
 #endif
  

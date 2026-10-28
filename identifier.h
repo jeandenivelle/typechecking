@@ -10,6 +10,8 @@
 #include <vector>
 #include <string> 
 #include <iostream>
+#include <unordered_set>
+#include <unordered_map>
 
 #include "identifier.h"
 #include "util/hashbuilder.h"
@@ -30,9 +32,10 @@ public:
    using const_iterator = std::vector< std::string > :: const_iterator;
  
    const_iterator begin( ) const { return repr. begin( ); }
-   const_iterator cbegin( ) const { return repr. begin( ); }
    const_iterator end( ) const { return repr. end( ); }
-   const_iterator cend( ) const { return repr. end( ); }
+
+   const_iterator cbegin( ) const { return repr. cbegin( ); }
+   const_iterator cend( ) const { return repr. cend( ); }
 
    identifier& operator += ( const std::string& s )
       { repr. push_back(s); return *this; } 
@@ -57,6 +60,15 @@ public:
       hash( ) = default;  
       size_t operator( ) ( const identifier& id ) const;
    };
+
+   using set = 
+      std::unordered_set< identifier, 
+                          identifier::hash, identifier::equal_to > ;
+
+   template< typename T > 
+   using map = 
+      std::unordered_map< identifier, T,
+                          identifier::hash, identifier::equal_to > ;
 
 };
 
