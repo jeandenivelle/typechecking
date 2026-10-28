@@ -30,6 +30,7 @@
 %sources
    selector.cpp
    expr.cpp
+   exprtype.cpp
    defmap.cpp
    printing.cpp
 
@@ -81,6 +82,8 @@
    selector.cpp
    expr.h
    expr.cpp
+   exprtype.h
+   exprtype.cpp
 
 %preproc $(Treegen)/treegen intermediate/treedefs.rec
 %dir Source/intermediate

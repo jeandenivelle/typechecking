@@ -81,3 +81,21 @@
 }
 
 
+%define exprtype ( exprtype_onevalue )
+
+%option onevalue    { exprtype_onevalue } =>
+%option tuple       { exprtype_tuple } =>  arity : size_t 
+%option array       { exprtype_array } =>
+
+%h_incl
+{
+   #include "tvm/includes.h"
+   #include "util/print.h"
+}
+
+%h_methods 
+{
+   void print( std::ostream& ) const;
+}
+
+

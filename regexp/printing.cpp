@@ -1,10 +1,14 @@
 
+#include <stdexcept>
+
 #include "expr.h"
+#include "exprtype.h"
+
 
 void 
 regexp::expr::print( std::ostream& out ) const
 {
-   switch( sel( ) )
+   switch( sel( ))
    {
    case type_never: 
    case type_unit: 
@@ -90,6 +94,28 @@ regexp::expr::print( std::ostream& out ) const
       return; 
    }
 
+   std::cout << "printing a regexp, unknown selector: " << sel( ) << "\n";
+   throw std::logic_error( "unknown selector" );
 }
 
+
+void 
+regexp::exprtype::print( std::ostream& out ) const
+{
+   switch( sel( ))
+   {     
+   case exprtype_onevalue:
+      out << "onevalue";
+      return;
+   case exprtype_tuple:
+      out << "tuple( " << view_tuple( ). arity( ) << ")";
+      return;
+   case exprtype_array:
+      out << "array";
+      return;
+   }
+
+   std::cout << "printing exprtype, unknown selector: " << sel( ) << "\n";
+   throw std::logic_error( "unknown selector" );
+}
 

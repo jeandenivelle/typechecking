@@ -20,6 +20,8 @@ regexp/selector.h
 regexp/selector.cpp
 regexp/expr.h
 regexp/expr.cpp
+regexp/exprtype.h
+regexp/exprtype.cpp
 
 paper/*.aux
 paper/*.dvi

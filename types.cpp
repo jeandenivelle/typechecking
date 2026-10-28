@@ -13,8 +13,12 @@
 
 #include "atm/stateset.h"
 
+#include "regexp/exprtype.h"
+
 int main( int argc, char* arcgv[] ) 
 {
+   std::cout << regexp::exprtype( regexp::exprtype_tuple, 100 ) << "\n";
+
    std::cout << tests::formula( ) << "\n\n";
 
    auto e = regexp::expr( regexp::set_union,
