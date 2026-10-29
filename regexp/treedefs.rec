@@ -19,13 +19,13 @@
 
 %option filter_bool    { flt_bool } => b : bool
 %option filter_char    { flt_char } => 
-               part : partition< char, bool > 
+           part : partition< char, bool > 
 %option filter_sel     { flt_sel } => 
-               fin : finfunc< usel, bool, usel::hash, usel::equal_to > 
+           fin : finfunc< usel, bool, usel::hash, usel::equal_to > 
 %option filter_u64     { flt_u64 } =>
-               part : partition< size_t, bool >
+           part : partition< size_t, bool >
 %option filter_integer { flt_integer } =>
-               part : partition< bigint, bool > 
+           part : partition< bigint, bool > 
 
 %option reference      { ref_ident } => # ident : identifier
    // We are referring to a defined identifier.
@@ -40,8 +40,12 @@
 // 'union' there is confusion on which level the union takes place.
 // In the case below, it is on the lower level.
 
-%option set_unary      { set_single, set_repeat } => sub : expr
-%option set_union      { set_union } => [ sub : expr ] 
+%option set            { set_constr, set_merge } => [ sub : expr ] 
+%option repeat         { set_repeat } => sub : expr
+   // merge works like concat, but since we are dealing with sets,
+   // it is associative.
+
+%option conv           { conv_tuple2single, conv_set2single } => sub : expr
 
 %h_incl {
 	#include "identifier.h"
@@ -81,12 +85,14 @@
 }
 
 
-%define exprtype ( exprtype_singleval )
+%define exprtype ( exprtype_unknown )
 
-%option singleval   { exprtype_singleval } =>
-%option tuple       { exprtype_tuple } =>  arity : size_t 
-%option set         { exprtype_set } =>
-   // Actually 'multiset'.
+%option value       { exprtype_single, exprtype_tuple, exprtype_set } =>
+   // 'set' = multiset. 
+
+%option lattice     { exprtype_unknown, exprtype_error } =>
+   // View unknown as the bottom of the lattice, and error
+   // as the top of the lattice. 
 
 %h_incl
 {
@@ -97,24 +103,15 @@
 %h_methods 
 {
    void print( std::ostream& ) const;
+   bool isbelow( selector s ) const
+      { return sel( ) == exprtype_unknown || sel( ) == s; }
+
 }
 
 %h_after
 {
-   bool operator == ( exprtype tp1, exprtype tp2 ); 
-}
+   inline bool operator == ( exprtype tp1, exprtype tp2 )
+      { return tp1. sel( ) == tp2. sel( ); }
 
-%cpp_back
-{
-   bool regexp::operator == ( exprtype tp1, exprtype tp2 )
-   {
-      if( tp1. sel( ) != tp2. sel( ))
-         return false; 
-
-      if( tp1. sel( ) == exprtype_tuple ) 
-         return tp1. view_tuple( ). arity( ) == tp2. view_tuple( ). arity( );
-      else
-         return true; 
-   }
 }
 

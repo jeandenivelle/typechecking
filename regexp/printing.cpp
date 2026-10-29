@@ -72,15 +72,11 @@ regexp::expr::print( std::ostream& out ) const
       }
       return; 
 
-   case set_single:
-   case set_repeat:
-      out << sel( ) << "( " << view_set_unary( ). sub( ) << " )";
-      return;
-
-   case set_union:
+   case set_constr:
+   case set_merge:
       {
-         out << sel( ) << "(";
-         auto un = view_set_union( );
+         out << sel( ) << "[";
+         auto un = view_set( );
          for( size_t i = 0; i != un. size( ); ++i )
          {
             if(i)   
@@ -89,9 +85,19 @@ regexp::expr::print( std::ostream& out ) const
                out << " ";
             out << un. sub(i);
          }
-         out << " )";   
+         out << " ]";   
       }
       return; 
+
+   case set_repeat:
+      out << sel( ) << "( " << view_repeat( ). sub( ) << " )";
+      return;
+
+   case conv_tuple2single:
+   case conv_set2single:
+      out << sel( ) << "( " << view_conv( ). sub( ) << " )";
+      return;
+
    }
 
    std::cout << "printing a regexp, unknown selector: " << sel( ) << "\n";
@@ -104,18 +110,25 @@ regexp::exprtype::print( std::ostream& out ) const
 {
    switch( sel( ))
    {     
-   case exprtype_singleval:
-      out << "singleval";
+   case exprtype_single:
+      out << "single";
       return;
    case exprtype_tuple:
-      out << "tuple(" << view_tuple( ). arity( ) << ")";
+      out << "tuple";
       return;
    case exprtype_set:
       out << "set";
       return;
+   case exprtype_unknown:
+      out << "unknown";
+      return; 
+   case exprtype_error:
+      out << "error";
+      return; 
    }
 
    std::cout << "printing exprtype, unknown selector: " << sel( ) << "\n";
    throw std::logic_error( "unknown selector" );
 }
+
 

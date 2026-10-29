@@ -17,6 +17,8 @@
 
 int main( int argc, char* arcgv[] ) 
 {
+   std::cout << regexp::exprtype( regexp::exprtype_error ) << "\n";
+
    std::cout << tests::formula( ) << "\n\n";
 
 #if 0
@@ -56,25 +58,15 @@ int main( int argc, char* arcgv[] )
 #endif
 
    fieldmap flds;
-   regexp::defmap prp;
+   regexp::defmap defs;
 
-   tests::add_nat( prp, flds );
-   tests::add_fol( prp, flds );
+   tests::add_nat( defs, flds );
+   tests::add_fol( defs, flds );
 
-   std::cout << prp << "\n";
+   std::cout << defs << "\n";
    std::cout << flds << "\n";
  
-   for( const auto& p : prp )
-   {
-      std::cout << p. first << " -> " << p. second << "\n";
-      identifier::set ids;
-      size_t cntr = 0;
-      collect( p. second, ids, cntr );
-      for( const auto& id : ids )
-         std::cout << id << "\n";
-      std::cout << cntr << "\n";
-      std::cout << "\n";
-   } 
+   auto b = checktypes( defs );
 
 #if 0
    auto f = tests::mixing( );

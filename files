@@ -30,9 +30,9 @@
 %sources
    selector.cpp
    expr.cpp
+   defmap.cpp
    exprtype.cpp
    printing.cpp
-   defmap.cpp
    algorithms.cpp
 
 %dir Source/atm
