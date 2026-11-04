@@ -145,8 +145,8 @@ intermediate::function tests::mixing( )
 #endif
    res. push_back( statement( stat_repeat, p ++, rep. begin( ), rep. end( )));
 
-    return function( statement( stat_block, p ++, res.begin( ), res. end( )),
-                     regexp::expr( regexp::type_unit ));
+   return function( statement( stat_block, p ++, res.begin( ), res. end( )),
+                    regexp::expr( regexp::type_unit ));
 
 }
 
@@ -291,16 +291,15 @@ void tests::add_nat( regexp::defmap& defs, fieldmap& flds )
    succ = tuple( { succ, expr( ref_ident, identifier( ) + "nat" ) } );
 
    auto nat = identifier( ) + "nat";
-   defs. insert( nat, expr( conv_tuple2single, expr( log_or, { zero, succ } )), exprtype_unknown );
+   defs. insert( nat, expr( log_or, { zero, succ } ), exprtype_unknown );
 
    succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
    succ = tuple( { succ, expr( ref_ident, identifier( ) + "odd" ) } );
    auto even = identifier( ) + "even";
-   defs. insert( even, expr( conv_tuple2single, 
-                    expr( log_or, { zero, succ } )), exprtype_unknown );
+   defs. insert( even, expr( log_or, { zero, succ } ), exprtype_unknown );
   
    succ = selectors( { usel( "succ" ) } ); 
-   succ = expr( conv_tuple2single, tuple( { succ, expr( ref_ident, identifier( ) + "even" ) } ));
+   succ = tuple( { succ, expr( ref_ident, identifier( ) + "even" ) } );
    auto odd = identifier( ) + "odd";
    defs. insert( odd, succ, exprtype_unknown );
 
@@ -318,8 +317,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    using namespace regexp;
  
    auto fol = identifier( ) + "fol"; 
-   defs. insert( fol + "variable", 
-       expr( set_repeat, expr( set_constr, { expr( type_char ) } )),
+   defs. insert( fol + "variable", expr( set_repeat, expr( type_char )),
        exprtype_unknown );
 
    auto term = fol + "term";
@@ -327,10 +325,10 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    {
       auto appl = 
          tuple( { selectors( { usel( "?appl" ) } ),
-                  expr( ref_ident, fol + "variable" ),
-                  expr( set_repeat, 
-                     expr( set_constr, {
-                        expr( ref_ident, fol + "term" ) } )) } 
+                  expr( conv_set2single, expr( ref_ident, fol + "variable" )),
+                  expr( conv_set2single, 
+                     expr( set_repeat, expr( ref_ident, fol + "term" ))) 
+                } 
            );
 
       auto db = tuple( { selectors( { usel( "?debruijn" ) } ), 
@@ -344,19 +342,18 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
       {
          selectors( { usel( "?prop" ) } ), 
          tuple( { selectors( { usel( "?def" ) } ), 
-                  expr( ref_ident, fol + "variable" ) } ) 
+                  expr( conv_set2single, expr( ref_ident, fol + "variable" )) } ) 
       });
 
-      auto sort = tuple( { prim, expr( set_repeat, prim ) } );
+      auto sort = tuple( { prim, expr( conv_set2single, expr( set_repeat, prim )) } );
       defs. insert( fol + "sort", std::move(sort), exprtype_unknown  );
    } 
 
    defs. insert( fol + "atom", 
       tuple( { selectors( { usel( "?atom" ) } ), 
-               expr( ref_ident, fol + "variable" ), 
-               expr( set_repeat, 
-                  expr( set_constr, 
-                     { expr( ref_ident, fol + "term" ) } )) } ),
+               expr( conv_set2single, expr( ref_ident, fol + "variable" )), 
+               expr( conv_set2single, expr( set_repeat, 
+                                         expr( ref_ident, fol + "term" ))) } ),
       exprtype_unknown );
 
    defs. insert( fol + "binary",
@@ -367,7 +364,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 
    defs. insert( fol + "nary",
       tuple( { selectors( { usel( "?and" ), usel( "?or" ) } ),
-               expr( set_repeat, expr( ref_ident, fol + "form" )) } ),
+               expr( conv_set2single, expr( set_repeat, expr( ref_ident, fol + "form" ))) } ),
       exprtype_unknown );
 
    defs. insert( fol + "equals",
@@ -376,12 +373,14 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
                expr( ref_ident, fol + "term" ) } ),
       exprtype_unknown );
 
-   auto vartype = tuple( { expr( ref_ident, fol + "variable" ),
+   auto vartype = tuple( { expr( conv_set2single, 
+                              expr( ref_ident, fol + "variable" )),
                            expr( ref_ident, fol + "sort" ) } );
 
    defs. insert( fol + "quant",
       tuple( { selectors( { usel( "?forall" ), usel( "?exists" ) } ),
-               expr( set_repeat, vartype ),
+               expr( conv_set2single, 
+                  expr( set_repeat, vartype )),
                expr( ref_ident, fol + "form" ) } ),
       exprtype_unknown );
 
@@ -401,6 +400,16 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 
    
 }
+
+
+atm::simple tests::atm_fol( )
+{
+   atm::simple res;
+
+   return res;
+}
+
+
 
 #if 0
 

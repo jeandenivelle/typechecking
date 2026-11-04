@@ -39,6 +39,7 @@
 %sources
    stateset.cpp
    simple.cpp
+   run.cpp
 
 %dir Source/intermediate
 %sources

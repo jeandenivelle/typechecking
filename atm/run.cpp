@@ -1,7 +1,7 @@
-#include "simulation.h"
 
-#include <map>
-#include <stdexcept>
+#include "run.h"
+
+#if 0
 
 atm::stateset atm::eps_closure
 ( const simple& atm, stateset unchecked ) {
@@ -137,3 +137,6 @@ atm::stateset atm::simulate
    sset = eps_closure( atm, std::move( sset ));
    return sset;
 }
+
+#endif
+

@@ -11,15 +11,19 @@
 #include "tests.h"
 #include "overloadmap.h"
 
-#include "atm/stateset.h"
+#include "atm/run.h"
 
 #include "regexp/algorithms.h"
 
 int main( int argc, char* arcgv[] ) 
 {
-   std::cout << regexp::exprtype( regexp::exprtype_error ) << "\n";
+   auto f = tests::formula( );
+   std::cout << f << "\n";
 
-   std::cout << tests::formula( ) << "\n\n";
+   auto a = tests::atm_fol( );
+   std::cout << a << "\n";
+
+   return 0;
 
 #if 0
    diff::approxset set1 = diff::approxset::empty( );
@@ -63,11 +67,12 @@ int main( int argc, char* arcgv[] )
    tests::add_nat( defs, flds );
    tests::add_fol( defs, flds );
 
-   std::cout << defs << "\n";
    std::cout << flds << "\n";
  
    auto b = checktypes( defs );
 
+   std::cout << "\n";
+   std::cout << defs << "\n";
 #if 0
    auto f = tests::mixing( );
    // auto f = tests::repeated( );

@@ -1,14 +1,17 @@
 
-#ifndef SIMULATION_
-#define SIMULATION_
+#ifndef TYPECHECKING_RUN_
+#define TYPECHECKING_RUN_
 
 #include "data/tree.h"
 #include "atm/stateset.h"
 #include "atm/simple.h"
 
-namespace atm {
+namespace atm 
+{
    stateset eps_closure( const simple&, stateset );
-   stateset simulate( const simple&, const data::tree& );
+
+   stateset run( const simple&, const data::tree& );
 }
 
 #endif
+

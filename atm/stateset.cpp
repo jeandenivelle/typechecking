@@ -26,7 +26,6 @@
          return Q. size( );
       }
 
-#endif
 
 
 void atm::stateset::print( std::ostream& out ) const 
@@ -84,3 +83,4 @@ bool atm::subset( const stateset& s1, const stateset& s2 )
 }
 
 
+#endif

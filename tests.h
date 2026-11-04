@@ -5,7 +5,7 @@
 #include "fieldmap.h"
 #include "regexp/defmap.h"
 #include "data/tree.h"
-
+#include "atm/simple.h"
 #include "intermediate/function.h"
 
 namespace tests
@@ -24,8 +24,12 @@ namespace tests
    data::tree formula( ); 
       // Produce a first-order formula.
 
-   data::tree nat( unsigned int x );
-      // Produce a natural number. 
+   atm::simple atm_fol( );
+      // A non-deterministic automaton that recognizes first-order 
+      // formulas.
+
+   data::tree nat( unsigned int n );
+      // Produce natural number n. 
 
 }
 

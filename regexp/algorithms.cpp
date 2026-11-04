@@ -32,7 +32,6 @@ regexp::collect( const expr& e,
       return;
 
    case tup_constr:
-   case tup_concat:
       {
          auto tup = e. view_tuple( );
          for( size_t i = 0; i != tup. size( ); ++ i )
@@ -49,20 +48,11 @@ regexp::collect( const expr& e,
          return;
       }
 
-   case set_constr:
-   case set_merge:
-      {
-         auto set = e. view_set( );
-         for( size_t i = 0; i != set. size( ); ++ i )
-            collect( set. sub(i), defs, c );
-         return;
-      }
-
+   case set_once:
    case set_repeat:
-      collect( e. view_repeat( ). sub( ), defs, c );
+      collect( e. view_set( ). sub( ), defs, c ); 
       return;
 
-   case conv_tuple2single:
    case conv_set2single:
       collect( e. view_conv( ). sub( ), defs, c );
       return; 
@@ -110,8 +100,6 @@ regexp::exprtype regexp::join( exprtype tp1, exprtype tp2 )
 
 regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
 {
-   std::cout << "checking type of " << e << "\n";
-
    switch( e. sel( ))
    {
    case type_unit:
@@ -133,16 +121,13 @@ regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
    case tup_constr:
       {
          auto tup = e. view_tuple( );
-         exprtype res = exprtype_unknown;
          for( size_t i = 0; i != tup. size( ); ++ i )
          {
-            res = join( res, gettype( defs, tup. sub(i) ));
+            auto tp = gettype( defs, tup. sub(i) );
+            if( !tp. isbelow( exprtype_single ))
+               return exprtype_error; 
          }
-         std::cout << "tup_constr " << e << " -> " << res << "\n"; 
-         if( res. isbelow( exprtype_single ))
-            return exprtype_tuple;
-         else
-            return exprtype_error;
+         return exprtype_single;
       } 
 
    case log_and:
@@ -152,52 +137,49 @@ regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
          exprtype res = exprtype_unknown;
          for( size_t i = 0; i != log. size( ); ++ i )
             res = join( res, gettype( defs, log. sub(i)) );
-
          return res;
       }
 
-   case set_constr:
-      {
-         auto set = e. view_set( );
-         exprtype res = exprtype_unknown;
-         for( size_t i = 0; i != set. size( ); ++ i )
-            res = join( res, gettype( defs, set. sub(i)) );
-  
-         if( res. isbelow( exprtype_single ))
-            return exprtype_set;
-         else
-            return exprtype_error;
-      }
-
+   case set_once:
    case set_repeat:
       {
-         auto tp = gettype( defs, e. view_repeat( ). sub( ));
-         if( tp. sel( ) != exprtype_unknown && tp. sel( ) != exprtype_set )
-            return exprtype_error;
-         else
+         auto tp = gettype( defs, e. view_set( ). sub( ));
+         if( tp. isbelow( exprtype_single ))
             return exprtype_set; 
+         else
+            return exprtype_error;
       }
 
-   case conv_tuple2single:
+   case set_chain:
+      {
+         auto ch = e. view_chain( );
+         for( size_t i = 0; i != ch. size( ); ++ i )
+         {
+            auto tp = gettype( defs, ch. sub(i) );
+            if( !tp. isbelow( exprtype_set ))
+               return exprtype_error;
+         }
+         return exprtype_set;
+      }
+
+   case conv_set2single:
       {
          auto tp = gettype( defs, e. view_conv( ). sub( ));
-         if( tp. sel( ) != exprtype_unknown && tp. sel( ) != exprtype_tuple )
-            return exprtype_error;
-         else
+         if( tp. isbelow( exprtype_set ))
             return exprtype_single;
+         else
+            return exprtype_error;
       }
+
    }
    std::cout << "unknown selector in regexp::gettype:  " << e. sel( ) << "\n";
 
    throw std::logic_error( "regexp::gettype" );
-
 }
 
 
 bool regexp::checktypes( defmap& defs )
 {
-   std::cout << "checking the types\n";
-
    auto mp = dependencymap( defs );
    identifier::map< identifier::set > used;
       // used. at(id) contains the identifiers whose automata
@@ -236,46 +218,49 @@ bool regexp::checktypes( defmap& defs )
    std::queue< identifier > changed;
    for( auto& d : defs )
    {
-      d. second. tp = gettype( defs, d. second. e );
-      if( d. second. tp. sel( ) != exprtype_unknown )
+      auto tp = gettype( defs, d. second. e );
+      if( tp. sel( ) == exprtype_error )
+         std::cout << d. first << " is typed as error\n";
+
+      if( tp != exprtype_unknown )
+      {
+         d. second. tp = tp; 
          changed. push( d. first ); 
+      }
    }
-
-   std::cout << defs << "\n";
-   std::cout << changed. size( ) << "\n";
-
-   throw std::logic_error( "quitting" );
 
    while( changed. size( )) 
    {
       auto id = changed. front( );
       changed. pop( );
-      std::cout << "looking at " << id << "\n";
 
-      for( const auto& neighbour : used. at( id ) )
+      for( const auto& occursin : used. at( id ))
       { 
-         auto tp = gettype( defs, defs. at( neighbour ). e ); 
-         if( tp != defs. at( neighbour ). tp ) 
+         auto tp = gettype( defs, defs. at( occursin ). e ); 
+         if( tp != defs. at( occursin ). tp ) 
          {
-            changed. push( neighbour );
-            defs. at( neighbour ). tp = tp;
+            if( tp == exprtype_error )
+               std::cout << occursin << " is typed as error\n";
+
+            changed. push( occursin );
+            defs. at( occursin ). tp = tp;
          }
       }
    }
 
    // We report the errors:
 
-#if 0
-         if( tp. sel( ) == exprtype_error )
-         {
-            std::cout << "automaton " << d. first << " is ill-typed:\n";
-            std::cout << "   " << d. second. e << "\n";
-         }
-
-         d. second. tp = tp;
-         changed. push_back( std::pair( d. first, :               
-         std::cout << d. first << " " << tp << "\n";
-         throw std::logic_error( "es besteht handlungsbedarf" );
+   size_t nrproblems = 0;
+   for( const auto& d : defs ) 
+   {
+      if( d. second. tp == exprtype_error ||
+          d. second. tp == exprtype_unknown )
+      {
+         ++ nrproblems; 
+         std::cout << "could not assign a type to " << d. first << "\n";
       }
-#endif
+   }
+
+   return nrproblems == 0;
 }
+

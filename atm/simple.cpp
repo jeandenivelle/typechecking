@@ -8,7 +8,7 @@ atm::simple::addtuple( const std::vector< state > & tup, state goal )
    for( auto s : tup ) std::cout << s << " ";
    std::cout << " -> " << goal << "\n";
  
-   state partial = empty_tup; 
+   state partial = empty_tuple; 
    for( auto s : tup )
    {
       auto p = delta_tup. find( partial );
@@ -20,7 +20,7 @@ atm::simple::addtuple( const std::vector< state > & tup, state goal )
          partial = q -> second;
       else 
       {
-         partial = newstate( );
+         partial = createstate( );
          p -> second. insert( { s,  partial } );
       }
    } 
@@ -38,14 +38,11 @@ atm::simple::addtuple( const std::vector< state > & tup, state goal )
 void atm::simple::print( std::ostream& out ) const
 {
    out << "Simple Automaton:\n";
-   out << "   collapsed = " << collapsed << "\n\n";
-   out << "Selector transitions:\n";
-   out << "   " << delta_usel << "\n"; 
-
+   out << "   collapsed = " << collapsed << "\n";
    out << "\n";
 
    out << "Tuple transitions:\n";
-   out << "Empty: " << empty_tup << "\n";
+   out << "Empty: " << empty_tuple << "\n";
    for( const auto& set : delta_tup )
       for( const auto& ins : set. second )
       {
@@ -54,7 +51,7 @@ void atm::simple::print( std::ostream& out ) const
       }
    out << "\n";
    out << "Multiset transitions:\n"; 
-   out << "Empty: " << empty_mset << "\n";
+   out << "Empty: " << empty_set << "\n";
    for( const auto& set : delta_mset )
       for( const auto& ins : set. second )
       {

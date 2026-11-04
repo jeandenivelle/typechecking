@@ -39,7 +39,6 @@ regexp::expr::print( std::ostream& out ) const
       return;
 
    case tup_constr:
-   case tup_concat:
       {
          auto tp = view_tuple( ); 
          out << sel( ) << "(";
@@ -72,28 +71,27 @@ regexp::expr::print( std::ostream& out ) const
       }
       return; 
 
-   case set_constr:
-   case set_merge:
+   case set_once:
+   case set_repeat:
+         out << sel( ) << "( " << view_set( ). sub( ) << " )";
+         return;
+
+   case set_chain:
       {
          out << sel( ) << "[";
-         auto un = view_set( );
-         for( size_t i = 0; i != un. size( ); ++i )
+         auto ch = view_chain( );
+         for( size_t i = 0; i != ch. size( ); ++i )
          {
             if(i)   
                out << ", ";
             else
                out << " ";
-            out << un. sub(i);
+            out << ch. sub(i);
          }
          out << " ]";   
       }
       return; 
 
-   case set_repeat:
-      out << sel( ) << "( " << view_repeat( ). sub( ) << " )";
-      return;
-
-   case conv_tuple2single:
    case conv_set2single:
       out << sel( ) << "( " << view_conv( ). sub( ) << " )";
       return;
@@ -112,9 +110,6 @@ regexp::exprtype::print( std::ostream& out ) const
    {     
    case exprtype_single:
       out << "single";
-      return;
-   case exprtype_tuple:
-      out << "tuple";
       return;
    case exprtype_set:
       out << "set";
