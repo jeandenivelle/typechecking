@@ -30,7 +30,7 @@ void data::tree::print ( std::ostream& out ) const
       return;
 
    case sel_u64:
-      out << view_u64( ). i( );
+      out << view_u64( ). u( );
       return;
 
    case sel_bigint:

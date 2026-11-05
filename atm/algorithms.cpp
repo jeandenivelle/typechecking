@@ -13,28 +13,34 @@ void atm::close_eps( const simple& smp, stateset& set )
    {
       auto s = unchecked. front( );
       unchecked. pop( );
-      
-#if 0
-   stateset checked; 
-   while( unchecked. size( ))
-   {
-      auto s1 = * ( unchecked. begin( ));
-      unchecked. remove(s1);
-      checked. insert(s1);
-
-      auto it = atm. delta_eps. find( s1 );
-      if( it != atm. delta_eps. end() ) {
-         for( auto s2 : it -> second )
+      auto rg = smp. delta_epsilon. equal_range(s);
+      for( auto p = rg. first; p != rg. second; ++ p )
+      {
+         if( !set. contains( p -> second ))
          {
-            if( !checked. contains(s2) && !unchecked. contains(s2)) 
-               unchecked. insert(s2); 
+            unchecked. push( p -> second );
+            set. insert( p -> second );
          }
       }
    }
+}
 
-   return checked;
-#endif
+
+atm::stateset atm::apply_tuple( const simple& smp,
+                                const stateset& tuple,
+                                const stateset& single )
+{
+   stateset res;
+   for( const auto& t : tuple )
+   {
+      for( const auto& s : single )
+      {
+         auto r = smp. delta_tuple. equal_range( { t, s } );
+         for( auto p = r. first; p != r. second; ++ p )
+            res. insert( p -> second );
+      }
    }
+   return res;
 }
 
 
@@ -92,12 +98,16 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
          close_eps( smp, res );
          return res; 
       }
-#if 0
-   
-   case data::tree_u64:
-      sset. insert( atm. delta_u64( data. view_u64(). i() ) );
-      break;
+   case data::sel_u64:
+      {
+         stateset res;
+         for( const auto& u : smp. delta_u64 )
+            res. insert( u. apply( tr. view_u64( ). u( )) );
+         close_eps( smp, res );
+         return res;
+      }
 
+#if 0
    case data::tree_bigint:
       sset. insert( atm. delta_bigint( data. view_bigint(). i() ) );
       break;
@@ -114,23 +124,14 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
          stateset res = { smp. empty_tuple };
          close_eps( smp, res );
  
-         for( size_t i = 0; i < tup. size( ); ++ i ) 
+         for( size_t i = 0; i != tup. size( ); ++ i ) 
          { 
             auto sub = run( smp, tup. val(i));
-            std::cout << "in a tuple received " << sub << "\n";
-
-#if 0
-            auto sset_at_i = run( smp, tup. val(i)); 
-            stateset new_sset = set_delta( atm. delta_tup, sset, sset_at_i );
-         sset = eps_closure( atm, std::move( new_sset ));
-         if( sset. size() == 0 ) {
-            sset. insert( atm. collapsed );
-            return sset;
-#endif
+            res = apply_tuple( smp, res, sub ); 
+            close_eps( smp, res ); 
          }
+         return res;
       }
-      throw std::logic_error( "unfinished" );
-      break;
 
    case data::sel_array: 
       {
@@ -138,7 +139,7 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
          stateset res = { smp. empty_set };
          close_eps( smp, res ); 
 
-         for( size_t i = 0; i < ar. size( ); ++ i ) 
+         for( size_t i = 0; i != ar. size( ); ++ i ) 
          {
             auto sub = run( smp, ar. val(i));
             res = apply_set( smp, res, sub ); 

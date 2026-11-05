@@ -11,7 +11,7 @@
 %option bool    { sel_bool }     => b : bool
 %option char    { sel_char }     => c : char
 %option usel    { sel_usel }     => s : usel
-%option u64     { sel_u64 }      => i : uint64_t
+%option u64     { sel_u64 }      => u : uint64_t
 %option bigint  { sel_bigint }   => i : bigint 
 %option double  { sel_double }   => d : double 
 

@@ -4,37 +4,27 @@
 void 
 atm::simple::addtuple( const std::vector< state > & tup, state goal )
 {
-   std::cout << "adding tuple transition:";
+   std::cout << "adding tuple transition: ";
    for( auto s : tup ) std::cout << s << " ";
    std::cout << " -> " << goal << "\n";
 
-#if 0 
+   // In earlier versions, we tried to reuse states, but 
+   // now we don't care: We just create a new path.
+
    state partial = empty_tuple; 
    for( auto s : tup )
    {
-      auto p = delta_tup. find( partial );
-      if( p == delta_tup. end( ))
-         p = delta_tup. try_emplace( partial ). first;
+      state next = newstate( );
+      delta_tuple. insert( { { partial, s }, next } );
 
-      auto q = p -> second. find( s );
-      if( q != p -> second. end( ))
-         partial = q -> second;
-      else 
-      {
-         partial = newstate( );
-         p -> second. insert( { s,  partial } );
-      }
+      partial = next;
    } 
-#endif
 
-   // Now partial became total.
-#if 0
    std::cout << "reached " << partial << "\n";
 
    // We create an epsilon transition to goal:
 
-   delta_eps[ partial ]. insert( goal );
-#endif
+   delta_epsilon. insert( { partial, goal } );
 }
 
 
@@ -49,8 +39,9 @@ void atm::simple::print( std::ostream& out ) const
       out << "Comments:\n";
       for( const auto& c : comments )
          out << "   " << c. first << " : " << c. second << "\n";
+      out << "\n";
    }
-
+   
    if( delta_usel. size( )) 
    {
       out << "Delta (usel):\n";
@@ -59,17 +50,15 @@ void atm::simple::print( std::ostream& out ) const
       out << "\n";
    }
 
-#if 0
    out << "Tuple transitions:\n";
-   out << "Empty: " << empty_tuple << "\n";
-   for( const auto& set : delta_tup )
-      for( const auto& ins : set. second )
-      {
-         out << "   " << set. first << " * " << ins. first;
-         out << " -> " << ins. second << "\n";
-      }
+   out << "   <empty> -> " << empty_tuple << "\n";
+   for( const auto& t : delta_tuple )
+   {
+      out << "   " << t. first. first << ", " << t. first. second; 
+      out << " -> " << t. second << "\n";
+   }
    out << "\n";
-#endif
+
    out << "Set transitions:\n"; 
    out << "   <empty> -> " << empty_set << "\n";
    for( const auto& d : delta_set )
@@ -78,22 +67,11 @@ void atm::simple::print( std::ostream& out ) const
       out << " -> " << d. second << "\n";
    }
    out << "\n";
-#if 0
-   out << "Epsilon Transitions:\n"; 
-#endif
 
-#if 0
-   for( const auto& eps : delta_eps )
-   {
-      out << "   " << eps. first << " -> ";
-      for( auto p = eps. second. begin( ); p != eps. second. end( ); ++ p )
-      {
-         if( p != eps. second. begin( ))
-            out << ", ";
-         out << *p;
-      }
-      out << "\n";
-   }
-#endif
+   out << "Epsilon Transitions:\n"; 
+   for( const auto& e : delta_epsilon )
+      out << "   " << e. first << " -> " << e. second << "\n";
+   out << "\n";
+
 }
 

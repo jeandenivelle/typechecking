@@ -346,7 +346,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
       });
 
       auto sort = tuple( { prim, expr( conv_set2single, expr( set_repeat, prim )) } );
-      defs. insert( fol + "sort", std::move(sort), exprtype_unknown  );
+      defs. insert( fol + "sort", std::move( sort ), exprtype_unknown  );
    } 
 
    defs. insert( fol + "atom", 
@@ -406,12 +406,12 @@ atm::simple tests::atm_fol( )
 {
    atm::simple res;
 
-   auto s = res. newstate( ); 
-   res. comment( s, "after forall/exists" );
+   auto qnt = res. newstate( ); 
+   res. comment( qnt, "?forall/?exists" );
    {
       auto& v = res. add_delta_usel( res. trap );
-      v. assign( usel( "?forall" ), s );
-      v. assign( usel( "?exists" ), s );
+      v. assign( usel( "?forall" ), qnt );
+      v. assign( usel( "?exists" ), qnt );
    }
 
    auto single_char = res. newstate( );
@@ -422,6 +422,29 @@ atm::simple tests::atm_fol( )
    res. comment( char_set, "set of characters" );
    res. delta_set. insert( { { res. empty_set, single_char }, char_set } );
    res. delta_set. insert( { { char_set, single_char }, char_set } );
+
+   auto def = res. newstate( );
+   res. comment( def, "?def" );
+   {
+      auto& v = res. add_delta_usel( res. trap );
+      v. assign( usel( "?def" ), def );
+   }
+
+   auto prop = res. newstate( );
+   res. comment( prop, "?prop" );
+   {
+      auto& v = res. add_delta_usel( res. trap );
+      v. assign( usel( "?prop" ), prop );
+   }
+ 
+   auto prim = res. newstate( );
+   res. comment( prim, "prim" );
+   res. addtuple( { def, char_set }, prim );
+   res. delta_epsilon. insert( { prop, prim } );
+ 
+   auto u64 = res. newstate( );
+   res. comment( u64, "u64" );
+   res. add_delta_u64( u64 );
 
    return res;
 }

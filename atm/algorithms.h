@@ -11,7 +11,7 @@ namespace atm
    void close_eps( const simple& smp, stateset& s );
 
    stateset apply_tuple( const simple& smp, 
-                         stateset tuple, stateset single );
+                         const stateset& tuple, const stateset& single );
 
    stateset apply_set( const simple& smp, 
                        const stateset& set, const stateset& element );
