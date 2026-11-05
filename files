@@ -39,7 +39,7 @@
 %sources
    stateset.cpp
    simple.cpp
-   run.cpp
+   algorithms.cpp
 
 %dir Source/intermediate
 %sources

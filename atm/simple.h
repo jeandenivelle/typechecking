@@ -16,17 +16,18 @@ namespace atm
 {
    struct simple
    {
+      using char_func = partition< char, state > ; 
+      using usel_func = finfunc< usel, state, usel::hash, usel::equal_to > ;
 
       std::vector< state > delta_unit; 
       std::vector< partition< bool, state >> delta_bool;
-      std::vector< partition< char, state >> delta_char;
-      std::vector< finfunc< usel, state, usel::hash, usel::equal_to >>
-         delta_usel;
+      std::vector< char_func > delta_char;
+      std::vector< usel_func > delta_usel;
       std::vector< partition< size_t, state >> delta_u64;
       std::vector< partition< bigint, state >> delta_integer;
       std::vector< state > delta_double;
 
-      state collapsed;     // The state that forgets absolutely everything. 
+      state trap;      // No escape from this state! 
 
       state empty_tuple;
       state empty_set;
@@ -34,35 +35,48 @@ namespace atm
       // In both cases, we assume right insertion, so that the
       // the first parameter is the state of the tuple/multiset, and
       // the second parameter is the appended or inserted element.
+      // I am expecting that multimap is more efficient when the
+      // automaton is deterministic.
 
-      std::map< state, std::map< state, state, state::less >, state::less >
-         delta_tup;
-
-      std::map< state, std::map< state, state, state::less >, state::less >
-         delta_mset;
+      std::multimap<std::pair<state,state>, state, state::less> delta_tup;
+      std::multimap< std::pair< state, state >, 
+                     state, state::pair_less > delta_set;
 
       // We do not store inverses of delta. Inverse indices
       // can be created when they are needed.
 
-      std::map< state, std::set< state, state::less >, state::less > delta_eps;
+      std::multimap< state, state, state::less > delta_eps;
     
-      std::map< state, state::less, std::string > comments;
+      std::map< state, std::string, state::less > comments;
          // One can attach comments to states. It's not obligatory.
 
-      state nextstate;
+      state freestate;
  
       explicit simple( state firststate = state( )) noexcept
-         : nextstate( firststate )  
-      { 
-         collapsed = nextstate ++ ;
-         empty_tuple = nextstate ++ ;
-         empty_set = nextstate ++ ;  
-      } 
+         : trap( firststate ),
+           empty_tuple( firststate + 1 ),
+           empty_set( firststate + 2 ),
+           freestate( firststate + 3 ) 
+      { } 
 
-      state createstate( ) 
-         { return nextstate ++ ; }
+      state newstate( ) 
+         { return freestate ++ ; }
 
-      
+      void comment( state s, const std::string& bla ) 
+         { comments. insert( std::pair( s, bla )); }
+
+      char_func& add_delta_char( state def )
+      {
+         delta_char. push_back( def );
+         return delta_char. back( );
+      }
+
+      usel_func& add_delta_usel( state def )
+      {
+         delta_usel. push_back( def ); 
+         return delta_usel. back( );
+      }
+
       void addtuple( const std::vector< state > & tup, state goal );
 
       void print( std::ostream& out ) const; 

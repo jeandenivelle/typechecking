@@ -406,6 +406,23 @@ atm::simple tests::atm_fol( )
 {
    atm::simple res;
 
+   auto s = res. newstate( ); 
+   res. comment( s, "after forall/exists" );
+   {
+      auto& v = res. add_delta_usel( res. trap );
+      v. assign( usel( "?forall" ), s );
+      v. assign( usel( "?exists" ), s );
+   }
+
+   auto single_char = res. newstate( );
+   res. comment( single_char, "single char" ); 
+   res. add_delta_char( single_char );
+
+   auto char_set = res. newstate( );
+   res. comment( char_set, "set of characters" );
+   res. delta_set. insert( { { res. empty_set, single_char }, char_set } );
+   res. delta_set. insert( { { char_set, single_char }, char_set } );
+
    return res;
 }
 

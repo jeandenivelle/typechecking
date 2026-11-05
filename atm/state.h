@@ -2,8 +2,8 @@
 #ifndef ATM_STATE_
 #define ATM_STATE_
 
-#include <utility>
 #include <iostream>
+#include "util/print.h"
 
 namespace atm
 {
@@ -18,25 +18,17 @@ namespace atm
       state( ): 
          s(0) {};
 
-      struct less 
-      {
-         bool operator() ( state s1, state s2 ) const 
-         {
-            return s1.s < s2.s; 
-         }
-      };
-
       state& operator ++ ( )
          { ++ s; return *this; } 
       
       state operator ++ ( int )
          { auto res = *this; ++ *this; return res; }
 
-      state& operator -- ( )
-         { -- s; return *this; }
+      state operator + ( unsigned int i ) const
+         { auto res = *this; res. s += i; return res; }
 
-      state operator -- ( int )
-         { auto res = *this; -- *this; return res; } 
+      state& operator += ( unsigned int i )
+         { s += i; return *this; }
 
       bool operator == ( state other ) const
          { return s == other.s; }
@@ -44,20 +36,38 @@ namespace atm
       bool operator != ( state other ) const
          { return s != other.s; }
 
-      void print( std::ostream& out ) const {
+      struct less 
+      {
+         bool operator() ( state q1, state q2 ) const 
+         {
+            return q1.s < q2.s; 
+         }
+      };
+
+      struct pair_less
+      {
+         bool operator( ) ( std::pair< state, state > p1,
+                            std::pair< state, state > p2 ) const
+         {
+            if( p1.first.s != p2.first.s )
+               return p1.first.s < p2.first.s;
+
+            return p1. second. s < p2. second. s;
+         }
+      };
+
+      void print( std::ostream& out ) const 
+      {
          out << 'Q';
          if( s < 10 )
             out << '0';
-         out << s; 
+         out << s;
       }
    };
 
-   inline std::ostream& 
-   operator<< ( std::ostream& out, const state& s ) 
-   {
-      s. print( out );
-      return out;
-   }
+   inline std::ostream& operator << ( std::ostream& out, state q ) 
+      { q. print( out ); return out; } 
+
 }
 
 #endif

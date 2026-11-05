@@ -11,7 +11,7 @@
 #include "tests.h"
 #include "overloadmap.h"
 
-#include "atm/run.h"
+#include "atm/algorithms.h"
 
 #include "regexp/algorithms.h"
 
@@ -23,6 +23,10 @@ int main( int argc, char* arcgv[] )
    auto a = tests::atm_fol( );
    std::cout << a << "\n";
 
+
+   atm::stateset set = run( a, f );
+   std::cout << set << "\n";
+   
    return 0;
 
 #if 0

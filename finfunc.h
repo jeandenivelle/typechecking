@@ -12,7 +12,7 @@ struct finfunc
 {
    R def;    // Default value.
 
-   std::unordered_map<D,R,H,E > func;
+   std::unordered_map<D,R,H,E> func;
 
    finfunc( ) = delete;
 
@@ -47,7 +47,7 @@ struct finfunc
    const_iterator begin( ) const { return func. begin(); }
    const_iterator end( ) const { return func. end(); }
 
-   const R& operator( ) ( const D& d ) const
+   const R& apply( const D& d ) const
    {
       auto p = func. find(d);
       if( p != func. end( ))

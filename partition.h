@@ -95,7 +95,7 @@ struct partition
 
    // Uses binary search : 
 
-   const R& operator( ) ( const D& d ) const 
+   const R& apply( const D& d ) const 
    {
       if( table. empty( ) || lt( d, table. front( ). d ))
          return below;

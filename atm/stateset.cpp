@@ -27,21 +27,23 @@
       }
 
 
+#endif
 
-void atm::stateset::print( std::ostream& out ) const 
+std::ostream& atm::operator << ( std::ostream& out, const atm::stateset& set )
 {
    out <<'{';
-
-   for( auto p = repr. begin(); p != repr. end(); ++ p ) 
+   for( auto p = set. begin(); p != set. end(); ++ p ) 
    {
-      if( p != repr. begin() ) 
+      if( p != set. begin() ) 
          out << ", ";
       else
          out << ' ';
       out << *p;
    }
    out << " }";
+   return out;
 }
+
 
 bool atm::operator == ( const stateset& s1, const stateset& s2 )
 {
@@ -60,27 +62,27 @@ bool atm::operator == ( const stateset& s1, const stateset& s2 )
    return true;
 }
 
+
 bool atm::subset( const stateset& s1, const stateset& s2 )
 {
    if( s1. size( ) > s2. size( ))
       return false;
 
-   auto lt = state::less( );
+   stateset::key_compare lt;
 
    auto p1 = s1. begin( );
    auto p2 = s2. begin( );
+
    while( p1 != s1. end( )) 
    {
-      std::cout << *p1 << " " << *p2 << "\n";
       while( p2 != s2. end( ) && lt( *p2, *p1 ))
          ++ p2;
 
       if( p2 == s2. end( ) || *p2 != *p1 ) 
          return false;
+
       ++ p1; ++ p2;
    }
    return true; 
 }
 
-
-#endif

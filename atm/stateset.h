@@ -14,7 +14,9 @@ namespace atm
    std::ostream& operator<< ( std::ostream& out, const stateset& set ); 
 
    bool operator == ( const stateset& s1, const stateset& s2 ); 
-   bool operator != ( const stateset& s1, const stateset& s2 );
+
+   inline bool operator != ( const stateset& s1, const stateset& s2 )
+      { return ! ( s1 == s2 ); } 
 
    bool subset( const stateset& s1, const stateset& s2 ); 
 }
