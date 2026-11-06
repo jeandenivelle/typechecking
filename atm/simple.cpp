@@ -2,12 +2,21 @@
 #include "simple.h"
 
 void 
+atm::simple:: addforall( const std::vector< state > & single, 
+                         state goal )
+{
+   state loop = newstate( );
+   delta_epsilon. insert( { empty_set, loop } );
+   for( const auto& s : single )
+      delta_set. insert( { { loop, s }, loop } );
+
+   delta_epsilon. insert( { loop, goal } );
+}
+
+
+void 
 atm::simple::addtuple( const std::vector< state > & tup, state goal )
 {
-   std::cout << "adding tuple transition: ";
-   for( auto s : tup ) std::cout << s << " ";
-   std::cout << " -> " << goal << "\n";
-
    // In earlier versions, we tried to reuse states, but 
    // now we don't care: We just create a new path.
 
@@ -41,12 +50,28 @@ void atm::simple::print( std::ostream& out ) const
          out << "   " << c. first << " : " << c. second << "\n";
       out << "\n";
    }
-   
+  
+   if( delta_char. size( ))
+   {
+      out << "Delta (char):\n";
+      for( const auto& p : delta_char )
+         out << "   " << p << "\n";
+      out << "\n";
+   }
+
    if( delta_usel. size( )) 
    {
       out << "Delta (usel):\n";
-      for( const auto& t : delta_usel )
-         out << "   " << t << "\n";
+      for( const auto& f : delta_usel )
+         out << "   " << f << "\n";
+      out << "\n";
+   }
+
+   if( delta_u64. size( ))
+   {
+      out << "Delta (u64):\n";
+      for( const auto& p : delta_u64 )
+         out << "   " << p << "\n";
       out << "\n";
    }
 

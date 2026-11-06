@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <vector>
+#include <concepts>
 
 // A partition partitions an ordered type using 
 // an increasing set of values 
@@ -23,14 +24,14 @@
 
 
 template< typename D, typename R, 
-          typename C = std::less<D>, 
-          typename E = std::equal_to<R> >  
+          std::strict_weak_order<D,D> C = std::less<D>, 
+          std::equivalence_relation<R,R> E = std::equal_to<R> >  
 struct partition
 {
    C lt; 
-   E eq;       // Equality is on R.
+   E eq;       // Equality must be defined on on R.
 
-   R below;    // The value below the first d. 
+   R initial;    // The value below the first d. 
 
    struct interval
    {
@@ -44,13 +45,13 @@ struct partition
 
    partition( ) = delete;
 
-   partition( const R& below )
-      : below( below )
+   partition( const R& initial )
+      : initial( initial )
    { }
 
-   partition( const R& below,
+   partition( const R& initial,
                      std::initializer_list<interval> init )
-      : below( below ) 
+      : initial( initial ) 
    {
       table. reserve( init. size( ));
       for( auto p : init )
@@ -98,7 +99,7 @@ struct partition
    const R& apply( const D& d ) const 
    {
       if( table. empty( ) || lt( d, table. front( ). d ))
-         return below;
+         return initial;
 
       const_iterator low = cbegin( );
       const_iterator upp = cend( );
@@ -131,13 +132,14 @@ struct partition
 
    void print( std::ostream& out ) const
    { 
-      out << "<below> -> " << below; 
+      out << "partition( ";
+      out << "<initial> -> " << initial; 
       for( const auto& p : table )
       {
          out << ", " << p.d << " -> ";
          out << "[ first " << p. at << ", then " << p. after << " ]";
       }
-      out << "\n";
+      out << " )";
    } 
 
    void clear( ) { table. clear( ); }

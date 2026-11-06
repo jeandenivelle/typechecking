@@ -64,7 +64,7 @@ atm::stateset atm::apply_set( const simple& smp,
 
 atm::stateset atm::run( const simple& smp, const data::tree& tr ) 
 {
-   std::cout << "running on " << tr << "\n";
+
    switch( tr. sel( )) 
    {
 
@@ -80,30 +80,35 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
    case data::tree_bool:
       sset. insert( atm. delta_bool( data. view_bool(). b() ) );
       break;
-
 #endif
+
    case data::sel_char:
       {
          stateset res;
          for( const auto& f : smp. delta_char )
             res. insert( f. apply( tr. view_char( ). c( )) );
          close_eps( smp, res );  
+         std::cout << tr << " -> " << res << "\n"; 
          return res;
       }
+
    case data::sel_usel:
       {
          stateset res; 
          for( const auto& f : smp. delta_usel )
             res. insert( f. apply( tr. view_usel( ). s( )) ); 
          close_eps( smp, res );
+         std::cout << tr << " -> " << res << "\n";
          return res; 
       }
+
    case data::sel_u64:
       {
          stateset res;
          for( const auto& u : smp. delta_u64 )
             res. insert( u. apply( tr. view_u64( ). u( )) );
          close_eps( smp, res );
+         std::cout << tr << " -> " << res << "\n";
          return res;
       }
 
@@ -130,6 +135,7 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
             res = apply_tuple( smp, res, sub ); 
             close_eps( smp, res ); 
          }
+         std::cout << tr << " -> " << res << "\n";
          return res;
       }
 
@@ -145,8 +151,10 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
             res = apply_set( smp, res, sub ); 
             close_eps( smp, res );
          }
+         std::cout << tr << " -> " << res << "\n";
          return res;
       }
+
    }
  
    std::cout << "run( ), unrecognized selector " << tr. sel( ) << "\n";

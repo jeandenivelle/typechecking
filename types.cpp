@@ -5,30 +5,19 @@
 #include "usel.h"
 #include "data/tree.h"
 
-#include "partition.h"
+#include "stepfunc.h"
 #include "finfunc.h"
 
 #include "tests.h"
 #include "overloadmap.h"
 
 #include "atm/algorithms.h"
+#include "atm/conversions.h"
 
 #include "regexp/algorithms.h"
 
 int main( int argc, char* arcgv[] ) 
 {
-   auto f = tests::formula( );
-   std::cout << f << "\n";
-
-   auto a = tests::atm_fol( );
-   std::cout << a << "\n";
-
-
-   atm::stateset set = run( a, f );
-   std::cout << set << "\n";
-   
-   return 0;
-
 #if 0
    diff::approxset set1 = diff::approxset::empty( );
    set1. insert( -2 );
@@ -75,8 +64,13 @@ int main( int argc, char* arcgv[] )
  
    auto b = checktypes( defs );
 
+   atm::simple trans;
+   identifier::map< atm::state > acc;
+
+   add_automaton( trans, defs. at( identifier( ) + "nat" ). e, defs, acc );
    std::cout << "\n";
    std::cout << defs << "\n";
+
 #if 0
    auto f = tests::mixing( );
    // auto f = tests::repeated( );

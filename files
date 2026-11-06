@@ -40,6 +40,7 @@
    stateset.cpp
    simple.cpp
    algorithms.cpp
+   conversions.cpp
 
 %dir Source/intermediate
 %sources

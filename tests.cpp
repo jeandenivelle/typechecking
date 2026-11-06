@@ -398,7 +398,6 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    flds. insert( identifier( ) + "sub2",
       fielddef( fld_scalar, expr( regexp::ref_ident, fol + "binary" ), 2 ));
 
-   
 }
 
 
@@ -406,22 +405,15 @@ atm::simple tests::atm_fol( )
 {
    atm::simple res;
 
-   auto qnt = res. newstate( ); 
-   res. comment( qnt, "?forall/?exists" );
-   {
-      auto& v = res. add_delta_usel( res. trap );
-      v. assign( usel( "?forall" ), qnt );
-      v. assign( usel( "?exists" ), qnt );
-   }
-
    auto single_char = res. newstate( );
    res. comment( single_char, "single char" ); 
    res. add_delta_char( single_char );
 
    auto char_set = res. newstate( );
    res. comment( char_set, "set of characters" );
-   res. delta_set. insert( { { res. empty_set, single_char }, char_set } );
-   res. delta_set. insert( { { char_set, single_char }, char_set } );
+   res. addforall( { single_char }, char_set );
+
+   // Eventually vartype:
 
    auto def = res. newstate( );
    res. comment( def, "?def" );
@@ -436,24 +428,87 @@ atm::simple tests::atm_fol( )
       auto& v = res. add_delta_usel( res. trap );
       v. assign( usel( "?prop" ), prop );
    }
- 
+
    auto prim = res. newstate( );
    res. comment( prim, "prim" );
    res. addtuple( { def, char_set }, prim );
    res. delta_epsilon. insert( { prop, prim } );
+
+   auto prim_set = res. newstate( );
+   res. comment( prim_set, "set of prims" );
+   res. addforall( { prim }, prim_set ); 
+
+   auto sort = res. newstate( );
+   res. comment( sort, "sort" );
+   res. addtuple( { prim, prim_set }, sort );
+ 
+   auto vartype = res. newstate( );
+   res. comment( vartype, "vartype" );
+   res. addtuple( { char_set, sort }, vartype );
+
+   auto vartype_set = res. newstate( );
+   res. comment( vartype_set, "set of vartypes" );
+   res. addforall( { vartype }, vartype_set );
  
    auto u64 = res. newstate( );
    res. comment( u64, "u64" );
    res. add_delta_u64( u64 );
 
+   auto debruijn = res. newstate( );
+   res. comment( debruijn, "?debruijn" );
+   {
+      auto& v = res. add_delta_usel( res. trap );
+      v. assign( usel( "?debruijn" ), debruijn );
+   }
+
+   auto index = res. newstate( );
+   res. comment( index, "index" );
+   res. addtuple( { debruijn, u64 }, index );
+
+   auto term = res. newstate( );
+   res. comment( term, "term" );
+
+   auto term_set = res. newstate( );
+   res. comment( term_set, "set of terms" );
+   res. addforall( { term }, term_set );
+
+   auto appl = res. newstate( );
+   res. comment( appl, "?appl" );
+   {
+      auto& v = res. add_delta_usel( res. trap );
+      v. assign( usel( "?appl" ), appl );
+   }
+   
+   res. addtuple( { appl, char_set, term_set }, term );
+   res. delta_epsilon. insert( { index, term } ); 
+
+   auto atom = res. newstate( );
+   res. comment( atom, "?atom" );
+   {
+      auto& v = res. add_delta_usel( res. trap );
+      v. assign( usel( "?atom" ), atom );
+   }
+
+   auto qnt = res. newstate( ); 
+   res. comment( qnt, "?forall/?exists" );
+   {
+      auto& v = res. add_delta_usel( res. trap );
+      v. assign( usel( "?forall" ), qnt );
+      v. assign( usel( "?exists" ), qnt );
+   }
+
+
+   auto form = res. newstate( );
+   res. comment( form, "formula" );
+
+   res. addtuple( { atom, char_set, term_set }, form );
+   res. addtuple( { qnt, vartype_set, form }, form );
+
    return res;
 }
 
 
-
-#if 0
-
-void modaladjectives( adj::map& sys )
+void modaladjectives( regexp::defmap& defs, fieldmap& flds )
 {
 #if 0
    std::cout << "Adding adjectives on modal formula:\n";
@@ -471,14 +526,11 @@ void modaladjectives( adj::map& sys )
 #endif 
 }
 
-#endif
-
 data::tree tests::formula( )
 {
    // forall x : p(x,0).
 
    auto zero = data::string( "zero" );
-   std::cout << data::usel( "?appl" ) << "\n\n";
 
    zero = data::tuple( 
       { data::usel( "?appl" ), zero, 
@@ -499,6 +551,8 @@ data::tree tests::formula( )
       { data::usel( "?def" ), 
         data::string( "Nat" )
       } );
+
+   s = data::tuple( { s, data::array( { } ) } );
 
    auto vt = data::tuple( { data::string( "x" ), s } );
 

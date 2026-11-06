@@ -3,11 +3,12 @@
 #define FINFUNC_ 
 
 #include <iostream>
-#include <vector>
 #include <unordered_map>
+#include <concepts>
 
 template < typename D, typename R, 
-           typename H = std::hash<D>, typename E = std::equal_to<D> >
+           std::invocable<D> H = std::hash<D>, 
+           std::equivalence_relation<D,D> E = std::equal_to<D> >
 struct finfunc
 {
    R def;    // Default value.
@@ -21,7 +22,7 @@ struct finfunc
    { }
  
    finfunc( const R& def,
-            std::initializer_list<std::pair<const D, R>> init )
+            std::initializer_list<std::pair<D, R>> init )
       : def( def ) 
    {
       func. reserve( init. size( ));

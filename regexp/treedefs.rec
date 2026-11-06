@@ -19,13 +19,13 @@
 
 %option filter_bool    { flt_bool } => b : bool
 %option filter_char    { flt_char } => 
-           part : partition< char, bool > 
+           part : stepfunc< char, bool > 
 %option filter_sel     { flt_sel } => 
            fin : finfunc< usel, bool, usel::hash, usel::equal_to > 
 %option filter_u64     { flt_u64 } =>
-           part : partition< size_t, bool >
+           part : stepfunc< size_t, bool >
 %option filter_integer { flt_integer } =>
-           part : partition< bigint, bool > 
+           part : stepfunc< bigint, bool > 
 
 %option reference      { ref_ident } => # ident : identifier
    // A reference to a defined identifier.
@@ -49,7 +49,7 @@
 %h_incl {
 	#include "identifier.h"
         #include "finfunc.h"
-        #include "partition.h"
+        #include "stepfunc.h"
 	#include "util/print.h"
 	#include "tvm/includes.h"
 	#include "usel.h"

@@ -7,7 +7,7 @@
 #include <set>
 
 #include "finfunc.h"
-#include "partition.h"
+#include "stepfunc.h"
 #include "state.h"
 #include "usel.h"
 #include "util/bigint.h"
@@ -16,16 +16,16 @@ namespace atm
 {
    struct simple
    {
-      using char_func = partition< char, state > ; 
+      using char_func = stepfunc< char, state > ; 
       using usel_func = finfunc< usel, state, usel::hash, usel::equal_to > ;
-      using u64_func = partition< size_t, state > ;
+      using u64_func = stepfunc< size_t, state > ;
 
       std::vector< state > delta_unit; 
-      std::vector< partition< bool, state >> delta_bool;
+      std::vector< stepfunc< bool, state >> delta_bool;
       std::vector< char_func > delta_char;
       std::vector< usel_func > delta_usel;
       std::vector< u64_func > delta_u64;
-      std::vector< partition< bigint, state >> delta_integer;
+      std::vector< stepfunc< bigint, state >> delta_integer;
       std::vector< state > delta_double;
 
       state trap;      // No escape from this state! 
@@ -86,8 +86,8 @@ namespace atm
          return delta_u64. back( );
       }
 
-
       void addtuple( const std::vector< state > & tuple, state goal );
+      void addforall( const std::vector< state > & single, state goal );
 
       void print( std::ostream& out ) const; 
 
