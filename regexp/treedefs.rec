@@ -42,9 +42,12 @@
 // 'union' there is confusion on which level the union takes place.
 // In the case below, it is on the lower level.
 
-%option set            { set_once, set_repeat } => sub : expr
-%option chain          { set_chain } => [ sub : expr ] 
-%option conv           { conv_set2single } => sub : expr
+%option single2set     { single2set } => elem : expr, 
+                                 # nr : size_t, period : size_t 
+   // A period > 999999 means no period.
+      
+%option concat         { concat } => [ sub : expr ] 
+%option set2single     { set2single } => sub : expr
 
 %h_incl {
 	#include "identifier.h"

@@ -48,13 +48,12 @@ regexp::collect( const expr& e,
          return;
       }
 
-   case set_once:
-   case set_repeat:
-      collect( e. view_set( ). sub( ), defs, c ); 
+   case single2set:
+      collect( e. view_single2set( ). elem( ), defs, c ); 
       return;
 
-   case conv_set2single:
-      collect( e. view_conv( ). sub( ), defs, c );
+   case set2single:
+      collect( e. view_set2single( ). sub( ), defs, c );
       return; 
    }
 
@@ -140,31 +139,30 @@ regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
          return res;
       }
 
-   case set_once:
-   case set_repeat:
+   case single2set:
       {
-         auto tp = gettype( defs, e. view_set( ). sub( ));
+         auto tp = gettype( defs, e. view_single2set( ). elem( ));
          if( tp. isbelow( exprtype_single ))
             return exprtype_set; 
          else
             return exprtype_error;
       }
 
-   case set_chain:
+   case concat:
       {
-         auto ch = e. view_chain( );
-         for( size_t i = 0; i != ch. size( ); ++ i )
+         auto cat = e. view_concat( );
+         for( size_t i = 0; i != cat. size( ); ++ i )
          {
-            auto tp = gettype( defs, ch. sub(i) );
+            auto tp = gettype( defs, cat. sub(i) );
             if( !tp. isbelow( exprtype_set ))
                return exprtype_error;
          }
          return exprtype_set;
       }
 
-   case conv_set2single:
+   case set2single:
       {
-         auto tp = gettype( defs, e. view_conv( ). sub( ));
+         auto tp = gettype( defs, e. view_set2single( ). sub( ));
          if( tp. isbelow( exprtype_set ))
             return exprtype_single;
          else

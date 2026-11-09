@@ -219,8 +219,8 @@ intermediate::function tests::arrayconv( )
 
    auto propA = regexp::expr( regexp::ref_ident, identifier( ) + "A" );
    auto propB = regexp::expr( regexp::ref_ident, identifier( ) + "B" );
-   auto propAllA = regexp::expr( regexp::set_repeat, propA );
-   auto propAllB = regexp::expr( regexp::set_repeat, propB );
+   auto propAllA = regexp::expr( regexp::single2set, propA, 0, 1 );
+   auto propAllB = regexp::expr( regexp::single2set, propB, 0, 1 );
 
    std::vector< statement > res;
       // It will be collected into a single block at the end. 
@@ -317,7 +317,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    using namespace regexp;
  
    auto fol = identifier( ) + "fol"; 
-   defs. insert( fol + "variable", expr( set_repeat, expr( type_char )),
+   defs. insert( fol + "variable", expr( single2set, expr( type_char ), 0, 1 ),
        exprtype_unknown );
 
    auto term = fol + "term";
@@ -325,9 +325,9 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    {
       auto appl = 
          tuple( { selectors( { usel( "?appl" ) } ),
-                  expr( conv_set2single, expr( ref_ident, fol + "variable" )),
-                  expr( conv_set2single, 
-                     expr( set_repeat, expr( ref_ident, fol + "term" ))) 
+                  expr( set2single, expr( ref_ident, fol + "variable" )),
+                  expr( set2single, 
+                     expr( single2set, expr( ref_ident, fol + "term" ), 0, 1 )) 
                 } 
            );
 
@@ -342,18 +342,19 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
       {
          selectors( { usel( "?prop" ) } ), 
          tuple( { selectors( { usel( "?def" ) } ), 
-                  expr( conv_set2single, expr( ref_ident, fol + "variable" )) } ) 
+                  expr( set2single, expr( ref_ident, fol + "variable" )) } ) 
       });
 
-      auto sort = tuple( { prim, expr( conv_set2single, expr( set_repeat, prim )) } );
+      auto sort = tuple( { prim, expr( set2single, 
+                                 expr( single2set, prim, 0, 1 )) } );
       defs. insert( fol + "sort", std::move( sort ), exprtype_unknown  );
    } 
 
    defs. insert( fol + "atom", 
       tuple( { selectors( { usel( "?atom" ) } ), 
-               expr( conv_set2single, expr( ref_ident, fol + "variable" )), 
-               expr( conv_set2single, expr( set_repeat, 
-                                         expr( ref_ident, fol + "term" ))) } ),
+               expr( set2single, expr( ref_ident, fol + "variable" )), 
+               expr( set2single, expr( single2set, 
+                              expr( ref_ident, fol + "term" ), 0, 1 )) } ),
       exprtype_unknown );
 
    defs. insert( fol + "binary",
@@ -364,7 +365,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 
    defs. insert( fol + "nary",
       tuple( { selectors( { usel( "?and" ), usel( "?or" ) } ),
-               expr( conv_set2single, expr( set_repeat, expr( ref_ident, fol + "form" ))) } ),
+               expr( set2single, expr( single2set, expr( ref_ident, fol + "form" ), 0, 1 )) } ),
       exprtype_unknown );
 
    defs. insert( fol + "equals",
@@ -373,14 +374,14 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
                expr( ref_ident, fol + "term" ) } ),
       exprtype_unknown );
 
-   auto vartype = tuple( { expr( conv_set2single, 
+   auto vartype = tuple( { expr( set2single, 
                               expr( ref_ident, fol + "variable" )),
                            expr( ref_ident, fol + "sort" ) } );
 
    defs. insert( fol + "quant",
       tuple( { selectors( { usel( "?forall" ), usel( "?exists" ) } ),
-               expr( conv_set2single, 
-                  expr( set_repeat, vartype )),
+               expr( set2single, 
+                  expr( single2set, vartype, 0, 1 )),
                expr( ref_ident, fol + "form" ) } ),
       exprtype_unknown );
 
@@ -405,74 +406,74 @@ atm::simple tests::atm_fol( )
 {
    atm::simple res;
 
-   auto single_char = res. newstate( );
+   auto single_char = res. create_state( );
    res. comment( single_char, "single char" ); 
    res. add_delta_char( single_char );
 
-   auto char_set = res. newstate( );
+   auto char_set = res. create_state( );
    res. comment( char_set, "set of characters" );
    res. addforall( { single_char }, char_set );
 
    // Eventually vartype:
 
-   auto def = res. newstate( );
+   auto def = res. create_state( );
    res. comment( def, "?def" );
    {
       auto& v = res. add_delta_usel( res. trap );
       v. assign( usel( "?def" ), def );
    }
 
-   auto prop = res. newstate( );
+   auto prop = res. create_state( );
    res. comment( prop, "?prop" );
    {
       auto& v = res. add_delta_usel( res. trap );
       v. assign( usel( "?prop" ), prop );
    }
 
-   auto prim = res. newstate( );
+   auto prim = res. create_state( );
    res. comment( prim, "prim" );
    res. addtuple( { def, char_set }, prim );
    res. delta_epsilon. insert( { prop, prim } );
 
-   auto prim_set = res. newstate( );
+   auto prim_set = res. create_state( );
    res. comment( prim_set, "set of prims" );
    res. addforall( { prim }, prim_set ); 
 
-   auto sort = res. newstate( );
+   auto sort = res. create_state( );
    res. comment( sort, "sort" );
    res. addtuple( { prim, prim_set }, sort );
  
-   auto vartype = res. newstate( );
+   auto vartype = res. create_state( );
    res. comment( vartype, "vartype" );
    res. addtuple( { char_set, sort }, vartype );
 
-   auto vartype_set = res. newstate( );
+   auto vartype_set = res. create_state( );
    res. comment( vartype_set, "set of vartypes" );
    res. addforall( { vartype }, vartype_set );
  
-   auto u64 = res. newstate( );
+   auto u64 = res. create_state( );
    res. comment( u64, "u64" );
    res. add_delta_u64( u64 );
 
-   auto debruijn = res. newstate( );
+   auto debruijn = res. create_state( );
    res. comment( debruijn, "?debruijn" );
    {
       auto& v = res. add_delta_usel( res. trap );
       v. assign( usel( "?debruijn" ), debruijn );
    }
 
-   auto index = res. newstate( );
+   auto index = res. create_state( );
    res. comment( index, "index" );
    res. addtuple( { debruijn, u64 }, index );
 
-   auto term = res. newstate( );
+   auto term = res. create_state( );
    res. comment( term, "term" );
 
-   auto term_set = res. newstate( );
+   auto term_set = res. create_state( );
    res. comment( term_set, "set of terms" );
    res. addforall( { term }, term_set );
 
-   auto appl = res. newstate( );
+   auto appl = res. create_state( );
    res. comment( appl, "?appl" );
    {
       auto& v = res. add_delta_usel( res. trap );
@@ -482,14 +483,14 @@ atm::simple tests::atm_fol( )
    res. addtuple( { appl, char_set, term_set }, term );
    res. delta_epsilon. insert( { index, term } ); 
 
-   auto atom = res. newstate( );
+   auto atom = res. create_state( );
    res. comment( atom, "?atom" );
    {
       auto& v = res. add_delta_usel( res. trap );
       v. assign( usel( "?atom" ), atom );
    }
 
-   auto qnt = res. newstate( ); 
+   auto qnt = res. create_state( ); 
    res. comment( qnt, "?forall/?exists" );
    {
       auto& v = res. add_delta_usel( res. trap );
@@ -498,7 +499,7 @@ atm::simple tests::atm_fol( )
    }
 
 
-   auto form = res. newstate( );
+   auto form = res. create_state( );
    res. comment( form, "formula" );
 
    res. addtuple( { atom, char_set, term_set }, form );

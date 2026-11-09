@@ -62,7 +62,7 @@ namespace atm
            freestate( firststate + 3 ) 
       { } 
 
-      state newstate( ) 
+      state create_state( ) 
          { return freestate ++ ; }
 
       void comment( state s, const std::string& bla ) 

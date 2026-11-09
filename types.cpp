@@ -15,6 +15,7 @@
 #include "atm/conversions.h"
 
 #include "regexp/algorithms.h"
+#include "atm/focus.h"
 
 int main( int argc, char* arcgv[] ) 
 {
@@ -54,6 +55,19 @@ int main( int argc, char* arcgv[] )
    std::cout << mat << "\n";
 #endif
 
+   atm::state q1;
+   atm::state q2 = q1 + 1;
+   atm::state q3 = q1 + 2;
+   atm::state q4 = q1 + 3;
+
+   std::vector< atm::state > word = { q1, q2, q2, q3, q2, q3, q1, q2, q3 };
+   atm::simple smp;
+
+   atm::convert_word( smp, word );
+
+   return 0;
+
+  
    fieldmap flds;
    regexp::defmap defs;
 
@@ -63,6 +77,8 @@ int main( int argc, char* arcgv[] )
    std::cout << flds << "\n";
  
    auto b = checktypes( defs );
+
+   std::cout << "after checking " << defs << "\n";
 
    atm::simple trans;
    identifier::map< atm::state > acc;

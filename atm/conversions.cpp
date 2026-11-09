@@ -11,7 +11,7 @@ atm::state atm::add_automaton( simple& smp,
                const identifier::map< state > & accepting )
 {
 
-   std::cout << "translating " << e << "\n";
+   std::cout << "coverting (to automaton) " << e << "\n";
 
    switch( e. sel( ))
    {

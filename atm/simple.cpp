@@ -5,7 +5,7 @@ void
 atm::simple:: addforall( const std::vector< state > & single, 
                          state goal )
 {
-   state loop = newstate( );
+   state loop = create_state( );
    delta_epsilon. insert( { empty_set, loop } );
    for( const auto& s : single )
       delta_set. insert( { { loop, s }, loop } );
@@ -23,7 +23,7 @@ atm::simple::addtuple( const std::vector< state > & tup, state goal )
    state partial = empty_tuple; 
    for( auto s : tup )
    {
-      state next = newstate( );
+      state next = create_state( );
       delta_tuple. insert( { { partial, s }, next } );
 
       partial = next;

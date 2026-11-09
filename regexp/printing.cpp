@@ -71,15 +71,23 @@ regexp::expr::print( std::ostream& out ) const
       }
       return; 
 
-   case set_once:
-   case set_repeat:
-         out << sel( ) << "( " << view_set( ). sub( ) << " )";
+   case single2set:
+      {
+         auto sg = view_single2set( );
+         if( sg. period( ) < 1000000 ) 
+         {
+            out << sel( ) << "( " << sg. elem( ) << ", ";
+            out << sg. nr( ) << " mod " << sg. period( ) << " )";
+         }
+         else
+            out << sel( ) << "( " << sg. elem( ) << ", " << sg. nr( ) << " )"; 
          return;
+      }
 
-   case set_chain:
+   case concat:
       {
          out << sel( ) << "[";
-         auto ch = view_chain( );
+         auto ch = view_concat( );
          for( size_t i = 0; i != ch. size( ); ++i )
          {
             if(i)   
@@ -92,8 +100,8 @@ regexp::expr::print( std::ostream& out ) const
       }
       return; 
 
-   case conv_set2single:
-      out << sel( ) << "( " << view_conv( ). sub( ) << " )";
+   case set2single:
+      out << sel( ) << "( " << view_set2single( ). sub( ) << " )";
       return;
 
    }
