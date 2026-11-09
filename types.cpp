@@ -15,7 +15,7 @@
 #include "atm/conversions.h"
 
 #include "regexp/algorithms.h"
-#include "atm/focus.h"
+#include "atm/view.h"
 
 int main( int argc, char* arcgv[] ) 
 {
@@ -60,11 +60,13 @@ int main( int argc, char* arcgv[] )
    atm::state q3 = q1 + 2;
    atm::state q4 = q1 + 3;
 
-   std::vector< atm::state > word = { q1, q2, q2, q3, q2, q3, q1, q2, q3 };
+   std::vector< atm::state > word = { q2, q2, q1, q2, q2 };
    atm::simple smp;
 
-   atm::convert_word( smp, word );
+   auto v = atm::convert_word( smp, word );
+   std::cout << v << "\n";
 
+   std::cout << smp << "\n";
    return 0;
 
   

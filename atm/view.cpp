@@ -1,13 +1,12 @@
 
-#include "focus.h"
+#include "view.h"
 #include "statemultiset.h"
 
 namespace
 {
-
    using namespace atm;
 
-   // mset[ trans ] is the symbol for which we are currently trying to
+   // mset. at( trans ) is the symbol for which we are currently trying to
    // find transitions.
 
    void addtransitions( simple& smp, size_t level, size_t trans,
@@ -17,7 +16,11 @@ namespace
    {
       if( level == mset. size( ))
       {
-         std::cout << "adding from " << index << "\n";
+         // A transition over state mset. at( trans ). s : 
+
+         smp. delta_set. insert( 
+            { { statevect. at( index ), mset. at( trans ). s }, 
+              statevect. at( index + mset. at( trans ). skip ) } ); 
          return; 
       }
 
@@ -35,29 +38,42 @@ namespace
 }
 
    
-atm::focus
+atm::view
 atm::convert_word( simple& smp, std::vector< state > word )
 {
    auto mset = statemultiset( word );
    std::cout << mset << "\n";
 
    // Now we have the word as a multiset, and we don't care
-   // about 'word' anymore.
+   // about 'word' any more.
 
    word. clear( );   // To be sure.
 
    auto entry = smp. create_state( ); 
-   auto accept = smp. create_state( );
-   auto result = focus( entry, accept ); 
+   auto exit= smp. create_state( );
+   auto result = view( entry, exit ); 
    for( size_t i = 0; i != mset. nrstates( ); ++ i )
       result. states. push_back( smp. create_state( )); 
 
    for( size_t trans = 0; trans != mset. size( ); ++ trans )
-   {
-      std::cout << "trans = " << trans << "\n";  
       addtransitions( smp, 0, trans, mset, result. states, 0 );
-   }
-   
+
+   smp. delta_epsilon. insert( { result. entry, result. states. front( ) } );
+   smp. delta_epsilon. insert( { result. states. back( ), result. exit } ); 
    return result; 
+}
+
+void atm::view::print( std::ostream& out ) const
+{
+   out << "View( " << entry << ", " << exit;
+   for( auto p = states. begin( ); p != states. end( ); ++ p )
+   {
+      if( p == states. begin( ))
+         out << ";  ";
+      else
+         out << ", ";
+      out << *p;
+   }
+   out << " )";
 }
 

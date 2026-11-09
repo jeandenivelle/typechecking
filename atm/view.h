@@ -1,6 +1,8 @@
 
-#ifndef ATM_FOCUS_
-#define ATM_FOCUS_
+// A selected sub part of a simple automaton.
+
+#ifndef ATM_VIEW_
+#define ATM_VIEW_
 
 // a* is represented by nr = 0, period = 1.
 // (aa)* is represented by nr = 0, period = 2.
@@ -13,22 +15,23 @@
 
 namespace atm
 {
-   struct focus
+   struct view
    {
       state entry;
-      state accept;
+      state exit;
 
       std::vector< state > states; 
 
-      focus( state entry, state accept )
-         : entry( entry ), accept( accept )
+      view( state entry, state exit )
+         : entry( entry ), exit( exit )
       { }
 
+      void print( std::ostream& out ) const; 
    };
 
-   focus convert_word( simple& smp, std::vector< state > word );
+   view convert_word( simple& smp, std::vector< state > word );
    
-   void merge_with( const focus& other );
+   void merge_with( const view& other );
    void add_repetition( state s, size_t rep );
 
 }
