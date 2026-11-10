@@ -30,10 +30,9 @@ namespace atm
    };
 
    view convert_word( simple& smp, std::vector< state > word );
+   view add_dimension( state s, size_t rep, bool circular );
+   // void merge_with( const view& other );
    
-   void merge_with( const view& other );
-   void add_repetition( state s, size_t rep );
-
 }
 
 #endif

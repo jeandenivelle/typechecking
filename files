@@ -43,6 +43,7 @@
    conversions.cpp
    view.cpp
    statemultiset.cpp
+   builder.cpp
 
 %dir Source/intermediate
 %sources
