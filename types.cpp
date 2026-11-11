@@ -60,11 +60,20 @@ int main( int argc, char* arcgv[] )
    atm::state q2 = q0 + 2;
    atm::state q3 = q0 + 3;
 
-   auto bld = atm::builder( );
-   std::cout << bld << "\n";
-   bld. addlinear( q0, 3 );
-   bld. addlinear( q1, 2 );
-   std::cout << bld << "\n";
+   auto bld1 = atm::builder( );
+   bld1. addlinear( q0, 3 );
+
+   auto bld2 = atm::builder( ); 
+   bld2. addlinear( q1, 2 );
+
+   auto bld3 = atm::builder( );
+   bld3. addlinear( q2, 3 );
+
+   std::cout << bld1 << "\n";
+   std::cout << bld2 << "\n";
+   std::cout << bld3 << "\n";
+   
+   std::cout << atm::disjunction( { bld1, bld2, bld3 } ) << "\n";
    return 0;
 
   

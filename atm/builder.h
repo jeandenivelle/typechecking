@@ -18,6 +18,7 @@ namespace atm
    {
       size_t nrstates;
          // 0 is always entry, and nrstates itself is always the exit.
+         // There can be no transitions from nrstates.
          
       static constexpr size_t empty_set = 
          std::numeric_limits< size_t > :: max( );
@@ -32,6 +33,8 @@ namespace atm
             : from( from ), element( element ), to( to )
          { } 
 
+         transition moved( size_t dist ) const
+            { return transition( from + dist, element, to + dist ); }
       };
 
       struct epsilon
@@ -43,7 +46,8 @@ namespace atm
             : from( from ), to( to )
          { } 
 
-         void print( std::ostream& out ) const;
+         epsilon moved( size_t dist ) const
+            { return epsilon( from + dist, to + dist ); } 
       };
 
       std::vector< transition > delta_set;
@@ -66,6 +70,7 @@ namespace atm
          // If nr == 0, then add circular will not add a copy, but
          // it will still add a circle with length 1.
 
+ 
       void printstate( std::ostream& out, size_t s ) const;
       void print( std::ostream& out ) const;
 
@@ -73,6 +78,9 @@ namespace atm
       void copy_delta( size_t delta_set_size, size_t delta_eps_size );
 
    };
+
+   builder disjunction( const std::vector< builder > & disj );
+      // Builds a disjunction.
 
 }
 

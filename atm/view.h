@@ -1,6 +1,8 @@
 
 // A selected sub part of a simple automaton.
 
+(It is not used any more)
+
 #ifndef ATM_VIEW_
 #define ATM_VIEW_
 

@@ -41,8 +41,6 @@
    simple.cpp
    algorithms.cpp
    conversions.cpp
-   view.cpp
-   statemultiset.cpp
    builder.cpp
 
 %dir Source/intermediate

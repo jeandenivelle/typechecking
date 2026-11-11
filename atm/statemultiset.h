@@ -1,4 +1,6 @@
 
+This is not used any more!
+
 #ifndef ATM_STATEMULTISET_
 #define ATM_STATEMULTISET_
 
