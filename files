@@ -42,7 +42,9 @@
    algorithms.cpp
    conversions.cpp
    builder.cpp
-
+   selector.cpp
+   convresult.cpp
+   
 %dir Source/intermediate
 %sources
    statement.cpp
@@ -88,6 +90,16 @@
    expr.cpp
    exprtype.h
    exprtype.cpp
+
+%preproc $(Treegen)/treegen atm/treedefs.rec
+%dir Source/atm
+%in 
+   treedefs.rec
+%out 
+   selector.h
+   selector.cpp
+   convresult.h
+   convresult.cpp
 
 %preproc $(Treegen)/treegen intermediate/treedefs.rec
 %dir Source/intermediate

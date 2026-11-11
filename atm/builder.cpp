@@ -1,7 +1,8 @@
 
 #include "builder.h"
 
-void atm::builder::addlinear( state aa, size_t nr ) 
+void 
+atm::builder::addlinear( const std::vector< state > & symbset, size_t nr ) 
 {
    if( nr == 0 )
       return; 
@@ -18,21 +19,25 @@ void atm::builder::addlinear( state aa, size_t nr )
       nrstates += orig_nrstates;
    }
 
-   // It remains to add the aa transitions:
+   // It remains to add the transitions in symbset:
 
    for( size_t s = 0; s != orig_nrstates; ++ s )
    {
       for( size_t i = 0; i != nr; ++ i )
       {
-         delta_set. push_back( { i * orig_nrstates + s, aa, 
-                                 ( i + 1 ) * orig_nrstates + s } );
+         for( auto sym : symbset )
+         {
+            delta_set. push_back( { i * orig_nrstates + s, sym, 
+                                    ( i + 1 ) * orig_nrstates + s } );
+         }
       }
    }
 
    -- nrstates;
 }
 
-void atm::builder::addcircular( state aa, size_t nr )
+void 
+atm::builder::addcircular( const std::vector< state > & symbset, size_t nr )
 {
    ++ nrstates;
    const size_t orig_nrstates = nrstates;
@@ -46,20 +51,26 @@ void atm::builder::addcircular( state aa, size_t nr )
       nrstates += orig_nrstates;
    }
 
-   // It remains to add the aa transitions:
+   // It remains to add the transitions in symbset:
 
    for( size_t s = 0; s != orig_nrstates; ++ s )
    {
       for( size_t i = 0; i != nr; ++ i )
       {
-         delta_set. push_back( { i * orig_nrstates + s, aa,
-                                 ( i + 1 ) * orig_nrstates + s } );
+         for( auto sym : symbset ) 
+         {
+            delta_set. push_back( { i * orig_nrstates + s, sym,
+                                    ( i + 1 ) * orig_nrstates + s } );
+         }
       }
    }
 
    for( size_t s = 0; s != orig_nrstates; ++ s )
    {
-      delta_set. push_back( { nr * orig_nrstates + s, aa, s } );
+      for( auto sym : symbset ) 
+      {
+         delta_set. push_back( { nr * orig_nrstates + s, sym, s } );
+      }
    }
 
    delta_eps. push_back( { orig_nrstates - 1, nrstates } ); 
@@ -112,7 +123,6 @@ void atm::builder::print( std::ostream& out ) const
 atm::builder 
 atm::disjunction( const std::vector< builder > & disj )
 {
-   std::cout << "building a disjunction\n";
 
    // The first state will have epsilon transitions to all the
    // first states of disj. In addition, every disjunct
@@ -148,4 +158,29 @@ atm::disjunction( const std::vector< builder > & disj )
    return res;
 }
 
+atm::builder atm::oneword( std::vector< state > word )
+{
+   std::cout << "oneword\n";
+   std::sort( word. begin( ), word. end( ), state::less( ));
+
+   auto bld = atm::builder( );
+
+   auto it = word. begin( ); 
+   while( it != word. end( ))
+   {
+      auto next = it;
+      size_t freq = 0;
+      while( next != word. end( ) && *it == *next )
+      {
+         ++ next;
+         ++ freq;
+      }
+
+      std::cout << *it << " / " << freq << "\n";
+      bld. addcircular( { *it }, freq );
+      it = next;
+   }
+
+   return bld;
+}
 

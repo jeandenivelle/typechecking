@@ -219,8 +219,8 @@ intermediate::function tests::arrayconv( )
 
    auto propA = regexp::expr( regexp::ref_ident, identifier( ) + "A" );
    auto propB = regexp::expr( regexp::ref_ident, identifier( ) + "B" );
-   auto propAllA = regexp::expr( regexp::single2set, propA, 0, 1 );
-   auto propAllB = regexp::expr( regexp::single2set, propB, 0, 1 );
+   auto propAllA = regexp::forall( { propA } );
+   auto propAllB = regexp::forall( { propB } );
 
    std::vector< statement > res;
       // It will be collected into a single block at the end. 
@@ -317,22 +317,19 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    using namespace regexp;
  
    auto fol = identifier( ) + "fol"; 
-   defs. insert( fol + "variable", expr( single2set, expr( type_char ), 0, 1 ),
-       exprtype_unknown );
+   defs. insert( fol + "variable", regexp::forall( { type_char } ));
 
    auto term = fol + "term";
 
    {
       auto appl = 
          tuple( { selectors( { usel( "?appl" ) } ),
-                  expr( set2single, expr( ref_ident, fol + "variable" )),
-                  expr( set2single, 
-                     expr( single2set, expr( ref_ident, fol + "term" ), 0, 1 )) 
+                  expr( ref_ident, fol + "variable" ),
+                  regexp::forall( { expr( ref_ident, fol + "term" ) } ) 
                 } 
            );
 
-      auto db = tuple( { selectors( { usel( "?debruijn" ) } ), 
-                         expr( type_u64 ) } );
+      auto db = tuple( { selectors( { usel( "?debruijn" ) } ), expr( type_u64 ) } );
 
       defs. insert( term, expr( log_or, { appl, db } ), exprtype_unknown ); 
    } 
@@ -342,19 +339,17 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
       {
          selectors( { usel( "?prop" ) } ), 
          tuple( { selectors( { usel( "?def" ) } ), 
-                  expr( set2single, expr( ref_ident, fol + "variable" )) } ) 
+                  expr( ref_ident, fol + "variable" ) } ) 
       });
 
-      auto sort = tuple( { prim, expr( set2single, 
-                                 expr( single2set, prim, 0, 1 )) } );
+      auto sort = tuple( { prim, regexp::forall( { prim } ) } );
       defs. insert( fol + "sort", std::move( sort ), exprtype_unknown  );
    } 
 
    defs. insert( fol + "atom", 
       tuple( { selectors( { usel( "?atom" ) } ), 
-               expr( set2single, expr( ref_ident, fol + "variable" )), 
-               expr( set2single, expr( single2set, 
-                              expr( ref_ident, fol + "term" ), 0, 1 )) } ),
+               expr( ref_ident, fol + "variable" ), 
+               regexp::forall( { expr( ref_ident, fol + "term" ) } ) } ),
       exprtype_unknown );
 
    defs. insert( fol + "binary",
@@ -365,7 +360,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 
    defs. insert( fol + "nary",
       tuple( { selectors( { usel( "?and" ), usel( "?or" ) } ),
-               expr( set2single, expr( single2set, expr( ref_ident, fol + "form" ), 0, 1 )) } ),
+               regexp::forall( { expr( ref_ident, fol + "form" ) } ) } ),
       exprtype_unknown );
 
    defs. insert( fol + "equals",
@@ -374,14 +369,12 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
                expr( ref_ident, fol + "term" ) } ),
       exprtype_unknown );
 
-   auto vartype = tuple( { expr( set2single, 
-                              expr( ref_ident, fol + "variable" )),
+   auto vartype = tuple( { expr( ref_ident, fol + "variable" ),
                            expr( ref_ident, fol + "sort" ) } );
 
    defs. insert( fol + "quant",
       tuple( { selectors( { usel( "?forall" ), usel( "?exists" ) } ),
-               expr( set2single, 
-                  expr( single2set, vartype, 0, 1 )),
+               regexp::forall( { vartype } ), 
                expr( ref_ident, fol + "form" ) } ),
       exprtype_unknown );
 

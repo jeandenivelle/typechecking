@@ -23,6 +23,11 @@ regexp/expr.cpp
 regexp/exprtype.h
 regexp/exprtype.cpp
 
+atm/selector.h
+atm/selector.cpp
+atm/convresult.h
+atm/convresult.cpp
+
 paper/*.aux
 paper/*.dvi
 paper/*.out

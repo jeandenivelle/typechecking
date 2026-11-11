@@ -1,0 +1,46 @@
+
+// The result of a conversion. 
+// Written by Hans de Nivelle (Nov) 2026.
+
+%dir atm
+
+%namespace atm
+
+%define convresult     ( res_unknown )
+
+%option unknown        { res_unknown } => // Used as default.
+%option single         { res_single } => # q : state
+%option tuple          { res_tuple } =>  # q : state, sz : size_t 
+%option set            { res_set } => bld : builder 
+%option error          { res_string } => what : std::string
+
+%h_incl {
+	#include "builder.h"
+	#include "util/print.h"
+	#include "tvm/includes.h"
+}
+
+%h_methods {
+      void print( std::ostream& ) const;
+}
+
+
+%cpp_back
+{
+   void atm::convresult::print( std::ostream& out ) const 
+   {
+      switch( sel( ))
+      {
+
+      case res_single:
+         out << "single( " << view_single( ). q( ) << " )";
+         return;
+
+      }
+      std::cout << "convresult::print" << sel( ) << "\n";
+      throw std::logic_error( "not implemented" );
+   }
+
+}
+
+

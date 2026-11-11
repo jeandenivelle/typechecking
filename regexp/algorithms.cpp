@@ -47,7 +47,7 @@ regexp::collect( const expr& e,
             collect( log. sub(i), defs, c );
          return;
       }
-
+#if 0
    case single2set:
       collect( e. view_single2set( ). elem( ), defs, c ); 
       return;
@@ -55,6 +55,7 @@ regexp::collect( const expr& e,
    case set2single:
       collect( e. view_set2single( ). sub( ), defs, c );
       return; 
+#endif
    }
 
    std::cout << "unknown selector in regexp::collect:  " << e. sel( ) << "\n";
@@ -139,6 +140,7 @@ regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
          return res;
       }
 
+#if 0
    case single2set:
       {
          auto tp = gettype( defs, e. view_single2set( ). elem( ));
@@ -147,7 +149,8 @@ regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
          else
             return exprtype_error;
       }
-
+#endif
+#if 0
    case concat:
       {
          auto cat = e. view_concat( );
@@ -159,7 +162,9 @@ regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
          }
          return exprtype_set;
       }
+#endif
 
+#if 0
    case set2single:
       {
          auto tp = gettype( defs, e. view_set2single( ). sub( ));
@@ -169,6 +174,7 @@ regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
             return exprtype_error;
       }
 
+#endif
    }
    std::cout << "unknown selector in regexp::gettype:  " << e. sel( ) << "\n";
 

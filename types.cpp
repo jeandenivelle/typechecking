@@ -19,6 +19,10 @@
 
 int main( int argc, char* arcgv[] ) 
 {
+   auto res = atm::convresult( atm::res_single, atm::state( ) + 4 );
+   std::cout << res << "\n";
+   return 0;
+
 #if 0
    diff::approxset set1 = diff::approxset::empty( );
    set1. insert( -2 );
@@ -61,19 +65,19 @@ int main( int argc, char* arcgv[] )
    atm::state q3 = q0 + 3;
 
    auto bld1 = atm::builder( );
-   bld1. addlinear( q0, 3 );
+   bld1. addlinear( { q0 }, 3 );
 
    auto bld2 = atm::builder( ); 
-   bld2. addlinear( q1, 2 );
+   bld2. addlinear( { q1 }, 2 );
 
-   auto bld3 = atm::builder( );
-   bld3. addlinear( q2, 3 );
+   auto bld3 = atm::oneword( { q1, q2, q2 } );
 
    std::cout << bld1 << "\n";
    std::cout << bld2 << "\n";
    std::cout << bld3 << "\n";
    
    std::cout << atm::disjunction( { bld1, bld2, bld3 } ) << "\n";
+
    return 0;
 
   
@@ -92,7 +96,7 @@ int main( int argc, char* arcgv[] )
    atm::simple trans;
    identifier::map< atm::state > acc;
 
-   add_automaton( trans, defs. at( identifier( ) + "nat" ). e, defs, acc );
+   // add_automaton( trans, defs. at( identifier( ) + "nat" ). e, defs, acc );
    std::cout << "\n";
    std::cout << defs << "\n";
 

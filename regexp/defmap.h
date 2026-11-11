@@ -35,7 +35,7 @@ namespace regexp
 
       // True if the insertion happened. We stubbornly refuse to overwrite:
 
-      bool insert( const identifier& ident, expr e, exprtype tp );
+      bool insert( const identifier& ident, expr e, exprtype tp = exprtype_single );
 
       value& at( const identifier& id ) 
          { return mp. at( id ); }

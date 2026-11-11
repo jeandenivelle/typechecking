@@ -71,39 +71,38 @@ regexp::expr::print( std::ostream& out ) const
       }
       return; 
 
-   case single2set:
+   case set_word:
       {
-         auto sg = view_single2set( );
-         if( sg. period( ) < 1000000 ) 
+         auto wrd = view_word( );
+         out << sel( ) << "(";
+         for( size_t i = 0; i != wrd. size( ); ++i ) 
          {
-            out << sel( ) << "( " << sg. elem( ) << ", ";
-            out << sg. nr( ) << " mod " << sg. period( ) << " )";
+            if(i) 
+               out << ", ";
+            else
+               out << " ";
+            out << wrd. sym(i);  
          }
-         else
-            out << sel( ) << "( " << sg. elem( ) << ", " << sg. nr( ) << " )"; 
+         out << " )"; 
          return;
       }
 
-   case concat:
+   case set_linear:
+   case set_circular:
       {
-         out << sel( ) << "[";
-         auto ch = view_concat( );
-         for( size_t i = 0; i != ch. size( ); ++i )
+         out << sel( ) << "{";
+         auto dim = view_dimension( );
+         for( size_t i = 0; i != dim. size( ); ++i )
          {
             if(i)   
                out << ", ";
             else
                out << " ";
-            out << ch. sub(i);
+            out << dim. sym(i);
          }
-         out << " ]";   
+         out << " }";   
       }
       return; 
-
-   case set2single:
-      out << sel( ) << "( " << view_set2single( ). sub( ) << " )";
-      return;
-
    }
 
    std::cout << "printing a regexp, unknown selector: " << sel( ) << "\n";

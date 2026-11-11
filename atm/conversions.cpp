@@ -4,7 +4,7 @@
 identifier::map< atm::state >
 atm::make_automata( const regexp::defmap& defs,
                     simple& smp );
-
+#if 0
 atm::state atm::add_automaton( simple& smp, 
                const regexp::expr& e,
                const regexp::defmap& defs,
@@ -28,6 +28,6 @@ atm::state atm::add_automaton( simple& smp,
    throw std::logic_error( "not implemented" ); 
 
 }
-
+#endif
 
 

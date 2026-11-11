@@ -4,6 +4,7 @@
 
 #include "simple.h"
 #include "regexp/defmap.h"
+#include "convresult.h"
 
 namespace atm
 {
@@ -12,11 +13,11 @@ namespace atm
                   simple& smp );
 
                    
-   state
-   add_automaton( simple& smp,
-                  const regexp::expr& e, 
-                  const regexp::defmap& defs,
-                  const identifier::map< state > & accepting );
+   convresult
+   convert( simple& smp,
+            const regexp::expr& e, 
+            const regexp::defmap& defs,
+            const identifier::map< state > & accepting );
 
 }
 

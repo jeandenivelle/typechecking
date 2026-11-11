@@ -19,9 +19,6 @@ namespace atm
       size_t nrstates;
          // 0 is always entry, and nrstates itself is always the exit.
          // There can be no transitions from nrstates.
-         
-      static constexpr size_t empty_set = 
-         std::numeric_limits< size_t > :: max( );
 
       struct transition
       {
@@ -61,12 +58,11 @@ namespace atm
       { }
 
  
-
-      void addlinear( state aa, size_t nr );
+      void addlinear( const std::vector< state > & symset, size_t nr );
          // If nr == 0, nothing changes.
          // nr == 1 will add one copy, etc.
 
-      void addcircular( state aa, size_t nr );
+      void addcircular( const std::vector< state > & symset, size_t nr );
          // If nr == 0, then add circular will not add a copy, but
          // it will still add a circle with length 1.
 
@@ -82,6 +78,7 @@ namespace atm
    builder disjunction( const std::vector< builder > & disj );
       // Builds a disjunction.
 
+   builder oneword( const std::vector< state > word ); 
 }
 
 #endif
