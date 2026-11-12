@@ -30,7 +30,6 @@
 %sources
    selector.cpp
    expr.cpp
-   defmap.cpp
    exprtype.cpp
    printing.cpp
    algorithms.cpp

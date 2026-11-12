@@ -31,7 +31,8 @@ regexp::collect( const expr& e,
       defs. insert( e. view_reference( ). ident( ));
       return;
 
-   case tup_constr:
+   case tup_exact:
+   case tup_prefix:
       {
          auto tup = e. view_tuple( );
          for( size_t i = 0; i != tup. size( ); ++ i )
@@ -39,10 +40,9 @@ regexp::collect( const expr& e,
          return;
       }
 
-   case log_and:
    case log_or:
       {
-         auto log = e. view_logical( );
+         auto log = e. view_disjunction( );
          for( size_t i = 0; i != log. size( ); ++ i )
             collect( log. sub(i), defs, c );
          return;
@@ -72,7 +72,7 @@ regexp::dependencymap( const defmap& defs )
    {
       identifier::set used;
       size_t cntr = 0;
-      collect( d.second.e, used, cntr );
+      collect( d. second, used, cntr );
 
       res. emplace( d.first, std::move( used )); 
    }
@@ -116,9 +116,10 @@ regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
       return exprtype_single;
  
    case ref_ident:
-         return defs. at( e. view_reference( ). ident( )). tp; 
+      return exprtype_single; 
    
-   case tup_constr:
+   case tup_exact:
+   case tup_prefix:
       {
          auto tup = e. view_tuple( );
          for( size_t i = 0; i != tup. size( ); ++ i )
@@ -130,10 +131,9 @@ regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
          return exprtype_single;
       } 
 
-   case log_and:
    case log_or:
       {
-         auto log = e. view_logical( );
+         auto log = e. view_disjunction( );
          exprtype res = exprtype_unknown;
          for( size_t i = 0; i != log. size( ); ++ i )
             res = join( res, gettype( defs, log. sub(i)) );
@@ -184,6 +184,7 @@ regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
 
 bool regexp::checktypes( defmap& defs )
 {
+#if 0
    auto mp = dependencymap( defs );
    identifier::map< identifier::set > used;
       // used. at(id) contains the identifiers whose automata
@@ -264,7 +265,7 @@ bool regexp::checktypes( defmap& defs )
          std::cout << "could not assign a type to " << d. first << "\n";
       }
    }
-
    return nrproblems == 0;
+#endif
 }
 

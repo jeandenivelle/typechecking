@@ -13,50 +13,21 @@
 
 namespace regexp
 {
-   class defmap
+   using defmap = identifier::map< expr > ; 
+
+   inline std::ostream& operator << ( std::ostream& out,
+                                      const defmap& mp ) 
    {
-      struct value
+      out << "Definition Map:\n";
+      for( const auto& def : mp )
       {
-         expr e;
-         exprtype tp;
-
-         value( expr e, exprtype tp )
-            : e( std::move(e)),
-              tp( std::move(tp))
-         { }
-      };
-
-      identifier::map< value > mp; 
-
-   public:
-      defmap( ) noexcept = default;
-
-      bool contains( const identifier& ident ) const;
-
-      // True if the insertion happened. We stubbornly refuse to overwrite:
-
-      bool insert( const identifier& ident, expr e, exprtype tp = exprtype_single );
-
-      value& at( const identifier& id ) 
-         { return mp. at( id ); }
-
-      const value& at( const identifier& id ) const 
-         { return mp. at( id ); }
-
-      size_t size( ) const { return mp. size( ); } 
-
-      using const_iterator = identifier::map< value > :: const_iterator;
-      const_iterator begin( ) const { return mp. begin( ); }
-      const_iterator end( ) const { return mp. end( ); }
-
-      using iterator = identifier::map< value > :: iterator; 
-      iterator begin( ) { return mp. begin( ); }
-      iterator end( ) { return mp. end( ); }
-
-      void print( std::ostream& out ) const;
-   };
+         out << "   " << def. first << " : " << def. second << "\n";
+      }
+      return out; 
+   }
 
 }
+
 
 #endif
  

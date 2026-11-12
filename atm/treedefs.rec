@@ -6,13 +6,15 @@
 
 %namespace atm
 
-%define convresult     ( res_unknown )
+%define convresult     ( atm_unknown )
+   // Not used, but TreeGen needs an option without fields.
 
-%option unknown        { res_unknown } => // Used as default.
-%option single         { res_single } => # q : state
-%option tuple          { res_tuple } =>  # q : state, sz : size_t 
-%option set            { res_set } => bld : builder 
-%option error          { res_string } => what : std::string
+%option unknown        { atm_unknown } => // Used as default.
+%option single         { atm_single } => # q : state
+%option tuple          { atm_tuple } =>  # q : state, sz : size_t 
+                          // sz is at least, not exact.
+%option set            { atm_set } => bld : builder 
+%option error          { atm_error } => cause : std::string
 
 %h_incl {
 	#include "builder.h"
@@ -31,13 +33,28 @@
    {
       switch( sel( ))
       {
+      case atm_unknown:
+         out << "unknown";
+         return;
 
-      case res_single:
+      case atm_single:
          out << "single( " << view_single( ). q( ) << " )";
          return;
 
+      case atm_tuple:
+         {
+            auto tup = view_tuple( ); 
+            out << "tuple( " << tup. q( ) << ", #" << tup. sz( ) << " )";
+            return;
+         }
+
+      case atm_error:
+         {
+            out << "error( " << view_error( ). cause( ) << " )";
+            return;
+         }
       }
-      std::cout << "convresult::print" << sel( ) << "\n";
+      std::cout << "convresult::print:   " << sel( ) << "\n";
       throw std::logic_error( "not implemented" );
    }
 

@@ -23,22 +23,23 @@ regexp::expr::print( std::ostream& out ) const
       return; 
 
    case flt_bool:
-      out << view_filter_bool( ). b( );
+      out << view_filter_bool( ). func( );
       return; 
 
    case flt_sel:
-      out << view_filter_sel( ). fin( ); 
+      out << view_filter_sel( ). func( ); 
       return;
 
    case flt_char:
-      out << view_filter_char( ). part( );
+      out << view_filter_char( ). func( );
       return;
 
    case ref_ident:
       out << view_reference( ). ident( ); 
       return;
 
-   case tup_constr:
+   case tup_exact:
+   case tup_prefix:
       {
          auto tp = view_tuple( ); 
          out << sel( ) << "(";
@@ -55,9 +56,8 @@ regexp::expr::print( std::ostream& out ) const
       return; 
 
    case log_or:
-   case log_and:
       {
-         auto log = view_logical( );
+         auto log = view_disjunction( );
          out << sel( ) << "{";
          for( size_t i = 0; i != log. size( ); ++i )
          {

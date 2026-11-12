@@ -19,9 +19,8 @@
 
 int main( int argc, char* arcgv[] ) 
 {
-   auto res = atm::convresult( atm::res_single, atm::state( ) + 4 );
+   auto res = atm::convresult( atm::atm_unknown );
    std::cout << res << "\n";
-   return 0;
 
 #if 0
    diff::approxset set1 = diff::approxset::empty( );
@@ -59,6 +58,7 @@ int main( int argc, char* arcgv[] )
    std::cout << mat << "\n";
 #endif
 
+#if 0
    atm::state q0;
    atm::state q1 = q0 + 1;
    atm::state q2 = q0 + 2;
@@ -77,9 +77,7 @@ int main( int argc, char* arcgv[] )
    std::cout << bld3 << "\n";
    
    std::cout << atm::disjunction( { bld1, bld2, bld3 } ) << "\n";
-
-   return 0;
-
+#endif
   
    fieldmap flds;
    regexp::defmap defs;
@@ -87,18 +85,16 @@ int main( int argc, char* arcgv[] )
    tests::add_nat( defs, flds );
    tests::add_fol( defs, flds );
 
-   std::cout << flds << "\n";
- 
-   auto b = checktypes( defs );
-
-   std::cout << "after checking " << defs << "\n";
+   std::cout << defs << "\n";
 
    atm::simple trans;
-   identifier::map< atm::state > acc;
+   atm::statemap acc = create_accepting( defs, trans );  
+   std::cout << acc << "\n";
 
-   // add_automaton( trans, defs. at( identifier( ) + "nat" ). e, defs, acc );
+   auto conv = convert( trans, defs. at( identifier( ) + "nat" ), defs, acc );
+   return 0;
+
    std::cout << "\n";
-   std::cout << defs << "\n";
 
 #if 0
    auto f = tests::mixing( );

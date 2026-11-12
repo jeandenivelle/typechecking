@@ -291,17 +291,17 @@ void tests::add_nat( regexp::defmap& defs, fieldmap& flds )
    succ = tuple( { succ, expr( ref_ident, identifier( ) + "nat" ) } );
 
    auto nat = identifier( ) + "nat";
-   defs. insert( nat, expr( log_or, { zero, succ } ), exprtype_unknown );
+   defs. insert( { nat, expr( log_or, { zero, succ } ) } );
 
    succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
    succ = tuple( { succ, expr( ref_ident, identifier( ) + "odd" ) } );
    auto even = identifier( ) + "even";
-   defs. insert( even, expr( log_or, { zero, succ } ), exprtype_unknown );
+   defs. insert( { even, expr( log_or, { zero, succ } ) } );
   
    succ = selectors( { usel( "succ" ) } ); 
    succ = tuple( { succ, expr( ref_ident, identifier( ) + "even" ) } );
    auto odd = identifier( ) + "odd";
-   defs. insert( odd, succ, exprtype_unknown );
+   defs. insert( { odd, succ } );
 
    flds. insert( identifier( ) + "op", 
                      fielddef( fld_scalar, 
@@ -317,7 +317,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    using namespace regexp;
  
    auto fol = identifier( ) + "fol"; 
-   defs. insert( fol + "variable", regexp::forall( { type_char } ));
+   defs. insert( { fol + "variable", regexp::forall( { type_char } ) } );
 
    auto term = fol + "term";
 
@@ -331,7 +331,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 
       auto db = tuple( { selectors( { usel( "?debruijn" ) } ), expr( type_u64 ) } );
 
-      defs. insert( term, expr( log_or, { appl, db } ), exprtype_unknown ); 
+      defs. insert( { term, expr( log_or, { appl, db } ) } ); 
    } 
 
    {
@@ -343,48 +343,42 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
       });
 
       auto sort = tuple( { prim, regexp::forall( { prim } ) } );
-      defs. insert( fol + "sort", std::move( sort ), exprtype_unknown  );
+      defs. insert( { fol + "sort", std::move( sort ) } );
    } 
 
-   defs. insert( fol + "atom", 
+   defs. insert( { fol + "atom", 
       tuple( { selectors( { usel( "?atom" ) } ), 
                expr( ref_ident, fol + "variable" ), 
-               regexp::forall( { expr( ref_ident, fol + "term" ) } ) } ),
-      exprtype_unknown );
+               regexp::forall( { expr( ref_ident, fol + "term" ) } ) } ) } );
 
-   defs. insert( fol + "binary",
+   defs. insert( { fol + "binary",
       tuple( { selectors( { usel( "?implies" ), usel( "?equiv" ) } ),
                expr( ref_ident, fol + "form" ),
-               expr( ref_ident, fol + "form" ) } ),
-      exprtype_unknown );
+               expr( ref_ident, fol + "form" ) } ) } );
 
-   defs. insert( fol + "nary",
+   defs. insert( { fol + "nary",
       tuple( { selectors( { usel( "?and" ), usel( "?or" ) } ),
-               regexp::forall( { expr( ref_ident, fol + "form" ) } ) } ),
-      exprtype_unknown );
+               regexp::forall( { expr( ref_ident, fol + "form" ) } ) } ) } );
 
-   defs. insert( fol + "equals",
+   defs. insert( { fol + "equals",
       tuple( { selectors( { usel( "?equals" ) } ),
                expr( ref_ident, fol + "term" ),
-               expr( ref_ident, fol + "term" ) } ),
-      exprtype_unknown );
+               expr( ref_ident, fol + "term" ) } ) } );
 
    auto vartype = tuple( { expr( ref_ident, fol + "variable" ),
                            expr( ref_ident, fol + "sort" ) } );
 
-   defs. insert( fol + "quant",
+   defs. insert( { fol + "quant",
       tuple( { selectors( { usel( "?forall" ), usel( "?exists" ) } ),
                regexp::forall( { vartype } ), 
-               expr( ref_ident, fol + "form" ) } ),
-      exprtype_unknown );
+               expr( ref_ident, fol + "form" ) } ) } );
 
-   defs. insert( fol + "form",
+   defs. insert( { fol + "form",
       expr( log_or, { expr( ref_ident, fol + "atom" ),
                       expr( ref_ident, fol + "equals" ),
                       expr( ref_ident, fol + "binary" ),
                       expr( ref_ident, fol + "nary" ),
-                      expr( ref_ident, fol + "quant" ) } ),
-      exprtype_unknown );
+                      expr( ref_ident, fol + "quant" ) } ) } );
 
    flds. insert( identifier( ) + "sub1",
       fielddef( fld_scalar, expr( regexp::ref_ident, fol + "binary" ), 1 ));

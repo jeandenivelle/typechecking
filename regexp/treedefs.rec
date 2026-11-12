@@ -17,27 +17,26 @@
 %option type_double    { type_double } => 
 %option type_iter      { type_iter } =>
 
-%option filter_bool    { flt_bool } => b : bool
+%option filter_bool    { flt_bool } => 
+            func : finfunc< bool, bool > 
 %option filter_char    { flt_char } => 
-           part : stepfunc< char, bool > 
+            func : stepfunc< char, bool > 
 %option filter_sel     { flt_sel } => 
-           fin : finfunc< usel, bool, usel::hash, usel::equal_to > 
+            func : finfunc< usel, bool, usel::hash, usel::equal_to > 
 %option filter_u64     { flt_u64 } =>
-           part : stepfunc< size_t, bool >
+            func : stepfunc< size_t, bool >
 %option filter_integer { flt_integer } =>
-           part : stepfunc< bigint, bool > 
+            func : stepfunc< bigint, bool > 
 
 %option reference      { ref_ident } => # ident : identifier
    // A reference to a defined identifier.
 
-%option tuple          { tup_constr } => [ sub : expr ]
-   // Earlier versions had a tuple concatenation operator,
-   // but this operator is useless.
-
+%option tuple          { tup_exact, tup_prefix } => [ sub : expr ]
 %option append         { tup_append } => tup : expr, [ sub : expr ] 
+   // append will probably not be used.
 
-%option logical        { log_and, log_or } => [ sub : expr ]
-   // everything = log_and( ), and nothing = log_or( ).
+%option everything     { log_everything } =>
+%option disjunction    { log_or } => [ sub : expr ]
 
 // (Multiset) operations are a bit confusing because we 
 // are constructing set of sets. If you call an operator for example
@@ -81,7 +80,7 @@
 
    regexp::expr regexp::tuple( const std::vector< expr > & sym )
    {
-      return expr( tup_constr, sym. begin( ), sym. end( ));
+      return expr( tup_exact, sym. begin( ), sym. end( ));
    }
 
    regexp::expr regexp::forall( const std::vector< expr > & sym )

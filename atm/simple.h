@@ -68,6 +68,9 @@ namespace atm
       void comment( state s, const std::string& bla ) 
          { comments. insert( std::pair( s, bla )); }
 
+      // Be careful with these references. They remain valid, as long
+      // as no other transition is added.
+
       char_func& add_delta_char( state def )
       {
          delta_char. push_back( def );
