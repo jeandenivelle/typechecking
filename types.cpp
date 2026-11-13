@@ -58,7 +58,7 @@ int main( int argc, char* arcgv[] )
    std::cout << mat << "\n";
 #endif
 
-#if 0
+#if 1
    atm::state q0;
    atm::state q1 = q0 + 1;
    atm::state q2 = q0 + 2;
@@ -68,7 +68,8 @@ int main( int argc, char* arcgv[] )
    bld1. addlinear( { q0 }, 3 );
 
    auto bld2 = atm::builder( ); 
-   bld2. addlinear( { q1 }, 2 );
+   bld2. addlinear( { q2 }, 1 );
+   std::cout << bld2 << "\n";
 
    auto bld3 = atm::oneword( { q1, q2, q2 } );
 
@@ -92,10 +93,16 @@ int main( int argc, char* arcgv[] )
    std::cout << acc << "\n";
 
    auto conv = convert( trans, defs. at( identifier( ) + "nat" ), defs, acc );
-   return 0;
+   std::cout << "convresult = " << conv << "\n";
+   trans. delta_epsilon. insert( { state_of( conv ), 
+                                   acc. at( identifier( ) + "nat" ) } );
+      // complete the cycle. 
+
+   std::cout << trans << "\n";
 
    std::cout << "\n";
-
+   std::cout << run( trans, tests::nat(2) ) << "\n";
+   return 0;
 #if 0
    auto f = tests::mixing( );
    // auto f = tests::repeated( );

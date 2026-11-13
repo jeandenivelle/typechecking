@@ -40,7 +40,7 @@ atm::simple::addtuple( const std::vector< state > & tup, state goal )
 void atm::simple::print( std::ostream& out ) const
 {
    out << "Simple Automaton:\n";
-   out << "   trap = " << trap << "\n";
+   out << "   <trap> = " << trap << "\n";
    out << "\n";
 
    if( comments. size( ))
@@ -76,7 +76,7 @@ void atm::simple::print( std::ostream& out ) const
    }
 
    out << "Tuple transitions:\n";
-   out << "   <empty> -> " << empty_tuple << "\n";
+   out << "   <empty> = " << empty_tuple << "\n";
    for( const auto& t : delta_tuple )
    {
       out << "   " << t. first. first << ", " << t. first. second; 
@@ -85,7 +85,7 @@ void atm::simple::print( std::ostream& out ) const
    out << "\n";
 
    out << "Set transitions:\n"; 
-   out << "   <empty> -> " << empty_set << "\n";
+   out << "   <empty> = " << empty_set << "\n";
    for( const auto& d : delta_set )
    {
       out << "   " << d. first. first << ", " << d. first. second;
