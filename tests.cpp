@@ -285,7 +285,7 @@ void tests::add_nat( regexp::defmap& defs, fieldmap& flds )
    using namespace regexp;
 
    auto zero = expr( flt_sel, { false, {{ usel( "?zero" ), true }} } );
-   zero = tuple( { zero } );
+   // zero = tuple( { zero } );
  
    auto succ = expr( flt_sel, { false, {{ usel( "?succ" ), true }} } );
    succ = tuple( { succ, expr( ref_ident, identifier( ) + "nat" ) } );
@@ -500,7 +500,7 @@ data::tree
 tests::nat( unsigned int n )
 {
    auto res = data::usel( "?zero" );
-   res = data::tuple( { res } ); 
+   // res = data::tuple( { res } ); 
    while( n != 0 )
    {
       res = data::tuple( { data::usel( "?succ" ), res } ); 

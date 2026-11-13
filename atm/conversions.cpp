@@ -186,14 +186,15 @@ atm::convert( simple& smp, const regexp::expr& e,
          for( auto& sub : subresults )
          {
             if( sub. sel( ) == atm_tuple ) 
-
             {
                if( sub. view_tuple( ). sz( ) < shortest )
                   shortest = sub. view_tuple( ). sz( ); 
             }
+            else
+               allaretuples = false;
          }
-         std::cout << "allaretuples " << allaretuples << "\n";
-         std::cout << shortest << "\n";
+         std::cout << "allaretuples = " << allaretuples << "\n";
+         std::cout << "shortest = " << shortest << "\n";
          std::cout << "state = " << acc << "\n";
          if( allaretuples && subresults. size( ) != 0 )
             return convresult( atm_tuple, acc, shortest );
