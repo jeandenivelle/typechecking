@@ -32,10 +32,9 @@
    // A reference to a defined identifier.
 
 %option tuple          { tup_exact, tup_prefix } => [ sub : expr ]
-%option append         { tup_append } => tup : expr, [ sub : expr ] 
-   // append will probably not be used.
+%option cycle          { tup_cycle } => pref : expr, [ sub : expr ] 
+   // prefix will probably not be used.
 
-%option everything     { log_everything } =>
 %option disjunction    { log_or } => [ sub : expr ]
 
 // (Multiset) operations are a bit confusing because we 
@@ -43,7 +42,7 @@
 // 'union' there is confusion on which level the union takes place.
 // In the case below, it is on the lower level.
 
-%option word           { set_word } => [ sym : expr ]
+%option word           { set_word } => [ smp : expr ]
 %option dimension      { set_linear, set_circular } => 
                           set : expr, nr : size_t, [ sym : expr ]
       
@@ -86,7 +85,7 @@
    regexp::expr regexp::forall( const std::vector< expr > & sym )
    {
       return expr( set_linear, expr( set_word, { } ), (size_t) 0, 
-                   sym. begin( ), sym. end( ));
+                               sym. begin( ), sym. end( ));
    }
 }
 

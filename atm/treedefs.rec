@@ -47,6 +47,13 @@
             out << "tuple( " << tup. q( ) << ", #" << tup. sz( ) << " )";
             return;
          }
+      
+      case atm_set:
+         {
+            auto set = view_set( );
+            out << "set( " << set. bld( ). nrstates << " )";
+            return;
+         }
 
       case atm_error:
          {

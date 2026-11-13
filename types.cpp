@@ -71,13 +71,11 @@ int main( int argc, char* arcgv[] )
    bld2. addlinear( { q2 }, 1 );
    std::cout << bld2 << "\n";
 
-   auto bld3 = atm::oneword( { q1, q2, q2 } );
-
    std::cout << bld1 << "\n";
    std::cout << bld2 << "\n";
-   std::cout << bld3 << "\n";
+   // std::cout << bld3 << "\n";
    
-   std::cout << atm::disjunction( { bld1, bld2, bld3 } ) << "\n";
+   // std::cout << atm::disjunction( { bld1, bld2, bld3 } ) << "\n";
 #endif
   
    fieldmap flds;
@@ -92,7 +90,7 @@ int main( int argc, char* arcgv[] )
    atm::statemap acc = create_accepting( defs, trans );  
    std::cout << acc << "\n";
 
-   auto conv = convert( trans, defs. at( identifier( ) + "nat" ), defs, acc );
+   auto conv = convert( trans, defs. at( identifier( ) + "fol" + "term" ), defs, acc );
    std::cout << "convresult = " << conv << "\n";
    trans. delta_epsilon. insert( { state_of( conv ), 
                                    acc. at( identifier( ) + "nat" ) } );

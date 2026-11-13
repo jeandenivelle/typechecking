@@ -81,7 +81,7 @@ regexp::expr::print( std::ostream& out ) const
                out << ", ";
             else
                out << " ";
-            out << wrd. sym(i);  
+            out << wrd. smp(i);  
          }
          out << " )"; 
          return;
@@ -90,8 +90,10 @@ regexp::expr::print( std::ostream& out ) const
    case set_linear:
    case set_circular:
       {
-         out << sel( ) << "{";
          auto dim = view_dimension( );
+
+         out << sel( ) << "( ";
+         out << dim. set( ) << ", " << dim. nr( ) << ", {";
          for( size_t i = 0; i != dim. size( ); ++i )
          {
             if(i)   
@@ -100,7 +102,7 @@ regexp::expr::print( std::ostream& out ) const
                out << " ";
             out << dim. sym(i);
          }
-         out << " }";   
+         out << " } )";   
       }
       return; 
    }

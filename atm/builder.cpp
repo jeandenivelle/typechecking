@@ -160,7 +160,7 @@ atm::disjunction( const std::vector< builder > & disj )
 
 atm::builder atm::oneword( std::vector< state > word )
 {
-   std::cout << "oneword\n";
+   std::cout << "OneWord:\n";
    std::sort( word. begin( ), word. end( ), state::less( ));
 
    auto bld = atm::builder( );
@@ -176,7 +176,7 @@ atm::builder atm::oneword( std::vector< state > word )
          ++ freq;
       }
 
-      std::cout << *it << " / " << freq << "\n";
+      std::cout << "   " << *it << " / " << freq << "\n";
       bld. addcircular( { *it }, freq );
       it = next;
    }

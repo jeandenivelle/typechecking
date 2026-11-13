@@ -201,6 +201,36 @@ atm::convert( simple& smp, const regexp::expr& e,
          else
             return convresult( atm_single, acc );
       }
+
+   case regexp::set_word:
+      {
+         auto wrd = e. view_word( );
+         std::vector< state > sub;  
+         for( size_t i = 0; i != wrd. size( ); ++ i )
+         {
+            auto res = convert( smp, wrd. smp(i), defs, acc );
+            res = conv2single( smp, res );
+            if( res. sel( ) == atm_error )
+               return res;
+
+            sub. push_back( state_of( res )); 
+         }
+
+         std::cout << "Word:\n";
+         for( const auto& w : sub )
+            std::cout << "   " << w << "\n";
+
+         return convresult( atm_set, oneword( sub )); 
+      }
+
+   case regexp::set_linear:
+   case regexp::set_circular:
+      {
+         auto dim = e. view_dimension( );
+         auto bld = convert( smp, dim. set( ), defs, acc );   
+         std::cout << "this is bld: " << bld << "\n"; 
+         throw std::logic_error( "sadly unfinished" ); 
+      }
    }
 
    std::cout << e << "\n";
