@@ -126,8 +126,23 @@ struct stepfunc
 
    size_t size( ) const { return table. size( ); }
    bool empty( ) const { return table. empty( ); }
-};
 
+
+   template< typename F > 
+      using transformedtype = typename std::invoke_result<F,R> :: type ;
+
+   template< std::invocable<R> F, 
+             std::invocable<transformedtype<F>, transformedtype<F>> E2 = 
+                                         std::equal_to< transformedtype<F> >>
+   auto transform_range( const F& f ) const  
+   {
+      auto res = stepfunc< D, transformedtype<F>, C, E2 > ( f( initial ));
+      for( const auto& p : *this )
+         res. append( p.d, f( p.val ));  
+      return res; 
+   }
+
+};
 
 template< typename D, typename R, typename C >
 inline std::ostream&

@@ -7,18 +7,11 @@
 
 %define expr ( type_never )
 
-%option type_never     { type_never } => 
-%option type_unit      { type_unit } => 
-%option type_bool      { type_bool } => 
-%option type_char      { type_char } => 
-%option type_sel       { type_sel } => 
-%option type_u64       { type_u64  } => 
-%option type_integer   { type_integer } => 
-%option type_double    { type_double } => 
-%option type_iter      { type_iter } =>
+%option type_never   { type_never } => 
+%option type_unit    { type_unit } => 
 
 %option filter_bool    { flt_bool } => 
-            func : finfunc< bool, bool > 
+            func : stepfunc< bool, bool > 
 %option filter_char    { flt_char } => 
             func : stepfunc< char, bool > 
 %option filter_sel     { flt_sel } => 
@@ -27,6 +20,7 @@
             func : stepfunc< size_t, bool >
 %option filter_integer { flt_integer } =>
             func : stepfunc< bigint, bool > 
+%option type_double  { type_double } => 
 
 %option reference      { ref_ident } => # ident : identifier
    // A reference to a defined identifier.
@@ -43,8 +37,8 @@
 // In the case below, it is on the lower level.
 
 %option word           { set_word } => [ smp : expr ]
-%option dimension      { set_linear, set_circular } => 
-                          set : expr, nr : size_t, [ sym : expr ]
+%option multiply       { set_linear, set_circular } => 
+                          set : expr, factor : size_t, [ disj : expr ]
       
 %h_incl {
 	#include "identifier.h"
@@ -62,9 +56,27 @@
 
 %h_after
 {
+   inline expr any_bool( )
+      { return expr( flt_bool, stepfunc< bool, bool > ( true )); } 
+   inline expr any_char( )
+      { return expr( flt_char, stepfunc< char, bool > ( true )); }
+   inline expr any_selector( )
+      { return expr( flt_sel, 
+            finfunc< usel, bool, usel::hash, usel::equal_to > ( true )); }
+   inline expr any_u64( )  
+      { return expr( flt_u64, stepfunc< size_t, bool > ( true )); }
+   inline expr any_integer( )
+      { return expr( flt_integer, stepfunc< bigint, bool > ( true )); }
+
+   expr chars( const std::vector< std::pair< char, bool >> & steps );
+
    expr selectors( const std::vector< usel > & sels );
-   expr tuple( const std::vector< expr > & sym );
-   expr forall( const std::vector< expr > & sym ); 
+
+   expr u64s( const std::vector< std::pair< size_t, bool >> & steps );
+
+   expr tuple( const std::vector< expr > & single );
+
+   expr forall( const std::vector< expr > & disj ); 
 }
 
 %cpp_back
@@ -72,20 +84,29 @@
    regexp::expr regexp::selectors( const std::vector< usel > & sels )
    {
       auto f = finfunc< usel, bool, usel::hash, usel::equal_to > ( false );
-      for( auto& s : sels )
+      for( auto s : sels )
          f. assign( s, true );       
       return expr( flt_sel, std::move(f));
    }
 
-   regexp::expr regexp::tuple( const std::vector< expr > & sym )
+   regexp::expr 
+   regexp::u64s( const std::vector< std::pair< size_t, bool >> & steps )
    {
-      return expr( tup_exact, sym. begin( ), sym. end( ));
+      auto func = stepfunc< size_t, bool > ( false );
+      for( auto s : steps )
+         func. append( s.first, s.second );
+      return expr( flt_u64, std::move( func ));
+   }
+   
+   regexp::expr regexp::tuple( const std::vector< expr > & single )
+   {
+      return expr( tup_exact, single. begin( ), single. end( ));
    }
 
-   regexp::expr regexp::forall( const std::vector< expr > & sym )
+   regexp::expr regexp::forall( const std::vector< expr > & disj )
    {
-      return expr( set_linear, expr( set_word, { } ), (size_t) 0, 
-                               sym. begin( ), sym. end( ));
+      return expr( set_circular, expr( set_word, { } ), (size_t) 0, 
+                                 disj. begin( ), disj. end( ));
    }
 }
 

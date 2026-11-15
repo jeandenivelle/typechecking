@@ -15,7 +15,8 @@ namespace atm
    state add2simple( const builder& bld, simple& smp );
       // Add bld to smp, and return the accepting state.
 
-   statemap create_accepting( const regexp::defmap& defs, simple& smp );
+   statemap 
+   create_accepting( const regexp::defmap& defs, simple& smp );
 
    state state_of( const convresult& res );
       // fails if res is an error or a builder.

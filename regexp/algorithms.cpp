@@ -13,18 +13,14 @@ regexp::collect( const expr& e,
    {
    case type_never:
    case type_unit:
-   case type_bool:
-   case type_char: 
-   case type_sel:
-   case type_u64:
-   case type_integer:
+   case flt_bool:
+   case flt_char:
+   case flt_sel:
+   case flt_u64:
+   case flt_integer:
    case type_double:
-   case type_iter:
       return;  
   
-   case flt_sel:
-      return;
-
    case ref_ident:
       // Here we count an identifier!
 
@@ -102,19 +98,16 @@ regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
 {
    switch( e. sel( ))
    {
+   case type_never:
    case type_unit:
-   case type_bool:
-   case type_char:
-   case type_sel:
-   case type_u64:
-   case type_integer:
+   case flt_bool:
+   case flt_char:
+   case flt_sel:
+   case flt_u64:
+   case flt_integer:
    case type_double:
-   case type_iter:
       return exprtype_single;
 
-   case flt_sel:
-      return exprtype_single;
- 
    case ref_ident:
       return exprtype_single; 
    

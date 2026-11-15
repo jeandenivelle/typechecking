@@ -59,10 +59,10 @@ void atm::simple::print( std::ostream& out ) const
       out << "\n";
    }
 
-   if( delta_usel. size( )) 
+   if( delta_sel. size( )) 
    {
       out << "Delta (usel):\n";
-      for( const auto& f : delta_usel )
+      for( const auto& f : delta_sel )
          out << "   " << f << "\n";
       out << "\n";
    }

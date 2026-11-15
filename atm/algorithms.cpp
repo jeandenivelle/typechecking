@@ -95,7 +95,7 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
    case data::sel_usel:
       {
          stateset res; 
-         for( const auto& f : smp. delta_usel )
+         for( const auto& f : smp. delta_sel )
             res. insert( f. apply( tr. view_usel( ). s( )) ); 
          close_eps( smp, res );
          std::cout << tr << " -> " << res << "\n";

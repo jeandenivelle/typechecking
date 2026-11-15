@@ -16,16 +16,18 @@ namespace atm
 {
    struct simple
    {
+      using bool_func = stepfunc< bool, state > ; 
       using char_func = stepfunc< char, state > ; 
-      using usel_func = finfunc< usel, state, usel::hash, usel::equal_to > ;
+      using sel_func = finfunc< usel, state, usel::hash, usel::equal_to > ;
       using u64_func = stepfunc< size_t, state > ;
+      using integer_func = stepfunc< bigint, state > ;
 
       std::vector< state > delta_unit; 
-      std::vector< stepfunc< bool, state >> delta_bool;
+      std::vector< bool_func > delta_bool;
       std::vector< char_func > delta_char;
-      std::vector< usel_func > delta_usel;
+      std::vector< sel_func > delta_sel;
       std::vector< u64_func > delta_u64;
-      std::vector< stepfunc< bigint, state >> delta_integer;
+      std::vector< integer_func > delta_integer;
       std::vector< state > delta_double;
 
       state trap;      // No escape from this state! 
@@ -67,27 +69,6 @@ namespace atm
 
       void comment( state s, const std::string& bla ) 
          { comments. insert( std::pair( s, bla )); }
-
-      // Be careful with these references. They remain valid, as long
-      // as no other transition is added.
-
-      char_func& add_delta_char( state def )
-      {
-         delta_char. push_back( def );
-         return delta_char. back( );
-      }
-
-      usel_func& add_delta_usel( state def )
-      {
-         delta_usel. push_back( def ); 
-         return delta_usel. back( );
-      }
-
-      u64_func& add_delta_u64( state def )
-      {
-         delta_u64. push_back( def ); 
-         return delta_u64. back( );
-      }
 
       void addtuple( const std::vector< state > & tuple, state goal );
       void addforall( const std::vector< state > & single, state goal );

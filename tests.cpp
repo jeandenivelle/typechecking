@@ -1,5 +1,4 @@
 
-
 #include "tests.h"
 #include "data/constructors.h"
 
@@ -317,7 +316,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    using namespace regexp;
  
    auto fol = identifier( ) + "fol"; 
-   defs. insert( { fol + "variable", regexp::forall( { type_char } ) } );
+   defs. insert( { fol + "variable", regexp::forall( { any_char( ) } ) } );
 
    auto term = fol + "term";
 
@@ -329,7 +328,8 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
                 } 
            );
 
-      auto db = tuple( { selectors( { usel( "?debruijn" ) } ), expr( type_u64 ) } );
+      auto db = tuple( { selectors( { usel( "?debruijn" ) } ), 
+                                      any_u64( ) } );
 
       defs. insert( { term, expr( log_or, { appl, db } ) } ); 
    } 
@@ -395,7 +395,7 @@ atm::simple tests::atm_fol( )
 
    auto single_char = res. create_state( );
    res. comment( single_char, "single char" ); 
-   res. add_delta_char( single_char );
+   res. delta_char. push_back( atm::simple::char_func( single_char ));
 
    auto char_set = res. create_state( );
    res. comment( char_set, "set of characters" );
@@ -406,15 +406,17 @@ atm::simple tests::atm_fol( )
    auto def = res. create_state( );
    res. comment( def, "?def" );
    {
-      auto& v = res. add_delta_usel( res. trap );
-      v. assign( usel( "?def" ), def );
+      auto func = atm::simple::sel_func( res. trap );
+      func. assign( usel( "?def" ), def );
+      res. delta_sel. push_back( std::move( func ));
    }
 
    auto prop = res. create_state( );
    res. comment( prop, "?prop" );
    {
-      auto& v = res. add_delta_usel( res. trap );
-      v. assign( usel( "?prop" ), prop );
+      auto func = atm::simple::sel_func( res. trap );
+      func. assign( usel( "?prop" ), prop );
+      res. delta_sel. push_back( std::move( func ));
    }
 
    auto prim = res. create_state( );
@@ -440,13 +442,14 @@ atm::simple tests::atm_fol( )
  
    auto u64 = res. create_state( );
    res. comment( u64, "u64" );
-   res. add_delta_u64( u64 );
+   res. delta_u64. push_back( atm::simple::u64_func( u64 ));
 
    auto debruijn = res. create_state( );
    res. comment( debruijn, "?debruijn" );
    {
-      auto& v = res. add_delta_usel( res. trap );
-      v. assign( usel( "?debruijn" ), debruijn );
+      auto func = atm::simple::sel_func( res. trap );
+      func. assign( usel( "?debruijn" ), debruijn );
+      res. delta_sel. push_back( std::move( func ));
    }
 
    auto index = res. create_state( );
@@ -463,8 +466,9 @@ atm::simple tests::atm_fol( )
    auto appl = res. create_state( );
    res. comment( appl, "?appl" );
    {
-      auto& v = res. add_delta_usel( res. trap );
-      v. assign( usel( "?appl" ), appl );
+      auto func = atm::simple::sel_func( res. trap );
+      func. assign( usel( "?appl" ), appl );
+      res. delta_sel. push_back( std::move( func ));
    }
    
    res. addtuple( { appl, char_set, term_set }, term );
@@ -473,16 +477,18 @@ atm::simple tests::atm_fol( )
    auto atom = res. create_state( );
    res. comment( atom, "?atom" );
    {
-      auto& v = res. add_delta_usel( res. trap );
-      v. assign( usel( "?atom" ), atom );
+      auto func = atm::simple::sel_func( res. trap );
+      func. assign( usel( "?atom" ), atom );
+      res. delta_sel. push_back( std::move( func ));
    }
 
    auto qnt = res. create_state( ); 
    res. comment( qnt, "?forall/?exists" );
    {
-      auto& v = res. add_delta_usel( res. trap );
-      v. assign( usel( "?forall" ), qnt );
-      v. assign( usel( "?exists" ), qnt );
+      auto func = atm::simple::sel_func( res. trap );
+      func. assign( usel( "?forall" ), qnt );
+      func. assign( usel( "?exists" ), qnt );
+      res. delta_sel. push_back( std::move( func ));
    }
 
 

@@ -72,6 +72,19 @@ struct finfunc
    void clear() { func. clear(); }
    size_t size() const { return func. size(); }
    bool empty() const { return func. empty( ); }
+
+   template< typename F >
+      using transformedtype = typename std::invoke_result<F,R> :: type ;
+
+   template< std::invocable<R> F >
+   auto transform_range( const F& f ) const
+   {
+      auto res = finfunc<D, transformedtype<F>, H,E> ( f( def ));
+      for( const auto& p : *this )
+         res. assign( p.first, f( p.second ));
+      return res;
+   } 
+
 };
 
 

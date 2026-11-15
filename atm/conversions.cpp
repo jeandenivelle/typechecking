@@ -11,60 +11,32 @@ atm::create_accepting( const regexp::defmap& defs, simple& smp )
 }
 
 atm::state
-atm::conv_state( const simple& smp, state base, size_t i )
-{
-   if( i == 0 )
-      return smp. empty_set;
-   else
-      return base + ( i - 1 );
-}
-
-atm::state
 atm::add2simple( const builder& bld, simple& smp )
 {
-   // In bld, we match 0 to emptyset,
-   // 1 to q + 0,
-   // 2 to q + 1,
-   // nrstates to q + ( nrstates - 1 ).
-   // q + ( nrstates - 1 ) will be returned as accepting state.
-
-   if( bld. nrstates == 0 )
-   {
-      // We treat the empty builder separately. Otherwise, we would 
-      // have to make smp. empty_set an accepting state, which I think 
-      // is problematic. 
-      //    It may still happen during determinization, though. 
-
-      auto q = smp. create_state( );
-      smp. delta_epsilon. insert( { smp. empty_set, q } );
-      return q;
-   }
-
-   state base = smp. create_state( );
+   state entry = smp. create_state( );
+   smp. delta_epsilon. insert( { smp. empty_set, entry } );
 
    for( const auto& trans : bld. delta_set )
    {
       smp. delta_set. insert( 
-         { { conv_state( smp, base, trans. from ), trans. element },
-             conv_state( smp, base, trans. to ) } );
+         { { entry + trans. from, trans. element }, entry + trans. to } );
    }
 
    for( const auto& eps : bld. delta_eps )
    {
-      smp. delta_epsilon. insert( 
-         { conv_state( smp, base, eps. from ),  
-           conv_state( smp, base, eps. to ) } );
+      smp. delta_epsilon. insert( { entry + eps. from, entry + eps. to } );
    }
 
    // We know that bld. nrstates > 0.
 
-   auto acc = conv_state( smp, base, bld. nrstates );
+   auto acc = entry + bld. nrstates;
 
-   for( size_t i = 0; i + 1 != bld. nrstates; ++ i )
+   for( size_t i = 0; i != bld. nrstates; ++ i )
       smp. create_state( );
 
    return acc;
 }
+
 
 atm::convresult
 atm::conv2single( simple& smp, const convresult& res )
@@ -74,12 +46,20 @@ atm::conv2single( simple& smp, const convresult& res )
    case atm_single:
       return res;
 
+   case atm_set:
+      {
+         state acc = add2simple( res. view_set( ). bld( ), smp );
+         return convresult( atm_single, acc );
+      }
    }
+
+   throw std::logic_error( "falling through" );
 
    return convresult( atm_error, 
               std::string( "didn't know how to convert " ) + 
                  getcstring( res. sel( )) + " to single" ); 
 }
+
 
 atm::state
 atm::state_of( const convresult& res )
@@ -116,9 +96,18 @@ atm::convert( simple& smp, const regexp::expr& e,
    case regexp::flt_sel:
       {
          state q = smp. create_state( ); 
-         auto& u = smp. add_delta_usel( smp. trap ); 
-         for( const auto& f : e. view_filter_sel( ). func( ))
-            u. assign( f. first, q ); 
+         auto trans = [&] ( bool b ) { return b ? q : smp. trap; };  
+         smp. delta_sel. push_back( e. view_filter_sel( ). func( ).
+                                    transform_range( trans ));  
+         return { atm_single, q };
+      }
+
+   case regexp::flt_u64:
+      {
+         state q = smp. create_state( );
+         auto trans = [&] ( bool b ) { return b ? q : smp. trap; }; 
+         smp. delta_u64. push_back( e. view_filter_u64( ). func( ). 
+                                    transform_range( trans ));
          return { atm_single, q };
       }
 
@@ -226,14 +215,41 @@ atm::convert( simple& smp, const regexp::expr& e,
    case regexp::set_linear:
    case regexp::set_circular:
       {
-         auto dim = e. view_dimension( );
-         auto bld = convert( smp, dim. set( ), defs, acc );   
-         std::cout << "this is bld: " << bld << "\n"; 
-         throw std::logic_error( "sadly unfinished" ); 
+         auto mult = e. view_multiply( );
+         auto set = convert( smp, mult. set( ), defs, acc );   
+         std::cout << "this is set: " << set << "\n"; 
+         if( set. sel( ) != atm_set )
+         { 
+            return convresult( atm_error, 
+                      "first argument of linear/circular is not a set" ); 
+         }
+
+         std::vector< state > disj; 
+         for( size_t i = 0; i != mult. size( ); ++ i )
+         {
+            auto sub = convert( smp, mult. disj(i), defs, acc );
+            sub = conv2single( smp, sub );
+            if( sub. sel( ) == atm_error )
+               return sub;
+
+            disj. push_back( state_of( sub ));
+         }
+         std::cout << "This is the transformation disjunction:\n";
+         for( const auto& d : disj )
+            std::cout << "   " << d << "\n";
+
+         auto bld = set. view_set( ). extr_bld( );
+         if( e. sel( ) == regexp::set_linear )
+            bld. addlinear( disj, mult. factor( ));
+
+         if( e. sel( ) == regexp::set_circular )
+            bld. addcircular( disj, mult. factor( ));
+
+         return convresult( atm_set, std::move( bld ));
       }
    }
 
-   std::cout << e << "\n";
+   std::cout << "trying to convert: " << e. sel( ) << "\n";
    throw std::logic_error( "not implemented" ); 
 }
 

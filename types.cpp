@@ -19,6 +19,25 @@
 
 int main( int argc, char* arcgv[] ) 
 {
+   stepfunc< int, std::string > ff( "abcd" );
+   ff. append( 1, "aa" );
+   ff. append( 2, "bbc" );
+   std::cout << ff << "\n";
+
+   auto sz = []( const std::string& s ) { return s. size( ); };
+
+   auto st = []( const size_t i ) { return atm::state( ) + i; };
+
+   std::cout << ff. transform_range( sz ) << "\n";
+
+   finfunc< int, std::string > gg( "hallo" );
+   gg. assign( 1, "hans" );
+   gg. assign( 2, "de" );
+   gg. assign( 3, "nivelle" );
+
+   std::cout << gg << "\n";
+   std::cout << gg. transform_range( sz ) << "\n";
+ 
    auto res = atm::convresult( atm::atm_unknown );
    std::cout << res << "\n";
 
@@ -71,10 +90,12 @@ int main( int argc, char* arcgv[] )
    bld2. addlinear( { q2 }, 1 );
    std::cout << bld2 << "\n";
 
+   auto bld3 = atm::builder( );
+   bld3. addcircular( { q1, q2 }, 2 );
    std::cout << bld1 << "\n";
    std::cout << bld2 << "\n";
-   // std::cout << bld3 << "\n";
-   
+   std::cout << bld3 << "\n";
+ 
    // std::cout << atm::disjunction( { bld1, bld2, bld3 } ) << "\n";
 #endif
   

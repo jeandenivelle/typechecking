@@ -10,28 +10,21 @@ regexp::expr::print( std::ostream& out ) const
 {
    switch( sel( ))
    {
-   case type_never: 
-   case type_unit: 
-   case type_bool: 
-   case type_char: 
-   case type_sel:  
-   case type_u64: 
-   case type_iter:
-   case type_integer: 
-   case type_double:
-      out << sel( );
-      return; 
-
+   
    case flt_bool:
       out << view_filter_bool( ). func( );
       return; 
+
+   case flt_char:
+      out << view_filter_char( ). func( );
+      return;
 
    case flt_sel:
       out << view_filter_sel( ). func( ); 
       return;
 
-   case flt_char:
-      out << view_filter_char( ). func( );
+   case flt_u64:
+      out << view_filter_u64( ). func( );
       return;
 
    case ref_ident:
@@ -90,17 +83,17 @@ regexp::expr::print( std::ostream& out ) const
    case set_linear:
    case set_circular:
       {
-         auto dim = view_dimension( );
+         auto mult = view_multiply( );
 
          out << sel( ) << "( ";
-         out << dim. set( ) << ", " << dim. nr( ) << ", {";
-         for( size_t i = 0; i != dim. size( ); ++i )
+         out << mult. set( ) << ", " << mult. factor( ) << ", {";
+         for( size_t i = 0; i != mult. size( ); ++i )
          {
             if(i)   
                out << ", ";
             else
                out << " ";
-            out << dim. sym(i);
+            out << mult. disj(i);
          }
          out << " } )";   
       }
