@@ -9,23 +9,27 @@
 namespace atm
 {
    using statemap = identifier::map< state > ;
-
-   state conv_state( const simple& smp, state base, size_t i );
+   using resultmap = identifier::map< convresult > ;
 
    state add2simple( const builder& bld, simple& smp );
-      // Add bld to smp, and return the accepting state.
+      // Add the conversion of bld to smp, and return the accepting state.
 
    statemap 
-   create_accepting( const regexp::defmap& defs, simple& smp );
+   accepting_states( const regexp::defmap& defs, simple& smp );
+      // Create a state for every definition.
+      // statemap maps identifiers to the created states.
 
    state state_of( const convresult& res );
       // fails if res is an error or a builder.
 
    convresult conv2single( simple& smp, const convresult& res );
-      // It might become an error too!
 
    convresult
    convert( simple& smp, const regexp::expr& e, 
+            const regexp::defmap& defs, const statemap& acc );
+
+   void 
+   convert( simple& smp, resultmap& results,
             const regexp::defmap& defs, const statemap& acc );
 
    std::ostream& operator << ( std::ostream& out, const statemap& acc );

@@ -15,7 +15,7 @@ namespace atm
 
    stateset apply_set( const simple& smp, 
                        const stateset& set, const stateset& element );
-      // We don't do the epsilon closure.
+      // We don't do the final epsilon closure.
 
    stateset run( const simple& smp, const data::tree& tr );
 }

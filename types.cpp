@@ -30,17 +30,6 @@ int main( int argc, char* arcgv[] )
 
    std::cout << ff. transform_range( sz ) << "\n";
 
-   finfunc< int, std::string > gg( "hallo" );
-   gg. assign( 1, "hans" );
-   gg. assign( 2, "de" );
-   gg. assign( 3, "nivelle" );
-
-   std::cout << gg << "\n";
-   std::cout << gg. transform_range( sz ) << "\n";
- 
-   auto res = atm::convresult( atm::atm_unknown );
-   std::cout << res << "\n";
-
 #if 0
    diff::approxset set1 = diff::approxset::empty( );
    set1. insert( -2 );
@@ -108,19 +97,19 @@ int main( int argc, char* arcgv[] )
    std::cout << defs << "\n";
 
    atm::simple trans;
-   atm::statemap acc = create_accepting( defs, trans );  
+   atm::statemap acc = accepting_states( defs, trans );  
    std::cout << acc << "\n";
 
-   auto conv = convert( trans, defs. at( identifier( ) + "fol" + "term" ), defs, acc );
-   std::cout << "convresult = " << conv << "\n";
-   trans. delta_epsilon. insert( { state_of( conv ), 
-                                   acc. at( identifier( ) + "nat" ) } );
-      // complete the cycle. 
+   atm::resultmap conv;
+   convert( trans, conv, defs, acc );
+   std::cout << "Conversion Results:\n";
+   for( const auto& c : conv )
+      std::cout << "   " << c. first << " : " << c. second << "\n";
 
    std::cout << trans << "\n";
 
    std::cout << "\n";
-   std::cout << run( trans, tests::nat(2) ) << "\n";
+   std::cout << run( trans, tests::formula( )) << "\n";
    return 0;
 #if 0
    auto f = tests::mixing( );

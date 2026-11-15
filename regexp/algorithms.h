@@ -10,8 +10,9 @@
 namespace regexp
 {
 
-   // This was a a type checking procedure for regexp, but I think 
-   // it is longer needed. 
+   // This was a type checking procedure for regexp, but I think 
+   // it is longer needed, because the conversion operators
+   // check types during conversion. 
 
    void collect( const expr& e,
                  identifier::set& defs, size_t& c );

@@ -96,6 +96,8 @@ regexp::exprtype regexp::join( exprtype tp1, exprtype tp2 )
 
 regexp::exprtype regexp::gettype( const defmap& defs, const expr& e )
 {
+   // Not useful any more.
+
    switch( e. sel( ))
    {
    case type_never:

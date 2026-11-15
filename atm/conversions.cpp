@@ -2,7 +2,7 @@
 #include "conversions.h"
 
 atm::statemap 
-atm::create_accepting( const regexp::defmap& defs, simple& smp )
+atm::accepting_states( const regexp::defmap& defs, simple& smp )
 {
    statemap acc;
    for( const auto& d : defs ) 
@@ -46,6 +46,9 @@ atm::conv2single( simple& smp, const convresult& res )
    case atm_single:
       return res;
 
+   case atm_tuple:
+      return convresult( atm_single, res. view_tuple( ). q( ));
+
    case atm_set:
       {
          state acc = add2simple( res. view_set( ). bld( ), smp );
@@ -53,6 +56,7 @@ atm::conv2single( simple& smp, const convresult& res )
       }
    }
 
+   std::cout << "conv2single " << res << "\n";
    throw std::logic_error( "falling through" );
 
    return convresult( atm_error, 
@@ -91,6 +95,15 @@ atm::convert( simple& smp, const regexp::expr& e,
             return convresult( atm_single, p -> second );
          else
             throw std::logic_error( "unknown identifier" );
+      }
+
+   case regexp::flt_char:
+      {
+         state q = smp. create_state( );
+         auto trans = [&] ( bool b ) { return b ? q : smp. trap; };
+         smp. delta_char. push_back( e. view_filter_char( ). func( ).
+                                     transform_range( trans ));
+         return { atm_single, q };
       }
 
    case regexp::flt_sel:
@@ -252,6 +265,25 @@ atm::convert( simple& smp, const regexp::expr& e,
    std::cout << "trying to convert: " << e. sel( ) << "\n";
    throw std::logic_error( "not implemented" ); 
 }
+
+
+void 
+atm::convert( simple& smp, resultmap& results,
+              const regexp::defmap& defs, const statemap& acc )
+{
+   for( const auto& d : defs )
+   {
+      if( !results. contains( d. first ))
+      {
+         std::cout << "converting " << d. first << "\n";
+         auto c = convert( smp, d. second, defs, acc );
+         c = conv2single( smp, c );
+         smp. delta_epsilon. insert( { state_of(c), acc. at( d. first ) } );
+         results. insert( { d. first, std::move(c) } );
+      }
+   }
+}
+
 
 std::ostream& atm::operator << ( std::ostream& out, const statemap& acc )
 {

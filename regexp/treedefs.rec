@@ -123,6 +123,8 @@
 //    unknown (bottom) and error (top). 
 
 
+// this class will not be needed any more!
+
 %define exprtype ( exprtype_unknown )
 
 %option value      { exprtype_single, exprtype_set, exprtype_tuple } =>
