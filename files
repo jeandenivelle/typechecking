@@ -43,7 +43,7 @@
    builder.cpp
    selector.cpp
    convresult.cpp
-   
+
 %dir Source/intermediate
 %sources
    statement.cpp

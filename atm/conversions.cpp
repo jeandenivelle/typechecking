@@ -100,7 +100,7 @@ atm::convert( simple& smp, const regexp::expr& e,
    case regexp::flt_char:
       {
          state q = smp. create_state( );
-         auto trans = [&] ( bool b ) { return b ? q : smp. trap; };
+         auto trans = stateswitch( q, smp. trap );
          smp. delta_char. push_back( e. view_filter_char( ). func( ).
                                      transform_range( trans ));
          return { atm_single, q };
@@ -109,7 +109,7 @@ atm::convert( simple& smp, const regexp::expr& e,
    case regexp::flt_sel:
       {
          state q = smp. create_state( ); 
-         auto trans = [&] ( bool b ) { return b ? q : smp. trap; };  
+         auto trans = stateswitch( q, smp. trap ); 
          smp. delta_sel. push_back( e. view_filter_sel( ). func( ).
                                     transform_range( trans ));  
          return { atm_single, q };
@@ -118,7 +118,7 @@ atm::convert( simple& smp, const regexp::expr& e,
    case regexp::flt_u64:
       {
          state q = smp. create_state( );
-         auto trans = [&] ( bool b ) { return b ? q : smp. trap; }; 
+         auto trans = stateswitch( q, smp. trap ); 
          smp. delta_u64. push_back( e. view_filter_u64( ). func( ). 
                                     transform_range( trans ));
          return { atm_single, q };

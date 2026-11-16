@@ -16,11 +16,8 @@ void atm::close_eps( const simple& smp, stateset& set )
       auto rg = smp. delta_epsilon. equal_range(s);
       for( auto p = rg. first; p != rg. second; ++ p )
       {
-         if( !set. contains( p -> second ))
-         {
+         if( set. insert( p -> second ))
             unchecked. push( p -> second );
-            set. insert( p -> second );
-         }
       }
    }
 }
@@ -61,6 +58,52 @@ atm::stateset atm::apply_set( const simple& smp,
    return res; 
 }
 
+namespace
+{
+   using namespace atm;
+
+   template< typename D, typename R, typename C, typename E > 
+   stateset
+   apply( const std::vector< stepfunc<D,R,C,E>> & vect, const D& d )
+   {
+      stateset res;
+      for( const auto& f : vect )
+         res. insert( f. apply(d));
+      return res;
+   }
+
+   template< typename D, typename R, typename H, typename E >
+   stateset
+   apply( const std::vector< finfunc<D,R,H,E>> & vect, const D& d )
+   {
+      stateset res;
+      for( const auto& f : vect )
+         res. insert( f. apply(d));
+      return res;
+   }
+
+   template< typename D, typename R, typename C, typename E > 
+   stateset
+   getdefault( const std::vector< stepfunc<D,R,C,E>> & vect )
+   {
+      stateset res;
+      for( const auto& f : vect )
+         res. insert( f. def );
+      return res;
+   }
+
+   template< typename D, typename R, typename H, typename E >
+   stateset
+   getdefault( const std::vector< finfunc<D,R,H,E>> & vect )
+   {
+      stateset res;
+      for( const auto& f : vect )
+         res. insert( f. def );
+      return res;
+   }
+
+}
+
 
 atm::stateset atm::run( const simple& smp, const data::tree& tr ) 
 {
@@ -84,9 +127,7 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
 
    case data::sel_char:
       {
-         stateset res;
-         for( const auto& f : smp. delta_char )
-            res. insert( f. apply( tr. view_char( ). c( )) );
+         stateset res = apply( smp. delta_char, tr. view_char( ). c( ));
          close_eps( smp, res );  
          std::cout << tr << " -> " << res << "\n"; 
          return res;
@@ -94,12 +135,9 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
 
    case data::sel_usel:
       {
-         stateset res; 
-         for( const auto& f : smp. delta_sel )
-            res. insert( f. apply( tr. view_usel( ). s( )) ); 
+         stateset res = apply( smp. delta_sel, tr. view_usel( ). s( ));
          close_eps( smp, res );
-         std::cout << tr << " -> " << res << "\n";
-         return res; 
+         return res;
       }
 
    case data::sel_u64:
@@ -126,7 +164,7 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
    case data::sel_tuple:
       {
          auto tup = tr. view_tuple( );
-         stateset res = { smp. empty_tuple };
+         stateset res; res. insert( smp. empty_tuple );
          close_eps( smp, res );
  
          for( size_t i = 0; i != tup. size( ); ++ i ) 
@@ -142,7 +180,7 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
    case data::sel_array: 
       {
          auto ar = tr. view_array( );
-         stateset res = { smp. empty_set };
+         stateset res; res. insert( smp. empty_set );
          close_eps( smp, res ); 
 
          for( size_t i = 0; i != ar. size( ); ++ i ) 
@@ -159,6 +197,46 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
  
    std::cout << "run( ), unrecognized selector " << tr. sel( ) << "\n";
    throw std::logic_error( "atm::run()" );
+}
+
+
+atm::simple::sel_func
+atm::merge_sel( const simple& nondet, simple& det, 
+                stateset::map<state> & backmap )
+{
+   std::unordered_set< usel, usel::hash, usel::equal_to > domain;
+   for( const auto& d : nondet. delta_sel )
+   {
+      for( const auto& p : d )
+         domain. insert( p. first );
+   }
+
+   auto def = getdefault( nondet. delta_sel );
+   close_eps( nondet, def );
+   auto q = det.create_states(0);
+   auto p = backmap. emplace( std::move( def ), q );
+   if( p. second )
+      det. create_states(1);
+   q = p. first -> second;
+
+   atm::simple::sel_func func(q);
+   for( const auto& sel : domain )
+   {
+      std::cout << "   " << sel << "\n";
+      auto set = apply( nondet. delta_sel, sel );
+      close_eps( nondet, set );
+      std::cout << "--> " << set << "\n";
+      auto q = det. create_states(0); 
+         // No states are created, but we get a state.
+      auto p = backmap. emplace( std::move( set ), q );
+      if( p. second )
+         det. create_states(1);
+      q = p. first -> second;
+      func. assign( sel, q ); 
+      // auto q = backmap. insert( back );
+   }
+
+   std::cout << "returning\n";
 }
 
 

@@ -11,10 +11,11 @@ namespace atm
    // It is better to form sets of states with ordered tree than
    // with hashmap, because it makes equality testing easier.
 
-   struct state 
+   class state 
    {
       size_t s;
 
+   public:
       state( ): 
          s(0) {};
 
@@ -38,7 +39,7 @@ namespace atm
 
       struct less 
       {
-         bool operator() ( state q1, state q2 ) const 
+         bool operator( ) ( state q1, state q2 ) const 
          {
             return q1.s < q2.s; 
          }

@@ -1,50 +1,6 @@
 
 #include "stateset.h"
 
-
-#if 0
-   struct states_t {
-      std::unordered_set< state_t, std::hash< state_t >, std::equal_to< state_t > > Q;
-      
-      using iterator = std::unordered_set< state_t, std::hash< state_t >, std::equal_to< state_t > >:: iterator;
-      using const_iterator = std::unordered_set< state_t, std::hash< state_t >, std::equal_to< state_t > >:: const_iterator;
-
-      states_t( ): def( 0 ) {}
-      states_t( const state_t& def ): def( def ) {}
-      states_t( const state_t&& def ): def( std::move( def ) ) {}
-      
-      state_t get_next_state( ) {
-         state_t state = def;
-         while( Q. find( state ) != Q. cend() ) {
-            ++state;
-         }
-         Q. insert( state );
-         return state;
-      }
-      
-      size_t size( ) const {
-         return Q. size( );
-      }
-
-
-#endif
-
-std::ostream& atm::operator << ( std::ostream& out, const atm::stateset& set )
-{
-   out <<'{';
-   for( auto p = set. begin(); p != set. end(); ++ p ) 
-   {
-      if( p != set. begin() ) 
-         out << ", ";
-      else
-         out << ' ';
-      out << *p;
-   }
-   out << " }";
-   return out;
-}
-
-
 bool atm::operator == ( const stateset& s1, const stateset& s2 )
 {
    if( s1. size( ) != s2. size( ))
@@ -62,13 +18,35 @@ bool atm::operator == ( const stateset& s1, const stateset& s2 )
    return true;
 }
 
+bool 
+atm::stateset::less::operator( ) ( const stateset& s1, 
+                                   const stateset& s2 ) const
+{
+   auto cmp = state::less( );
+
+   auto p1 = s1. begin( );
+   auto p2 = s2. begin( );
+
+   while( p1 != s1. end( ) && p2 != s2. end( )) 
+   {
+      if( *p1 != *p2 )
+         return cmp( *p1, *p2 );
+      ++ p1;
+      ++ p2;
+   }
+
+   if( p1 == s1. end( ))
+      return p2 != s2. end( );
+   
+   return false;
+}
 
 bool atm::subset( const stateset& s1, const stateset& s2 )
 {
    if( s1. size( ) > s2. size( ))
       return false;
 
-   stateset::key_compare lt;
+   state::less lt;
 
    auto p1 = s1. begin( );
    auto p2 = s2. begin( );
@@ -85,4 +63,19 @@ bool atm::subset( const stateset& s1, const stateset& s2 )
    }
    return true; 
 }
+
+void atm::stateset::print( std::ostream& out ) const
+{
+   out <<'{';
+   for( auto p = begin(); p != end(); ++ p ) 
+   {
+      if( p != begin() ) 
+         out << ", ";
+      else
+         out << ' ';
+      out << *p;
+   }
+   out << " }";
+}
+
 

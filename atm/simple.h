@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <set>
+#include <utility>
 
 #include "finfunc.h"
 #include "stepfunc.h"
@@ -64,8 +65,11 @@ namespace atm
            freestate( firststate + 3 ) 
       { } 
 
-      state create_state( ) 
-         { return freestate ++ ; }
+      state create_states( size_t nr ) 
+         { return std::exchange( freestate, freestate + nr ); }
+
+      state create_state( )  
+         { return create_states(1); }
 
       void comment( state s, const std::string& bla ) 
          { comments. insert( std::pair( s, bla )); }

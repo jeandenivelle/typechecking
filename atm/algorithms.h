@@ -3,8 +3,8 @@
 #define ATM_ALGORITHMS_
 
 #include "data/tree.h"
-#include "atm/stateset.h"
-#include "atm/simple.h"
+#include "stateset.h"
+#include "simple.h"
 
 namespace atm 
 {
@@ -17,7 +17,14 @@ namespace atm
                        const stateset& set, const stateset& element );
       // We don't do the final epsilon closure.
 
+
    stateset run( const simple& smp, const data::tree& tr );
+
+   simple::sel_func
+   merge_sel( const simple& nondet, simple& det, 
+              stateset::map< state > & backmap );
+
+   // std::pair< simple, subsetmap > make_deterministic( const simple& smp );
 }
 
 #endif

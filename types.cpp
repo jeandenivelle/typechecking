@@ -106,7 +106,12 @@ int main( int argc, char* arcgv[] )
    for( const auto& c : conv )
       std::cout << "   " << c. first << " : " << c. second << "\n";
 
+   atm::simple det;
+   atm::stateset::map< atm::state > backmap;
    std::cout << trans << "\n";
+   auto func = merge_sel( trans, det, backmap );
+   std::cout << func << "\n";
+   return 0;
 
    std::cout << "\n";
    std::cout << run( trans, tests::formula( )) << "\n";

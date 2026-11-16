@@ -8,6 +8,20 @@
 
 namespace atm
 {
+
+   struct stateswitch
+   {
+      state yes;
+      state no;
+
+      stateswitch( state yes, state no )
+         : yes( yes ), no( no )
+      { }
+ 
+      state operator( ) ( bool b ) const
+         { return b ? yes : no; }
+   };
+
    using statemap = identifier::map< state > ;
    using resultmap = identifier::map< convresult > ;
 
