@@ -17,6 +17,7 @@
 #include "regexp/algorithms.h"
 #include "atm/builder.h"
 
+
 int main( int argc, char* arcgv[] ) 
 {
    stepfunc< int, std::string > ff( "abcd" );
@@ -106,15 +107,17 @@ int main( int argc, char* arcgv[] )
    for( const auto& c : conv )
       std::cout << "   " << c. first << " : " << c. second << "\n";
 
-   atm::simple det;
-   atm::stateset::map< atm::state > backmap;
+   std::cout << "NONDETERMINISTIC:\n";
    std::cout << trans << "\n";
-   auto func = merge_sel( trans, det, backmap );
-   std::cout << func << "\n";
-   return 0;
+ 
+   auto det = make_deterministic( trans ); 
+   std::cout << "DETERMINISTIC:\n";
+   std::cout << det. first << "\n";
+   std::cout << det. second << "\n";
 
    std::cout << "\n";
-   std::cout << run( trans, tests::formula( )) << "\n";
+   std::cout << "nondet: " << run( trans, tests::formula( )) << "\n";
+   std::cout << "det:    " << run( det. first, tests::formula( )) << "\n";
    return 0;
 #if 0
    auto f = tests::mixing( );

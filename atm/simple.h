@@ -31,7 +31,7 @@ namespace atm
       std::vector< integer_func > delta_integer;
       std::vector< state > delta_double;
 
-      state trap;      // No escape from this state! 
+      state trap;   // No one has ever escaped from this state! 
 
       state empty_tuple;
       state empty_set;

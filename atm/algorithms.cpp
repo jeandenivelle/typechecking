@@ -2,7 +2,6 @@
 #include "algorithms.h"
 #include <queue>
 
-
 void atm::close_eps( const simple& smp, stateset& set ) 
 {
    std::queue< state > unchecked;
@@ -88,7 +87,7 @@ namespace
    {
       stateset res;
       for( const auto& f : vect )
-         res. insert( f. def );
+         res. insert( f. initial );
       return res;
    }
 
@@ -158,7 +157,6 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
    case data::tree_double:
       sset. insert( atm. delta_double( data. view_double(). d() ) );
       break;
-
 #endif
 
    case data::sel_tuple:
@@ -200,43 +198,184 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
 }
 
 
-atm::simple::sel_func
-atm::merge_sel( const simple& nondet, simple& det, 
-                stateset::map<state> & backmap )
+atm::state
+atm::create_or_reuse( stateset set, 
+                      const stateset::map< state > & checked, 
+                      stateset::map< state > & unchecked, simple& det )
 {
-   std::unordered_set< usel, usel::hash, usel::equal_to > domain;
-   for( const auto& d : nondet. delta_sel )
-   {
-      for( const auto& p : d )
-         domain. insert( p. first );
-   }
+   state q = det. create_states(0);
+      // We get the next state from det, but do not commit to it.
 
-   auto def = getdefault( nondet. delta_sel );
-   close_eps( nondet, def );
-   auto q = det.create_states(0);
-   auto p = backmap. emplace( std::move( def ), q );
-   if( p. second )
+   auto it = checked. find( set );
+   if( it != checked. end( ))
+      return it -> second;  
+ 
+   auto pr = unchecked. emplace( std::move( set ), q );
+   if( pr. second )
+   {
       det. create_states(1);
-   q = p. first -> second;
-
-   atm::simple::sel_func func(q);
-   for( const auto& sel : domain )
-   {
-      std::cout << "   " << sel << "\n";
-      auto set = apply( nondet. delta_sel, sel );
-      close_eps( nondet, set );
-      std::cout << "--> " << set << "\n";
-      auto q = det. create_states(0); 
-         // No states are created, but we get a state.
-      auto p = backmap. emplace( std::move( set ), q );
-      if( p. second )
-         det. create_states(1);
-      q = p. first -> second;
-      func. assign( sel, q ); 
-      // auto q = backmap. insert( back );
+      return q; 
+         // state is new, we commit to the state, and return it.
    }
-
-   std::cout << "returning\n";
+   else
+      return pr. first -> second;  
 }
 
+
+namespace
+{
+   using namespace atm;
+
+   template< typename D, typename H, typename E >
+   finfunc<D,state,H,E>  
+   merge( const std::vector< finfunc<D,state,H,E>> & funcvector,
+          const simple& nondet, simple& det, 
+          const stateset::map< state > & checked,
+          stateset::map< state > & unchecked )
+   {
+      std::unordered_set<D,H,E> domain;
+
+      for( const auto& f : funcvector )
+      {
+         for( const auto& p : f )
+            domain. insert( p. first );
+      }
+
+      auto defset = getdefault( funcvector );
+      close_eps( nondet, defset );
+      auto q = create_or_reuse( std::move( defset ), checked, unchecked, det );
+      auto resfunc = finfunc<D,state,H,E> (q);
+
+      for( const auto& sel : domain )
+      {
+         auto targetset = apply( funcvector, sel );
+         close_eps( nondet, targetset );
+         q = create_or_reuse( std::move( targetset ), checked, unchecked, det );
+         resfunc. assign( sel, q ); 
+      }
+
+      return resfunc;
+   }
+
+
+   template< typename D, typename C, typename E >
+   stepfunc<D,state,C,E> 
+   merge( const std::vector< stepfunc<D,state,C,E>> & funcvector,
+          const simple& nondet, simple& det,
+          const stateset::map< state > & checked,
+          stateset::map< state > & unchecked )
+   {
+      std::set<D,C> domain;
+
+      for( const auto& f : funcvector )
+      {
+         for( const auto& p : f )
+            domain. insert( p.d );
+      }
+
+      auto defset = getdefault( funcvector );
+      close_eps( nondet, defset );
+      auto q = create_or_reuse( std::move( defset ), checked, unchecked, det );
+      auto resfunc = stepfunc<D,state,C,E> (q);
+
+      for( const auto& c : domain )
+      {
+         auto targetset = apply( funcvector, c );
+         close_eps( nondet, targetset );
+         q = create_or_reuse( std::move( targetset ), checked, unchecked, det );
+         resfunc. append( c, q );
+      }
+
+      return resfunc;
+   }
+}
+
+std::pair< atm::simple, atm::stateset::map< state >> 
+atm::make_deterministic( const simple& nondet )
+{
+   simple det;
+   stateset::map< state > checked;
+   stateset::map< state > unchecked;
+   {
+      auto empty = stateset( );
+      empty. insert( nondet. empty_tuple );
+      close_eps( nondet, empty );
+      auto p = unchecked. emplace( std::move( empty ), det. empty_tuple );
+      det. empty_tuple = p. first -> second; 
+
+      empty. clear( );
+      empty. insert( nondet. empty_set );
+      close_eps( nondet, empty );
+      p = unchecked. emplace( std::move( empty ), det. empty_set );
+      det. empty_set = p. first -> second;  // Unlikely, but who knows? 
+   }
+   
+   det. delta_char. push_back( merge( nondet. delta_char, nondet, det, checked, unchecked ));
+   det. delta_sel. push_back( merge( nondet. delta_sel, nondet, det, checked, unchecked )); 
+   det. delta_u64. push_back( merge( nondet. delta_u64, nondet, det, checked, unchecked ));
+
+   // We have binary transitions, so we need to use 
+   // a resolution-like algorithm:
+
+   std::cout << unchecked. size( ) << "\n\n"; 
+   while( unchecked. size( ))
+   {
+      auto given = unchecked. begin( );
+      std::cout << "given = " << ( given -> first ) << "\n";
+
+      for( auto p : checked )
+      {
+         auto res = apply_tuple( nondet, p. first, given -> first );
+         if( res. size( ))
+         { 
+            close_eps( nondet, res );
+            auto qres = create_or_reuse( std::move( res ),
+                                checked, unchecked, det );
+            det. delta_tuple. insert( {{ p. second, given -> second }, qres } );
+         }
+
+         res = apply_tuple( nondet, given -> first, p. first );
+         if( res. size( ))
+         {
+            close_eps( nondet, res );
+            auto qres = create_or_reuse( std::move( res ),
+                                checked, unchecked, det );
+            det. delta_tuple. insert( {{ given -> second, p. second }, qres } );
+         }
+
+         res = apply_set( nondet, p. first, given -> first );
+         if( res. size( ))
+         {
+            close_eps( nondet, res );
+            auto qres = create_or_reuse( std::move( res ),
+                               checked, unchecked, det );  
+            det. delta_set. insert( {{ p. second, given -> second }, qres } );  
+         }
+
+         res = apply_set( nondet, given -> first, p. first );
+         if( res. size( ))
+         {
+            close_eps( nondet, res );
+            auto qres = create_or_reuse( std::move( res ),
+                               checked, unchecked, det );
+            det. delta_set. insert( {{ given -> second, p. second }, qres } );
+         }
+      }
+
+      checked. insert( unchecked. extract( given ));
+   }
+
+   return std::pair( std::move( det ), std::move( checked ));
+}
+
+
+std::ostream& 
+atm::operator << ( std::ostream& out, 
+                   const stateset::map< state > & collapse )
+{
+   out << "Subset Collapse:\n";
+   for( const auto& p : collapse )
+      out << "   " << p. first << " -> " << p. second << "\n";
+   return out;
+}
 

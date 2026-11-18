@@ -29,7 +29,7 @@ intermediate::function tests::mixing( )
    variable succ = { 's', 0 };
 
    auto ffunc = finfunc< usel, bool, usel::hash, usel::equal_to > 
-      ( false, {{ usel( "succ" ), true }} );
+      ( false, {{ usel( "?succ" ), true }} );
 
    
 #if 0
@@ -126,7 +126,7 @@ intermediate::function tests::mixing( )
 
    {
       auto inc1 = statement( stat_assign, p ++, succ,
-         flatterm( flat_selconst, usel( "succ" )));
+         flatterm( flat_selconst, usel( "?succ" )));
 
       auto inc2 = statement( stat_assign, p ++, m1,
          flatterm( flat_scal, { succ, m0 } ));
@@ -292,12 +292,12 @@ void tests::add_nat( regexp::defmap& defs, fieldmap& flds )
    auto nat = identifier( ) + "nat";
    defs. insert( { nat, expr( log_or, { zero, succ } ) } );
 
-   succ = expr( flt_sel, { false, {{ usel( "succ" ), true }} } );
+   succ = expr( flt_sel, { false, {{ usel( "?succ" ), true }} } );
    succ = tuple( { succ, expr( ref_ident, identifier( ) + "odd" ) } );
    auto even = identifier( ) + "even";
    defs. insert( { even, expr( log_or, { zero, succ } ) } );
   
-   succ = selectors( { usel( "succ" ) } ); 
+   succ = selectors( { usel( "?succ" ) } ); 
    succ = tuple( { succ, expr( ref_ident, identifier( ) + "even" ) } );
    auto odd = identifier( ) + "odd";
    defs. insert( { odd, succ } );

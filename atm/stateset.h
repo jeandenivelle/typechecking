@@ -19,6 +19,9 @@ namespace atm
          : impl( set )
       { }
 
+      void clear( ) 
+         { impl. clear( ); }
+
       bool insert( state q ) 
          { return impl. insert(q). second; }
 

@@ -15,16 +15,23 @@ namespace atm
 
    stateset apply_set( const simple& smp, 
                        const stateset& set, const stateset& element );
-      // We don't do the final epsilon closure.
-
+      // We don't do the epsilon closure on the result.
 
    stateset run( const simple& smp, const data::tree& tr );
 
-   simple::sel_func
-   merge_sel( const simple& nondet, simple& det, 
-              stateset::map< state > & backmap );
 
-   // std::pair< simple, subsetmap > make_deterministic( const simple& smp );
+   state 
+   create_or_reuse( stateset set, 
+                    const stateset::map< state > & checked,
+                    stateset::map< state > & unchecked,
+                    simple& det );
+      // We create a state that is new in smp if needed.
+
+   std::ostream& operator << ( std::ostream& out,
+                               const stateset::map< state > & collapse );
+
+   std::pair< simple, stateset::map< state >> 
+   make_deterministic( const simple& nondet );
 }
 
 #endif
