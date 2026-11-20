@@ -2,18 +2,18 @@
 #include "conversions.h"
 
 atm::statemap 
-atm::accepting_states( const regexp::defmap& defs, simple& smp )
+atm::create_states( const regexp::defmap& defs, simple& smp )
 {
    statemap acc;
    for( const auto& d : defs ) 
-      acc. insert( { d. first, smp. create_state( ) } );
+      acc. insert( { d. first, smp. create_states(1) } );
    return acc; 
 }
 
 atm::state
 atm::add2simple( const builder& bld, simple& smp )
 {
-   state entry = smp. create_state( );
+   state entry = smp. create_states(1);
    smp. delta_epsilon. insert( { smp. empty_set, entry } );
 
    for( const auto& trans : bld. delta_set )
@@ -32,7 +32,7 @@ atm::add2simple( const builder& bld, simple& smp )
    auto acc = entry + bld. nrstates;
 
    for( size_t i = 0; i != bld. nrstates; ++ i )
-      smp. create_state( );
+      smp. create_states(1);
 
    return acc;
 }
@@ -76,7 +76,7 @@ atm::state_of( const convresult& res )
       return res. view_tuple( ). q( );
    }
    std::cout << res << "\n\n";
-   throw std::logic_error( "cannot find state" ); 
+   throw std::logic_error( "contains no state" ); 
 }
 
 atm::convresult 
@@ -84,10 +84,69 @@ atm::convert( simple& smp, const regexp::expr& e,
               const regexp::defmap& defs, const identifier::map< state > & acc )
 {
 
-   std::cout << "converting: " << e << "\n";
+   std::cout << "converting:  " << e << "\n";
 
    switch( e. sel( ))
    {
+   case regexp::type_unit:
+      {
+         state q = smp. create_states(1);
+         smp. delta_unit. push_back(q); 
+         return { atm_single, q };
+      }
+
+   case regexp::flt_bool:
+      {
+         state q = smp. create_states(1);
+         auto trans = brancher( q, smp. trap );
+         smp. delta_bool. push_back( e. view_filter_bool( ). func( ).
+                                     transform_range( trans ));
+         return { atm_single, q }; 
+      }
+
+   case regexp::flt_char:
+      {
+         state q = smp. create_states(1);
+         auto trans = brancher( q, smp. trap );
+         smp. delta_char. push_back( e. view_filter_char( ). func( ).
+                                     transform_range( trans ));
+         return { atm_single, q };
+      }
+
+   case regexp::flt_sel:
+      {
+         state q = smp. create_states(1); 
+         auto trans = brancher( q, smp. trap ); 
+         smp. delta_sel. push_back( e. view_filter_sel( ). func( ).
+                                    transform_range( trans ));  
+         return { atm_single, q };
+      }
+
+   case regexp::flt_u64:
+      {
+         state q = smp. create_states(1);
+         auto trans = brancher( q, smp. trap ); 
+         smp. delta_u64. push_back( e. view_filter_u64( ). func( ). 
+                                    transform_range( trans ));
+         return { atm_single, q };
+      }
+
+   case regexp::flt_integer:
+      {
+         state q = smp. create_states(1);
+         auto trans = brancher( q, smp. trap );
+         smp. delta_integer. push_back( e. view_filter_integer( ). func( ).
+                                        transform_range( trans ));
+         return { atm_single, q };
+      }
+
+   case regexp::type_double:
+      {
+         state q = smp. create_states(1);
+         smp. delta_double. push_back(q);
+         return { atm_single, q };
+      }
+
    case regexp::ref_ident:
       {
          auto p = acc. find( e. view_reference( ). ident( ));
@@ -97,35 +156,7 @@ atm::convert( simple& smp, const regexp::expr& e,
             throw std::logic_error( "unknown identifier" );
       }
 
-   case regexp::flt_char:
-      {
-         state q = smp. create_state( );
-         auto trans = stateswitch( q, smp. trap );
-         smp. delta_char. push_back( e. view_filter_char( ). func( ).
-                                     transform_range( trans ));
-         return { atm_single, q };
-      }
-
-   case regexp::flt_sel:
-      {
-         state q = smp. create_state( ); 
-         auto trans = stateswitch( q, smp. trap ); 
-         smp. delta_sel. push_back( e. view_filter_sel( ). func( ).
-                                    transform_range( trans ));  
-         return { atm_single, q };
-      }
-
-   case regexp::flt_u64:
-      {
-         state q = smp. create_state( );
-         auto trans = stateswitch( q, smp. trap ); 
-         smp. delta_u64. push_back( e. view_filter_u64( ). func( ). 
-                                    transform_range( trans ));
-         return { atm_single, q };
-      }
-
-   case regexp::tup_exact:
-   case regexp::tup_prefix:
+   case regexp::tup_constr:
       {
          auto tup = e. view_tuple( ); 
          std::vector< convresult > sub;
@@ -144,15 +175,41 @@ atm::convert( simple& smp, const regexp::expr& e,
          auto q = smp. empty_tuple;
          for( const auto& s : sub )
          {
-            auto q1 = smp. create_state( );
+            auto q1 = smp. create_states(1);
             smp. delta_tuple. insert( { { q, s. view_single( ). q( ) }, q1 } );
             q = q1; 
          }
          
-         if( e. sel( ) == regexp::tup_prefix )
-            throw std::logic_error( "we need to add a cycle" );
-
          return convresult( atm_tuple, q, sub. size( )); 
+      }
+
+   case regexp::tup_fill:
+      {
+         auto fl = e. view_fill( );
+         convresult pref = convert( smp, fl. prefix( ), defs, acc );
+         if( pref. sel( ) != atm_tuple )
+         {
+            return convresult( atm_error, 
+                               "first argument of fill must be a tuple" );
+         }
+
+         std::vector< state > fillers;
+         for( size_t i = 0; i != fl. size( ); ++ i )
+         {
+            auto cv = convert( smp, fl. filler(i), defs, acc );
+            if( cv. sel( ) == atm_error )
+               return cv;
+            cv = conv2single( smp, cv );
+            fillers. push_back( state_of( cv ));
+         }
+
+         auto tupq = pref. view_tuple( ). q( );
+         for( const auto& f : fillers )
+            smp. delta_tuple. insert( { { tupq, f }, tupq } ); 
+
+         auto resq = smp. create_states(1);
+         smp. delta_epsilon. insert( { tupq, resq } );
+         return convresult( atm_tuple, resq, pref. view_tuple( ). sz( ));
       }
 
    case regexp::log_or:
@@ -179,7 +236,7 @@ atm::convert( simple& smp, const regexp::expr& e,
                return sub; 
          }
 
-         auto acc = smp. create_state( );
+         auto acc = smp. create_states(1);
          for( auto& s : subresults )
             smp. delta_epsilon. insert( { state_of(s), acc } ); 
 
@@ -275,7 +332,6 @@ atm::convert( simple& smp, resultmap& results,
    {
       if( !results. contains( d. first ))
       {
-         std::cout << "converting " << d. first << "\n";
          auto c = convert( smp, d. second, defs, acc );
          c = conv2single( smp, c );
          smp. delta_epsilon. insert( { state_of(c), acc. at( d. first ) } );

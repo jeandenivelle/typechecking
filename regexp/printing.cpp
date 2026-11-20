@@ -2,7 +2,6 @@
 #include <stdexcept>
 
 #include "expr.h"
-#include "exprtype.h"
 
 
 void 
@@ -10,7 +9,12 @@ regexp::expr::print( std::ostream& out ) const
 {
    switch( sel( ))
    {
-   
+
+   case type_never:
+   case type_unit:
+      out << sel( );
+      return;
+  
    case flt_bool:
       out << view_filter_bool( ). func( );
       return; 
@@ -27,12 +31,19 @@ regexp::expr::print( std::ostream& out ) const
       out << view_filter_u64( ). func( );
       return;
 
+   case flt_integer:
+      out << view_filter_integer( ). func( );
+      return;
+
+   case type_double:
+      out << sel( );
+      return;
+
    case ref_ident:
       out << view_reference( ). ident( ); 
       return;
 
-   case tup_exact:
-   case tup_prefix:
+   case tup_constr:
       {
          auto tp = view_tuple( ); 
          out << sel( ) << "(";
@@ -48,6 +59,22 @@ regexp::expr::print( std::ostream& out ) const
       }
       return; 
 
+   case tup_fill:
+      {
+         auto fl = view_fill( );
+         out << sel( ) << "( " << fl. prefix( ) << ";";
+         for( size_t i = 0; i != fl. size( ); ++ i )
+         {
+            if(i)
+               out << " | ";
+            else
+               out << " ";
+            out << fl. filler(i);
+         }
+         out << " )";
+      } 
+      return;
+ 
    case log_or:
       {
          auto log = view_disjunction( );
@@ -101,30 +128,6 @@ regexp::expr::print( std::ostream& out ) const
    }
 
    std::cout << "printing a regexp, unknown selector: " << sel( ) << "\n";
-   throw std::logic_error( "unknown selector" );
-}
-
-
-void 
-regexp::exprtype::print( std::ostream& out ) const
-{
-   switch( sel( ))
-   {     
-   case exprtype_single:
-      out << "single";
-      return;
-   case exprtype_set:
-      out << "set";
-      return;
-   case exprtype_unknown:
-      out << "unknown";
-      return; 
-   case exprtype_error:
-      out << "error";
-      return; 
-   }
-
-   std::cout << "printing exprtype, unknown selector: " << sel( ) << "\n";
    throw std::logic_error( "unknown selector" );
 }
 

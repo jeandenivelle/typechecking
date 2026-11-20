@@ -20,16 +20,47 @@
 
 int main( int argc, char* arcgv[] ) 
 {
-   stepfunc< int, std::string > ff( "abcd" );
-   ff. append( 1, "aa" );
-   ff. append( 2, "bbc" );
-   std::cout << ff << "\n";
+   auto tr = data::tuple( { data::tree( data::dat_unit ),
+                            data::tree( data::dat_bool, true ),
+                            data::tree( data::dat_u64, (uint64_t) 400 ), 
+                            data::tree( data::dat_integer, bigint( 500 )),
+                            data::tree( data::dat_double, 3.1415 ),
+                            data::tree( data::dat_unit ) } );
+   std::cout << tr << "\n";
 
-   auto sz = []( const std::string& s ) { return s. size( ); };
+   auto ex = regexp::tuple( { regexp::expr( regexp::type_unit ),
+                              regexp::expr( regexp::flt_bool, 
+                                 stepfunc<bool,bool>( false, {{ true, true }} )),
+                              regexp::expr( regexp::flt_u64, 
+                                 stepfunc< uint64_t, bool > ( false, {{400,true}} )),
+                              regexp::expr( regexp::flt_integer,
+                                 stepfunc< bigint, bool > ( false,
+                                  {{ bigint(500), true }} )),
+                              regexp::expr( regexp::type_double ) } );
+   ex = regexp::expr( regexp::tup_fill, ex, 
+                      { regexp::expr( regexp::flt_char,
+                                 stepfunc< char, bool > ( false, {{ 'a', true }} )),
+                        regexp::expr( regexp::type_double ) } );
 
-   auto st = []( const size_t i ) { return atm::state( ) + i; };
+   std::cout << ex << "\n";
 
-   std::cout << ff. transform_range( sz ) << "\n";
+   {
+      regexp::defmap defs;
+      defs. insert( { identifier( ) + "tuple", ex } );  
+
+      atm::simple trans;
+      atm::statemap acc = create_states( defs, trans );
+
+      atm::resultmap conv;
+      convert( trans, conv, defs, acc );
+      std::cout << "Conversion Results:\n";
+      for( const auto& c : conv )
+         std::cout << "   " << c. first << " : " << c. second << "\n";
+
+      std::cout << trans << "\n";
+      std::cout << "nondet: " << run( trans, tr ) << "\n";
+      return 0;
+   }
 
 #if 0
    diff::approxset set1 = diff::approxset::empty( );
@@ -98,7 +129,7 @@ int main( int argc, char* arcgv[] )
    std::cout << defs << "\n";
 
    atm::simple trans;
-   atm::statemap acc = accepting_states( defs, trans );  
+   atm::statemap acc = create_states( defs, trans );  
    std::cout << acc << "\n";
 
    atm::resultmap conv;

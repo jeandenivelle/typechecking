@@ -9,7 +9,6 @@
 
 #include "identifier.h"
 #include "expr.h"
-#include "exprtype.h"
 
 namespace regexp
 {

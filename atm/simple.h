@@ -68,14 +68,8 @@ namespace atm
       state create_states( size_t nr ) 
          { return std::exchange( freestate, freestate + nr ); }
 
-      state create_state( )  
-         { return create_states(1); }
-
       void comment( state s, const std::string& bla ) 
          { comments. insert( std::pair( s, bla )); }
-
-      void addtuple( const std::vector< state > & tuple, state goal );
-      void addforall( const std::vector< state > & single, state goal );
 
       void print( std::ostream& out ) const; 
 

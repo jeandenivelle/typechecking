@@ -43,4 +43,6 @@ public:
 
 	void print( std::ostream& ) const;	
 };
+
+
 #endif

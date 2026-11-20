@@ -1,42 +1,23 @@
 
 #include "simple.h"
 
-void 
-atm::simple:: addforall( const std::vector< state > & single, 
-                         state goal )
+
+namespace 
 {
-   state loop = create_state( );
-   delta_epsilon. insert( { empty_set, loop } );
-   for( const auto& s : single )
-      delta_set. insert( { { loop, s }, loop } );
-
-   delta_epsilon. insert( { loop, goal } );
-}
-
-
-void 
-atm::simple::addtuple( const std::vector< state > & tup, state goal )
-{
-   // In earlier versions, we tried to reuse states, but 
-   // now we don't care: We just create a new path.
-
-   state partial = empty_tuple; 
-   for( auto s : tup )
+   template<typename D> 
+   void printdelta( std::ostream& out, 
+                    const std::vector<D> & delta, const char* c )
    {
-      state next = create_state( );
-      delta_tuple. insert( { { partial, s }, next } );
-
-      partial = next;
-   } 
-
-   std::cout << "reached " << partial << "\n";
-
-   // We create an epsilon transition to goal:
-
-   delta_epsilon. insert( { partial, goal } );
+      if( delta. size( ))
+      {
+         out << c << "\n";
+         for( const auto& d : delta )
+            out << "   " << d << "\n";
+         out << "\n";
+      }
+   }
 }
-
-
+ 
 void atm::simple::print( std::ostream& out ) const
 {
    out << "Simple Automaton:\n";
@@ -50,30 +31,14 @@ void atm::simple::print( std::ostream& out ) const
          out << "   " << c. first << " : " << c. second << "\n";
       out << "\n";
    }
-  
-   if( delta_char. size( ))
-   {
-      out << "Delta (char):\n";
-      for( const auto& p : delta_char )
-         out << "   " << p << "\n";
-      out << "\n";
-   }
 
-   if( delta_sel. size( )) 
-   {
-      out << "Delta (usel):\n";
-      for( const auto& f : delta_sel )
-         out << "   " << f << "\n";
-      out << "\n";
-   }
-
-   if( delta_u64. size( ))
-   {
-      out << "Delta (u64):\n";
-      for( const auto& p : delta_u64 )
-         out << "   " << p << "\n";
-      out << "\n";
-   }
+   printdelta( out, delta_unit, "Delta (unit)" );
+   printdelta( out, delta_bool, "Delta (bool)" );
+   printdelta( out, delta_char, "Delta (char)" );
+   printdelta( out, delta_sel, "Delta (usel)" );
+   printdelta( out, delta_u64, "Delta (u64)" );
+   printdelta( out, delta_integer, "Delta (integer)" );
+   printdelta( out, delta_double, "Delta (double)" );
 
    out << "Tuple transitions:\n";
    out << "   <empty> = " << empty_tuple << "\n";

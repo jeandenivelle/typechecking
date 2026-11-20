@@ -42,7 +42,7 @@ struct stepfunc
    {
       table. reserve( init. size( ));
       for( auto p : init )
-         append( p.d, p.at, p.after );
+         append( p.d, p.val );
    }
 
    // d must be strictly greater than the values encountered

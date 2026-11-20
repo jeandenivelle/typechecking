@@ -2,6 +2,7 @@
 #include "algorithms.h"
 #include <queue>
 
+
 void atm::close_eps( const simple& smp, stateset& set ) 
 {
    std::queue< state > unchecked;
@@ -61,6 +62,14 @@ namespace
 {
    using namespace atm;
 
+   stateset statesinvector( const std::vector< state > & vect )
+   {
+      stateset res;
+      for( const auto& s : vect )
+         res. insert(s);
+      return res;
+   }
+ 
    template< typename D, typename R, typename C, typename E > 
    stateset
    apply( const std::vector< stepfunc<D,R,C,E>> & vect, const D& d )
@@ -109,22 +118,21 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
 
    switch( tr. sel( )) 
    {
-
-#if 0
-   case data::tree_never:
-      sset. insert( atm. collapsed );
-      break;
-
-   case data::tree_unit:
-      sset. insert( atm. delta_unit );
-      break;
+   case data::dat_unit:
+      {
+         stateset res = statesinvector( smp. delta_unit );
+         close_eps( smp, res );
+         return res;
+      } 
    
-   case data::tree_bool:
-      sset. insert( atm. delta_bool( data. view_bool(). b() ) );
-      break;
-#endif
-
-   case data::sel_char:
+   case data::dat_bool:
+      {
+         stateset res = apply( smp. delta_bool, tr. view_bool( ). b( ));
+         close_eps( smp, res );
+         return res;
+      }
+ 
+   case data::dat_char:
       {
          stateset res = apply( smp. delta_char, tr. view_char( ). c( ));
          close_eps( smp, res );  
@@ -132,34 +140,40 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
          return res;
       }
 
-   case data::sel_usel:
+   case data::dat_sel:
       {
          stateset res = apply( smp. delta_sel, tr. view_usel( ). s( ));
          close_eps( smp, res );
          return res;
       }
 
-   case data::sel_u64:
+   case data::dat_u64:
       {
          stateset res;
          for( const auto& u : smp. delta_u64 )
             res. insert( u. apply( tr. view_u64( ). u( )) );
          close_eps( smp, res );
-         std::cout << tr << " -> " << res << "\n";
          return res;
       }
 
-#if 0
-   case data::tree_bigint:
-      sset. insert( atm. delta_bigint( data. view_bigint(). i() ) );
-      break;
+   case data::dat_integer:
+      {
+         stateset res;
+         for( const auto& u : smp. delta_integer )
+            res. insert( u. apply( tr. view_integer( ). i( )) );
+         close_eps( smp, res );
+         return res;
+      }
 
-   case data::tree_double:
-      sset. insert( atm. delta_double( data. view_double(). d() ) );
-      break;
-#endif
+   case data::dat_double:
+      {
+         stateset res = statesinvector( smp. delta_double );
+         close_eps( smp, res );
+         std::cout << "double -> " << res << "\n";
+         return res;
+      }
 
-   case data::sel_tuple:
+   case data::dat_tuple:
       {
          auto tup = tr. view_tuple( );
          stateset res; res. insert( smp. empty_tuple );
@@ -175,7 +189,7 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
          return res;
       }
 
-   case data::sel_array: 
+   case data::dat_array: 
       {
          auto ar = tr. view_array( );
          stateset res; res. insert( smp. empty_set );
@@ -215,7 +229,7 @@ atm::create_or_reuse( stateset set,
    {
       det. create_states(1);
       return q; 
-         // state is new, we commit to the state, and return it.
+         // state is new, we commit to q, and return it.
    }
    else
       return pr. first -> second;  
@@ -227,25 +241,33 @@ namespace
    using namespace atm;
 
    template< typename D, typename H, typename E >
-   finfunc<D,state,H,E>  
-   merge( const std::vector< finfunc<D,state,H,E>> & funcvector,
-          const simple& nondet, simple& det, 
-          const stateset::map< state > & checked,
-          stateset::map< state > & unchecked )
+   std::unordered_set<D,H,E> 
+   getdomains( const std::vector< finfunc<D,state,H,E>> & funcvector )
    {
       std::unordered_set<D,H,E> domain;
-
       for( const auto& f : funcvector )
       {
          for( const auto& p : f )
             domain. insert( p. first );
       }
+      return domain;
+   }
 
+
+   template< typename D, typename H, typename E >
+   finfunc<D,state,H,E>  
+   merge( const std::vector< finfunc<D,state,H,E> > & funcvector,
+          const simple& nondet, simple& det, 
+          const stateset::map< state > & checked,
+          stateset::map< state > & unchecked )
+   {
       auto defset = getdefault( funcvector );
       close_eps( nondet, defset );
       auto q = create_or_reuse( std::move( defset ), checked, unchecked, det );
+
       auto resfunc = finfunc<D,state,H,E> (q);
 
+      auto domain = getdomains( funcvector );
       for( const auto& sel : domain )
       {
          auto targetset = apply( funcvector, sel );
@@ -253,8 +275,21 @@ namespace
          q = create_or_reuse( std::move( targetset ), checked, unchecked, det );
          resfunc. assign( sel, q ); 
       }
-
       return resfunc;
+   }
+
+
+   template< typename D, typename C, typename E >
+   std::set<D,C>
+   getdomains( const std::vector< stepfunc<D,state,C,E>> & funcvector )
+   {
+      std::set<D,C> domain;
+      for( const auto& f : funcvector )
+      {
+         for( const auto& p : f )
+            domain. insert( p.d );
+      }
+      return domain;
    }
 
 
@@ -265,19 +300,13 @@ namespace
           const stateset::map< state > & checked,
           stateset::map< state > & unchecked )
    {
-      std::set<D,C> domain;
-
-      for( const auto& f : funcvector )
-      {
-         for( const auto& p : f )
-            domain. insert( p.d );
-      }
-
       auto defset = getdefault( funcvector );
       close_eps( nondet, defset );
       auto q = create_or_reuse( std::move( defset ), checked, unchecked, det );
+
       auto resfunc = stepfunc<D,state,C,E> (q);
 
+      auto domain = getdomains( funcvector );
       for( const auto& c : domain )
       {
          auto targetset = apply( funcvector, c );
@@ -285,10 +314,10 @@ namespace
          q = create_or_reuse( std::move( targetset ), checked, unchecked, det );
          resfunc. append( c, q );
       }
-
       return resfunc;
    }
 }
+
 
 std::pair< atm::simple, atm::stateset::map< state >> 
 atm::make_deterministic( const simple& nondet )

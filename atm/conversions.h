@@ -9,12 +9,12 @@
 namespace atm
 {
 
-   struct stateswitch
+   struct brancher
    {
       state yes;
       state no;
 
-      stateswitch( state yes, state no )
+      brancher( state yes, state no )
          : yes( yes ), no( no )
       { }
  
@@ -29,8 +29,8 @@ namespace atm
       // Add the conversion of bld to smp, and return the accepting state.
 
    statemap 
-   accepting_states( const regexp::defmap& defs, simple& smp );
-      // Create a state for every definition.
+   create_states( const regexp::defmap& defs, simple& smp );
+      // Create a new state for every definition.
       // statemap maps identifiers to the created states.
 
    state state_of( const convresult& res );
