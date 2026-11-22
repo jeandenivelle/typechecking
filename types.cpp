@@ -25,7 +25,8 @@ int main( int argc, char* arcgv[] )
                             data::tree( data::dat_u64, (uint64_t) 400 ), 
                             data::tree( data::dat_integer, bigint( 500 )),
                             data::tree( data::dat_double, 3.1415 ),
-                            data::tree( data::dat_unit ) } );
+                            data::tree( data::dat_unit ),
+                            data::tree( data::dat_char, 'b' ) } );
    std::cout << tr << "\n";
 
    auto ex = regexp::tuple( { regexp::expr( regexp::type_unit ),
@@ -39,8 +40,8 @@ int main( int argc, char* arcgv[] )
                               regexp::expr( regexp::type_double ) } );
    ex = regexp::expr( regexp::tup_fill, ex, 
                       { regexp::expr( regexp::flt_char,
-                                 stepfunc< char, bool > ( false, {{ 'a', true }} )),
-                        regexp::expr( regexp::type_double ) } );
+                                 stepfunc< char, bool > ( false, {{ 'c', true }} )),
+                        regexp::expr( regexp::type_unit ) } );
 
    std::cout << ex << "\n";
 
@@ -51,14 +52,14 @@ int main( int argc, char* arcgv[] )
       atm::simple trans;
       atm::statemap acc = create_states( defs, trans );
 
-      atm::resultmap conv;
-      convert( trans, conv, defs, acc );
-      std::cout << "Conversion Results:\n";
-      for( const auto& c : conv )
-         std::cout << "   " << c. first << " : " << c. second << "\n";
+      convert( trans, defs, acc );
 
       std::cout << trans << "\n";
       std::cout << "nondet: " << run( trans, tr ) << "\n";
+
+      auto pr = make_deterministic( trans );
+      std::cout << pr. first << "\n\n";
+      std::cout << pr. second << "\n\n";
       return 0;
    }
 
@@ -132,11 +133,7 @@ int main( int argc, char* arcgv[] )
    atm::statemap acc = create_states( defs, trans );  
    std::cout << acc << "\n";
 
-   atm::resultmap conv;
-   convert( trans, conv, defs, acc );
-   std::cout << "Conversion Results:\n";
-   for( const auto& c : conv )
-      std::cout << "   " << c. first << " : " << c. second << "\n";
+   convert( trans, defs, acc );
 
    std::cout << "NONDETERMINISTIC:\n";
    std::cout << trans << "\n";

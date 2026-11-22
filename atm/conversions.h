@@ -23,7 +23,6 @@ namespace atm
    };
 
    using statemap = identifier::map< state > ;
-   using resultmap = identifier::map< convresult > ;
 
    state add2simple( const builder& bld, simple& smp );
       // Add the conversion of bld to smp, and return the accepting state.
@@ -43,8 +42,7 @@ namespace atm
             const regexp::defmap& defs, const statemap& acc );
 
    void 
-   convert( simple& smp, resultmap& results,
-            const regexp::defmap& defs, const statemap& acc );
+   convert( simple& smp, const regexp::defmap& defs, const statemap& acc );
 
    std::ostream& operator << ( std::ostream& out, const statemap& acc );
 }

@@ -24,7 +24,7 @@
 %option yield       { flat_yield } => # v : variable
 
 %option unary { flat_len, flat_not, flat_neg } => # v : variable
-   // I prefer 'size' instead of 'len', but I decided to
+   // I personally prefer 'size' over 'len', but I decided to
    // consistently use Python names everywhere.
 
 %option binary { flat_eq, flat_ne, flat_lt, flat_gt,

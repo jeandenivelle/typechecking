@@ -31,7 +31,7 @@ namespace atm
                                const stateset::map< state > & collapse );
 
    std::pair< simple, stateset::map< state >> 
-   make_deterministic( const simple& nondet );
+      make_deterministic( const simple& nondet );
 }
 
 #endif

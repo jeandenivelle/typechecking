@@ -240,6 +240,19 @@ namespace
 {
    using namespace atm;
 
+   state 
+   merge( const std::vector< state > & statevector,
+          const simple& nondet, simple& det,
+          const stateset::map< state > & checked,
+          stateset::map< state > & unchecked )
+   {
+      auto set = statesinvector( statevector );
+      close_eps( nondet, set );
+      auto q = create_or_reuse( std::move( set ), checked, unchecked, det ); 
+      return q;
+   }
+
+
    template< typename D, typename H, typename E >
    std::unordered_set<D,H,E> 
    getdomains( const std::vector< finfunc<D,state,H,E>> & funcvector )
@@ -316,6 +329,7 @@ namespace
       }
       return resfunc;
    }
+
 }
 
 
@@ -338,15 +352,25 @@ atm::make_deterministic( const simple& nondet )
       p = unchecked. emplace( std::move( empty ), det. empty_set );
       det. empty_set = p. first -> second;  // Unlikely, but who knows? 
    }
-   
-   det. delta_char. push_back( merge( nondet. delta_char, nondet, det, checked, unchecked ));
-   det. delta_sel. push_back( merge( nondet. delta_sel, nondet, det, checked, unchecked )); 
-   det. delta_u64. push_back( merge( nondet. delta_u64, nondet, det, checked, unchecked ));
+
+   det. delta_unit. push_back(
+           merge( nondet. delta_unit, nondet, det, checked, unchecked )); 
+   det. delta_bool. push_back(
+           merge( nondet. delta_bool, nondet, det, checked, unchecked )); 
+   det. delta_char. push_back( 
+           merge( nondet. delta_char, nondet, det, checked, unchecked ));
+   det. delta_sel. push_back( 
+           merge( nondet. delta_sel, nondet, det, checked, unchecked )); 
+   det. delta_u64. push_back( 
+           merge( nondet. delta_u64, nondet, det, checked, unchecked ));
+   det. delta_integer. push_back(
+           merge( nondet. delta_integer, nondet, det, checked, unchecked ));
+   det. delta_double. push_back(
+           merge( nondet. delta_double, nondet, det, checked, unchecked ));
 
    // We have binary transitions, so we need to use 
    // a resolution-like algorithm:
 
-   std::cout << unchecked. size( ) << "\n\n"; 
    while( unchecked. size( ))
    {
       auto given = unchecked. begin( );

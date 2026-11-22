@@ -325,18 +325,14 @@ atm::convert( simple& smp, const regexp::expr& e,
 
 
 void 
-atm::convert( simple& smp, resultmap& results,
+atm::convert( simple& smp, 
               const regexp::defmap& defs, const statemap& acc )
 {
    for( const auto& d : defs )
    {
-      if( !results. contains( d. first ))
-      {
-         auto c = convert( smp, d. second, defs, acc );
-         c = conv2single( smp, c );
-         smp. delta_epsilon. insert( { state_of(c), acc. at( d. first ) } );
-         results. insert( { d. first, std::move(c) } );
-      }
+      auto c = convert( smp, d. second, defs, acc );
+      c = conv2single( smp, c );
+      smp. delta_epsilon. insert( { state_of(c), acc. at( d. first ) } );
    }
 }
 

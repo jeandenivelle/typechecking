@@ -27,6 +27,18 @@
 %option tuple          { tup_constr } => [ sub : expr ]
 %option fill           { tup_fill } => prefix : expr, [ filler : expr ] 
    // Fill the rest with ( filler1 | ... | fillern )^{*}. 
+   // I think that the current approach is acceptable, but not the best.
+   // The best approach would be to have a separate tuple-extension type that
+   // would translate into a simple automaton with an entry and exit point.
+   // (Meaning that conv( tuple ) would contain two states.)
+   // One would have :  constructor (entry and exit),
+   //                   disjunction (merges entries and exits),
+   //                   star 
+   // This means that tuple regexps are essentially standard regexps 
+   // over strings. When a tuple is converted to a single expression,
+   // a transition is added to the entry point, and only the exit point is
+   // returned. This probably should be changed in the future.
+   // Note that all of this is without consequences for the automata.
 
 %option disjunction    { log_or } => [ sub : expr ]
 
