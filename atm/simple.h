@@ -73,6 +73,7 @@ namespace atm
 
       void print( std::ostream& out ) const; 
 
+      bool isdeterministic( ) const;
    };
 
 }
