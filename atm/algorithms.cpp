@@ -333,10 +333,12 @@ namespace
 }
 
 
-std::pair< atm::simple, atm::stateset::map< state >> 
-atm::make_deterministic( const simple& nondet )
+atm::cluster
+atm::make_deterministic( const cluster& clust )
 {
    simple det;
+   const simple& nondet = clust. common;
+
    stateset::map< state > checked;
    stateset::map< state > unchecked;
    {
@@ -353,7 +355,7 @@ atm::make_deterministic( const simple& nondet )
       det. empty_set = p. first -> second;  // Unlikely, but who knows? 
    }
 
-   det. delta_unit. push_back(
+   det. delta_unit. push_back( 
            merge( nondet. delta_unit, nondet, det, checked, unchecked )); 
    det. delta_bool. push_back(
            merge( nondet. delta_bool, nondet, det, checked, unchecked )); 
@@ -367,7 +369,7 @@ atm::make_deterministic( const simple& nondet )
            merge( nondet. delta_integer, nondet, det, checked, unchecked ));
    det. delta_double. push_back(
            merge( nondet. delta_double, nondet, det, checked, unchecked ));
-
+   
    // We have binary transitions, so we need to use 
    // a resolution-like algorithm:
 
@@ -418,9 +420,25 @@ atm::make_deterministic( const simple& nondet )
       checked. insert( unchecked. extract( given ));
    }
 
-   return std::pair( std::move( det ), std::move( checked ));
-}
+   std::cout << det << "\n";
+   cluster res = std::move( det );
 
+   std::cout << "backmap " << checked << "\n";
+   for( const auto& ch : checked )
+   {
+      for( auto q : ch. first )
+      {
+         auto acc = clust. props_inv. find(q);
+         if( acc != clust. props_inv. end( ))
+         {
+            for( const auto& id : acc -> second )
+               res. add_accept( id, ch. second );   
+         } 
+      }   
+   }
+ 
+   return res;
+}
 
 std::ostream& 
 atm::operator << ( std::ostream& out, 

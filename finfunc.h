@@ -74,7 +74,9 @@ struct finfunc
    bool empty() const { return func. empty( ); }
 
    template< typename F >
-      using transformedtype = typename std::invoke_result<F,R> :: type ;
+      using transformedtype = 
+         typename std::remove_cvref< 
+            typename std::invoke_result<F,R> :: type > :: type;
 
    template< std::invocable<R> F >
    auto transform_range( const F& f ) const

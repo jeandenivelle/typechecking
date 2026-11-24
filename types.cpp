@@ -1,5 +1,6 @@
 
-#include <iostream>
+
+#include "interpreter/program.h"
 
 #include "data/constructors.h"
 #include "usel.h"
@@ -12,14 +13,17 @@
 #include "overloadmap.h"
 
 #include "atm/algorithms.h"
-#include "atm/conversions.h"
 
 #include "regexp/algorithms.h"
 #include "atm/builder.h"
 
+#include "interpreter/basictypes.h"
+#include "interpreter/varmap.h"
+#include "interpreter/funcdef.h"
 
 int main( int argc, char* arcgv[] ) 
 {
+
    auto tr = data::tuple( { data::tree( data::dat_unit ),
                             data::tree( data::dat_bool, true ),
                             data::tree( data::dat_u64, (uint64_t) 400 ), 
@@ -49,6 +53,7 @@ int main( int argc, char* arcgv[] )
       regexp::defmap defs;
       defs. insert( { identifier( ) + "tuple", ex } );  
 
+#if 0
       atm::simple trans;
       atm::statemap acc = create_states( defs, trans );
 
@@ -61,6 +66,7 @@ int main( int argc, char* arcgv[] )
       std::cout << pr. first << "\n\n";
       std::cout << pr. second << "\n\n";
       return 0;
+#endif
    }
 
 #if 0
@@ -129,22 +135,17 @@ int main( int argc, char* arcgv[] )
 
    std::cout << defs << "\n";
 
-   atm::simple trans;
-   atm::statemap acc = create_states( defs, trans );  
-   std::cout << acc << "\n";
-
-   convert( trans, defs, acc );
-
+   atm::cluster clust;
+   clust. regexp2nondet( defs );
    std::cout << "NONDETERMINISTIC:\n";
-   std::cout << trans << "\n";
- 
-   auto det = make_deterministic( trans ); 
-   std::cout << "DETERMINISTIC:\n";
-   std::cout << det. first << "\n";
-   std::cout << det. second << "\n";
+   std::cout << clust << "\n";
 
-   std::cout << "\n";
-   std::cout << "nondet: " << run( trans, tests::formula( )) << "\n";
+   auto det = make_deterministic( clust ); 
+   std::cout << "DETERMINISTIC:\n";
+   std::cout << det << "\n";
+
+   std::cout << "nondet: " << run( clust. common, tests::formula( )) << "\n";
+#if 0
    std::cout << "det:    " << run( det. first, tests::formula( )) << "\n";
    return 0;
 #if 0
@@ -154,7 +155,7 @@ int main( int argc, char* arcgv[] )
    f = tests::arrayconv( );
    std::cout << f << "\n";
 #endif
-
+#endif
    return 0;
 
 #if 0

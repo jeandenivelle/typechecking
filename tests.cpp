@@ -459,3 +459,11 @@ data::tree tests::formula( )
 }
 
 
+void tests::add_isfree( interpreter::program& prog )
+{
+      
+
+
+
+}
+

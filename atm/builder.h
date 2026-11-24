@@ -57,7 +57,6 @@ namespace atm
          : nrstates(0)
       { }
 
- 
       void addlinear( const std::vector< state > & symset, size_t nr );
          // If nr == 0, nothing changes.
          // nr == 1 will add one copy, etc.

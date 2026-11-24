@@ -1,0 +1,20 @@
+
+%dir interpreter
+
+%namespace interpreter
+
+%define expression ( expr_u64 )
+
+%option u64           { expr_u64 } => # u : uint64_t 
+%option double        { expr_double } => # d : double 
+
+%define instruction   ( ins_nop )
+
+%option nop           { ins_nop } =>
+%option assignment    { ins_assign } =>  
+
+%h_incl {
+   #include "tvm/includes.h"
+   #include "label.h"
+}
+

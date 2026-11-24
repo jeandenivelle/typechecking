@@ -5,6 +5,7 @@
 #include "data/tree.h"
 #include "stateset.h"
 #include "simple.h"
+#include "cluster.h"
 
 namespace atm 
 {
@@ -30,8 +31,8 @@ namespace atm
    std::ostream& operator << ( std::ostream& out,
                                const stateset::map< state > & collapse );
 
-   std::pair< simple, stateset::map< state >> 
-      make_deterministic( const simple& nondet );
+   cluster make_deterministic( const cluster& clust );
+
 }
 
 #endif

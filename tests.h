@@ -7,6 +7,7 @@
 #include "data/tree.h"
 #include "atm/simple.h"
 #include "intermediate/function.h"
+#include "interpreter/program.h"
 
 namespace tests
 {
@@ -31,6 +32,7 @@ namespace tests
    data::tree nat( unsigned int n );
       // Produce natural number n. 
 
+   void add_isfree( interpreter::program& prog );  
 }
 
 #endif

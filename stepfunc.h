@@ -129,7 +129,9 @@ struct stepfunc
 
 
    template< typename F > 
-      using transformedtype = typename std::invoke_result<F,R> :: type ;
+      using transformedtype = 
+         typename std::remove_cvref< 
+            typename std::invoke_result<F,R> :: type > :: type;
 
    template< std::invocable<R> F, 
              std::invocable<transformedtype<F>, transformedtype<F>> E2 = 

@@ -1,5 +1,5 @@
 
-%comment TYPECHECKING
+%comment typechecking (with thanks to Akhetzhan Kussainov and Zhandarbek Saginov) 
 
 %rootdirs 
    Source = .
@@ -38,10 +38,17 @@
    stateset.cpp
    simple.cpp
    algorithms.cpp
-   conversions.cpp
    builder.cpp
    selector.cpp
    convresult.cpp
+   cluster.cpp
+
+%dir Source/interpreter
+%sources
+   selector.cpp
+   basictypes.cpp
+   label.cpp
+   instruction.cpp
 
 %dir Source/intermediate
 %sources
@@ -98,6 +105,18 @@
    selector.cpp
    convresult.h
    convresult.cpp
+
+%preproc $(Treegen)/treegen interpreter/treedefs.rec
+%dir Source/interpreter
+%in
+   treedefs.rec
+%out
+   selector.h
+   selector.cpp
+   instruction.h
+   instruction.cpp
+   expr.h
+   expr.cpp
 
 %preproc $(Treegen)/treegen intermediate/treedefs.rec
 %dir Source/intermediate

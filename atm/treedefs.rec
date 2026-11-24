@@ -24,6 +24,7 @@
 
 %h_methods {
       void print( std::ostream& ) const;
+      state getstate( ) const; 
 }
 
 
@@ -63,6 +64,21 @@
       }
       std::cout << "convresult::print:   " << sel( ) << "\n";
       throw std::logic_error( "not implemented" );
+   }
+
+   
+   atm::state atm::convresult::getstate( ) const
+   {
+      switch( sel( ))
+      {
+      case atm_single:
+         return view_single( ). q( );
+      case atm_tuple: 
+         return view_tuple( ). q( );
+      }
+      print( std::cout );
+      std::cout << "\n\n";
+      throw std::logic_error( "contains no state" );
    }
 
 }

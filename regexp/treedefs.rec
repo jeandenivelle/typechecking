@@ -49,13 +49,13 @@
                           set : expr, factor : size_t, [ disj : expr ]
       
 %h_incl {
+	#include "tvm/includes.h"
 	#include "identifier.h"
         #include "finfunc.h"
         #include "stepfunc.h"
-	#include "util/print.h"
-	#include "tvm/includes.h"
 	#include "usel.h"
         #include "util/bigint.h"
+	#include "util/print.h"
 }
 
 %h_methods {
@@ -118,17 +118,5 @@
                                  disj. begin( ), disj. end( ));
    }
 }
-
-
-// Automata need types, because an automaton for
-// set has an entry and an exit point, while an automaton
-// for a single value, has only an exit point.
-//
-// The type checking algorithm uses a fixed point 
-// construction, due to the fact that 
-// definitions of regular expressions.
-// 
-// Because of that, we added lattice types 
-//    unknown (bottom) and error (top). 
 
 

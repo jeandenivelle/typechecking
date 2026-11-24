@@ -65,6 +65,9 @@ namespace atm
            freestate( firststate + 3 ) 
       { } 
 
+      simple( simple&& ) noexcept = default;
+      simple& operator = ( simple&& ) = default;
+
       state create_states( size_t nr ) 
          { return std::exchange( freestate, freestate + nr ); }
 
