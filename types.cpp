@@ -44,7 +44,7 @@ int main( int argc, char* arcgv[] )
                               regexp::expr( regexp::type_double ) } );
    ex = regexp::expr( regexp::tup_fill, ex, 
                       { regexp::expr( regexp::flt_char,
-                                 stepfunc< char, bool > ( false, {{ 'c', true }} )),
+                                 stepfunc< char, bool > ( false, {{ 'a', true }} )),
                         regexp::expr( regexp::type_unit ) } );
 
    std::cout << ex << "\n";
@@ -65,7 +65,8 @@ int main( int argc, char* arcgv[] )
       auto pr = make_deterministic( trans );
       std::cout << pr. first << "\n\n";
       std::cout << pr. second << "\n\n";
-      return 0;
+      std::cout << run( pr. first, tr ) << "\n";
+      std::cout << run_det( pr. first, tr ) << "\n";
 #endif
    }
 
@@ -147,6 +148,8 @@ int main( int argc, char* arcgv[] )
    std::cout << "nondet: " << run( clust. common, tests::formula( )) << "\n";
 #if 0
    std::cout << "det:    " << run( det. first, tests::formula( )) << "\n";
+   std::cout << "        " << run_det( det. first, tests::formula( )) << "\n";
+
    return 0;
 #if 0
    auto f = tests::mixing( );

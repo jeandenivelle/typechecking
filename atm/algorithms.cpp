@@ -212,6 +212,104 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
 }
 
 
+atm::state atm::run_det( const simple& smp, const data::tree& tr ) 
+{
+   switch( tr. sel( )) 
+   {
+   case data::dat_unit:
+      {
+         if( smp. delta_unit. size( ) == 1 )
+            return smp. delta_unit. front( ); 
+         else
+            return smp. trap;
+      } 
+
+   case data::dat_bool:
+      {
+         if( smp. delta_bool. size( ) == 1 ) 
+            return smp. delta_bool. front( ). apply( tr. view_bool( ). b( )); 
+         else
+            return smp. trap; 
+      }
+
+   case data::dat_char:
+      {
+         if( smp. delta_char. size( ) == 1 )
+            return smp. delta_char. front( ). apply( tr. view_char( ). c( ));
+         else 
+            return smp. trap; 
+      }
+
+   case data::dat_sel:
+      {
+         if( smp. delta_sel. size( ) == 1 )
+            return smp. delta_sel. front( ). apply( tr. view_usel( ). s( ));
+         else
+            return smp. trap;
+      }
+
+   case data::dat_u64:
+      {
+         if( smp. delta_u64. size( ) == 1 )
+            return smp. delta_u64. front( ). apply( tr. view_u64( ). u( )); 
+         else 
+            return smp. trap;  
+      }
+
+   case data::dat_integer:
+      {
+         if( smp. delta_integer. size( ) == 1 ) 
+            return smp. delta_integer. front( ). apply( tr. view_integer( ). i( ));
+         else
+            return smp. trap; 
+      }
+
+   case data::dat_double:
+      {
+         if( smp. delta_double. size( ) == 1 ) 
+            return smp. delta_double. front( );  
+         else 
+            return smp. trap;  
+      }
+
+   case data::dat_tuple:
+      {
+         auto tup = tr. view_tuple( );
+         state q = smp. empty_tuple;
+         for( size_t i = 0; i != tup. size( ); ++ i ) 
+         { 
+            state sub = run_det( smp, tup. val(i));
+            auto it = smp. delta_tuple. find( { q, sub } );
+            if( it != smp. delta_tuple. end( ))
+               q = ( it -> second );
+            else
+               q = smp. trap;
+         }
+         return q;
+      }
+
+   case data::dat_array: 
+      {
+         auto ar = tr. view_array( );
+         state q = smp. empty_set; 
+         for( size_t i = 0; i != ar. size( ); ++ i ) 
+         {
+            state sub = run_det( smp, ar. val(i));
+            auto it = smp. delta_set. find( { q, sub } ); 
+            if( it != smp. delta_set. end( ))
+               q = ( it -> second );
+            else
+               q = smp. trap; 
+         }
+         return q;
+      }
+   }
+
+   std::cout << "run determinsitically( ), unrecognized " << tr. sel( ) << "\n";
+   throw std::logic_error( "atm::run_det()" );
+}
+
+
 atm::state
 atm::create_or_reuse( stateset set, 
                       const stateset::map< state > & checked, 

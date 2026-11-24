@@ -19,7 +19,10 @@ namespace atm
       // We don't do the epsilon closure on the result.
 
    stateset run( const simple& smp, const data::tree& tr );
-
+  
+   state run_det( const simple& smp, const data::tree& tr );
+      // Run deterministically. If the automaton is not deterministic,
+      // a random path is picked.
 
    state 
    create_or_reuse( stateset set, 
