@@ -6,6 +6,9 @@
 #include <vector>
 #include <concepts>
 
+// If you want to use this class, you will need to add a transform method.
+// Look e.g. at stepfunc how this is done.
+
 // A partition partitions an ordered type using 
 // an increasing set of values 
 // d0, d1, ... dn.

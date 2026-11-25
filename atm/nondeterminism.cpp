@@ -1,5 +1,5 @@
 
-#include "algorithms.h"
+#include "nondeterminism.h"
 #include <queue>
 
 
@@ -212,108 +212,16 @@ atm::stateset atm::run( const simple& smp, const data::tree& tr )
 }
 
 
-atm::state atm::run_det( const simple& smp, const data::tree& tr ) 
+
+bool
+atm::subsets::insert( stateset set, state q )
 {
-   switch( tr. sel( )) 
-   {
-   case data::dat_unit:
-      {
-         if( smp. delta_unit. size( ) == 1 )
-            return smp. delta_unit. front( ); 
-         else
-            return smp. trap;
-      } 
-
-   case data::dat_bool:
-      {
-         if( smp. delta_bool. size( ) == 1 ) 
-            return smp. delta_bool. front( ). apply( tr. view_bool( ). b( )); 
-         else
-            return smp. trap; 
-      }
-
-   case data::dat_char:
-      {
-         if( smp. delta_char. size( ) == 1 )
-            return smp. delta_char. front( ). apply( tr. view_char( ). c( ));
-         else 
-            return smp. trap; 
-      }
-
-   case data::dat_sel:
-      {
-         if( smp. delta_sel. size( ) == 1 )
-            return smp. delta_sel. front( ). apply( tr. view_usel( ). s( ));
-         else
-            return smp. trap;
-      }
-
-   case data::dat_u64:
-      {
-         if( smp. delta_u64. size( ) == 1 )
-            return smp. delta_u64. front( ). apply( tr. view_u64( ). u( )); 
-         else 
-            return smp. trap;  
-      }
-
-   case data::dat_integer:
-      {
-         if( smp. delta_integer. size( ) == 1 ) 
-            return smp. delta_integer. front( ). apply( tr. view_integer( ). i( ));
-         else
-            return smp. trap; 
-      }
-
-   case data::dat_double:
-      {
-         if( smp. delta_double. size( ) == 1 ) 
-            return smp. delta_double. front( );  
-         else 
-            return smp. trap;  
-      }
-
-   case data::dat_tuple:
-      {
-         auto tup = tr. view_tuple( );
-         state q = smp. empty_tuple;
-         for( size_t i = 0; i != tup. size( ); ++ i ) 
-         { 
-            state sub = run_det( smp, tup. val(i));
-            auto it = smp. delta_tuple. find( { q, sub } );
-            if( it != smp. delta_tuple. end( ))
-               q = ( it -> second );
-            else
-               q = smp. trap;
-         }
-         return q;
-      }
-
-   case data::dat_array: 
-      {
-         auto ar = tr. view_array( );
-         state q = smp. empty_set; 
-         for( size_t i = 0; i != ar. size( ); ++ i ) 
-         {
-            state sub = run_det( smp, ar. val(i));
-            auto it = smp. delta_set. find( { q, sub } ); 
-            if( it != smp. delta_set. end( ))
-               q = ( it -> second );
-            else
-               q = smp. trap; 
-         }
-         return q;
-      }
-   }
-
-   std::cout << "run determinsitically( ), unrecognized " << tr. sel( ) << "\n";
-   throw std::logic_error( "atm::run_det()" );
+   return unchecked. emplace( std::move( set ), q ). second;
 }
 
 
 atm::state
-atm::create_or_reuse( stateset set, 
-                      const stateset::map< state > & checked, 
-                      stateset::map< state > & unchecked, simple& det )
+atm::subsets::create_or_reuse( simple& det, stateset set )
 {
    state q = det. create_states(0);
       // We get the next state from det, but do not commit to it.
@@ -340,13 +248,11 @@ namespace
 
    state 
    merge( const std::vector< state > & statevector,
-          const simple& nondet, simple& det,
-          const stateset::map< state > & checked,
-          stateset::map< state > & unchecked )
+          const simple& nondet, simple& det, subsets& sub )
    {
       auto set = statesinvector( statevector );
       close_eps( nondet, set );
-      auto q = create_or_reuse( std::move( set ), checked, unchecked, det ); 
+      auto q = sub. create_or_reuse( det, std::move( set )); 
       return q;
    }
 
@@ -368,13 +274,11 @@ namespace
    template< typename D, typename H, typename E >
    finfunc<D,state,H,E>  
    merge( const std::vector< finfunc<D,state,H,E> > & funcvector,
-          const simple& nondet, simple& det, 
-          const stateset::map< state > & checked,
-          stateset::map< state > & unchecked )
+          const simple& nondet, simple& det, subsets& sub ) 
    {
       auto defset = getdefault( funcvector );
       close_eps( nondet, defset );
-      auto q = create_or_reuse( std::move( defset ), checked, unchecked, det );
+      auto q = sub. create_or_reuse( det, std::move( defset ));
 
       auto resfunc = finfunc<D,state,H,E> (q);
 
@@ -383,7 +287,7 @@ namespace
       {
          auto targetset = apply( funcvector, sel );
          close_eps( nondet, targetset );
-         q = create_or_reuse( std::move( targetset ), checked, unchecked, det );
+         q = sub. create_or_reuse( det, std::move( targetset ));
          resfunc. assign( sel, q ); 
       }
       return resfunc;
@@ -407,13 +311,11 @@ namespace
    template< typename D, typename C, typename E >
    stepfunc<D,state,C,E> 
    merge( const std::vector< stepfunc<D,state,C,E>> & funcvector,
-          const simple& nondet, simple& det,
-          const stateset::map< state > & checked,
-          stateset::map< state > & unchecked )
+          const simple& nondet, simple& det, subsets& sub ) 
    {
       auto defset = getdefault( funcvector );
       close_eps( nondet, defset );
-      auto q = create_or_reuse( std::move( defset ), checked, unchecked, det );
+      auto q = sub. create_or_reuse( det, std::move( defset ));
 
       auto resfunc = stepfunc<D,state,C,E> (q);
 
@@ -422,7 +324,7 @@ namespace
       {
          auto targetset = apply( funcvector, c );
          close_eps( nondet, targetset );
-         q = create_or_reuse( std::move( targetset ), checked, unchecked, det );
+         q = sub. create_or_reuse( det, std::move( targetset ));
          resfunc. append( c, q );
       }
       return resfunc;
@@ -430,60 +332,54 @@ namespace
 
 }
 
-
-atm::cluster
-atm::make_deterministic( const cluster& clust )
+atm::simple
+atm::make_deterministic( subsets& sub, const simple& nondet )
 {
    simple det;
-   const simple& nondet = clust. common;
 
-   stateset::map< state > checked;
-   stateset::map< state > unchecked;
    {
       auto empty = stateset( );
       empty. insert( nondet. empty_tuple );
       close_eps( nondet, empty );
-      auto p = unchecked. emplace( std::move( empty ), det. empty_tuple );
-      det. empty_tuple = p. first -> second; 
-
-      empty. clear( );
-      empty. insert( nondet. empty_set );
-      close_eps( nondet, empty );
-      p = unchecked. emplace( std::move( empty ), det. empty_set );
-      det. empty_set = p. first -> second;  // Unlikely, but who knows? 
+      if( !sub. insert( std::move( empty ), det. empty_tuple ))
+         throw std::logic_error( "not expecting this" );
    }
 
-   det. delta_unit. push_back( 
-           merge( nondet. delta_unit, nondet, det, checked, unchecked )); 
-   det. delta_bool. push_back(
-           merge( nondet. delta_bool, nondet, det, checked, unchecked )); 
-   det. delta_char. push_back( 
-           merge( nondet. delta_char, nondet, det, checked, unchecked ));
-   det. delta_sel. push_back( 
-           merge( nondet. delta_sel, nondet, det, checked, unchecked )); 
-   det. delta_u64. push_back( 
-           merge( nondet. delta_u64, nondet, det, checked, unchecked ));
-   det. delta_integer. push_back(
-           merge( nondet. delta_integer, nondet, det, checked, unchecked ));
-   det. delta_double. push_back(
-           merge( nondet. delta_double, nondet, det, checked, unchecked ));
-   
+   {
+      auto empty = stateset( );
+      empty. insert( nondet. empty_set );
+      close_eps( nondet, empty );
+      if( !sub. insert( std::move( empty ), det. empty_set ))
+         throw std::logic_error( "not expecting this" );
+   }
+
+   det. delta_unit. push_back( merge( nondet. delta_unit, nondet, det, sub ));
+   det. delta_bool. push_back( merge( nondet. delta_bool, nondet, det, sub ));
+   det. delta_char. push_back( merge( nondet. delta_char, nondet, det, sub ));
+   det. delta_sel. push_back( merge( nondet. delta_sel, nondet, det, sub ));
+   det. delta_u64. push_back( merge( nondet. delta_u64, nondet, det, sub ));
+   det. delta_integer. push_back( 
+                 merge( nondet. delta_integer, nondet, det, sub ));
+   det. delta_double. push_back( 
+                 merge( nondet. delta_double, nondet, det, sub ));
+
+
+
    // We have binary transitions, so we need to use 
    // a resolution-like algorithm:
 
-   while( unchecked. size( ))
+   while( sub. unchecked. size( ))
    {
-      auto given = unchecked. begin( );
+      subsets::iterator given = sub. unchecked. begin( );
       std::cout << "given = " << ( given -> first ) << "\n";
 
-      for( auto p : checked )
+      for( auto p : sub. checked )
       {
          auto res = apply_tuple( nondet, p. first, given -> first );
          if( res. size( ))
          { 
             close_eps( nondet, res );
-            auto qres = create_or_reuse( std::move( res ),
-                                checked, unchecked, det );
+            auto qres = sub. create_or_reuse( det, std::move( res ));
             det. delta_tuple. insert( {{ p. second, given -> second }, qres } );
          }
 
@@ -491,8 +387,7 @@ atm::make_deterministic( const cluster& clust )
          if( res. size( ))
          {
             close_eps( nondet, res );
-            auto qres = create_or_reuse( std::move( res ),
-                                checked, unchecked, det );
+            auto qres = sub. create_or_reuse( det, std::move( res ));
             det. delta_tuple. insert( {{ given -> second, p. second }, qres } );
          }
 
@@ -500,8 +395,7 @@ atm::make_deterministic( const cluster& clust )
          if( res. size( ))
          {
             close_eps( nondet, res );
-            auto qres = create_or_reuse( std::move( res ),
-                               checked, unchecked, det );  
+            auto qres = sub. create_or_reuse( det, std::move( res ));
             det. delta_set. insert( {{ p. second, given -> second }, qres } );  
          }
 
@@ -509,42 +403,15 @@ atm::make_deterministic( const cluster& clust )
          if( res. size( ))
          {
             close_eps( nondet, res );
-            auto qres = create_or_reuse( std::move( res ),
-                               checked, unchecked, det );
+            auto qres = sub. create_or_reuse( det, std::move( res ));
             det. delta_set. insert( {{ given -> second, p. second }, qres } );
          }
       }
 
-      checked. insert( unchecked. extract( given ));
+      sub. checked. insert( sub. unchecked. extract( given ));
    }
 
-   std::cout << det << "\n";
-   cluster res = std::move( det );
-
-   std::cout << "backmap " << checked << "\n";
-   for( const auto& ch : checked )
-   {
-      for( auto q : ch. first )
-      {
-         auto acc = clust. props_inv. find(q);
-         if( acc != clust. props_inv. end( ))
-         {
-            for( const auto& id : acc -> second )
-               res. add_accept( id, ch. second );   
-         } 
-      }   
-   }
- 
-   return res;
+   return det;
 }
 
-std::ostream& 
-atm::operator << ( std::ostream& out, 
-                   const stateset::map< state > & collapse )
-{
-   out << "Subset Collapse:\n";
-   for( const auto& p : collapse )
-      out << "   " << p. first << " -> " << p. second << "\n";
-   return out;
-}
 

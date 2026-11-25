@@ -12,9 +12,9 @@
 #include "tests.h"
 #include "overloadmap.h"
 
-#include "atm/algorithms.h"
+#include "atm/nondeterminism.h"
+#include "atm/evaluator.h"
 
-#include "regexp/algorithms.h"
 #include "atm/builder.h"
 
 #include "interpreter/basictypes.h"
@@ -53,21 +53,18 @@ int main( int argc, char* arcgv[] )
       regexp::defmap defs;
       defs. insert( { identifier( ) + "tuple", ex } );  
 
-#if 0
-      atm::simple trans;
-      atm::statemap acc = create_states( defs, trans );
-
-      convert( trans, defs, acc );
+      atm::translator trans;
+      trans. insert( defs );
 
       std::cout << trans << "\n";
-      std::cout << "nondet: " << run( trans, tr ) << "\n";
+      std::cout << "nondet: " << run( trans. shared, tr ) << "\n";
 
-      auto pr = make_deterministic( trans );
-      std::cout << pr. first << "\n\n";
-      std::cout << pr. second << "\n\n";
-      std::cout << run( pr. first, tr ) << "\n";
-      std::cout << run_det( pr. first, tr ) << "\n";
-#endif
+      atm::evaluator eval = make_evaluator( trans ); 
+      std::cout << eval << "\n"; 
+
+      std::cout << run( trans. shared, tr ) << "\n";
+      std::cout << eval. run( tr ) << "\n";
+      return 0;
    }
 
 #if 0
@@ -136,16 +133,17 @@ int main( int argc, char* arcgv[] )
 
    std::cout << defs << "\n";
 
-   atm::cluster clust;
-   clust. regexp2nondet( defs );
+   atm::translator trans;
+   trans. insert( defs );
    std::cout << "NONDETERMINISTIC:\n";
-   std::cout << clust << "\n";
-
+   std::cout << trans << "\n";
+#if 0
    auto det = make_deterministic( clust ); 
    std::cout << "DETERMINISTIC:\n";
    std::cout << det << "\n";
 
-   std::cout << "nondet: " << run( clust. common, tests::formula( )) << "\n";
+#endif
+   std::cout << "nondet: " << run( trans. shared, tests::formula( )) << "\n";
 #if 0
    std::cout << "det:    " << run( det. first, tests::formula( )) << "\n";
    std::cout << "        " << run_det( det. first, tests::formula( )) << "\n";

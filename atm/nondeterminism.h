@@ -1,11 +1,12 @@
 
-#ifndef ATM_ALGORITHMS_
-#define ATM_ALGORITHMS_
+// Everything that deals with nondeterminism.
+
+#ifndef ATM_NONDETERMINISM_
+#define ATM_NONDETERMINISM_
 
 #include "data/tree.h"
 #include "stateset.h"
 #include "simple.h"
-#include "cluster.h"
 
 namespace atm 
 {
@@ -19,10 +20,27 @@ namespace atm
       // We don't do the epsilon closure on the result.
 
    stateset run( const simple& smp, const data::tree& tr );
+      // non-deterministically.
   
-   state run_det( const simple& smp, const data::tree& tr );
-      // Run deterministically. If the automaton is not deterministic,
-      // a random path is picked.
+
+   struct subsets
+   {
+      stateset::map< state > checked;
+      stateset::map< state > unchecked;
+
+      subsets( ) noexcept = default;
+      subsets( subsets&& ) noexcept = default;
+      subsets& operator = ( subsets&& ) noexcept = default;
+
+      bool insert( stateset set, state q );
+         // Insert into unchecked. True if it happened.
+
+      state create_or_reuse( simple& det, stateset set );
+
+      using iterator = stateset::map< state > :: iterator;
+
+      void print( std::ostream& out ) const;
+   };
 
    state 
    create_or_reuse( stateset set, 
@@ -31,11 +49,7 @@ namespace atm
                     simple& det );
       // We create a state that is new in smp if needed.
 
-   std::ostream& operator << ( std::ostream& out,
-                               const stateset::map< state > & collapse );
-
-   cluster make_deterministic( const cluster& clust );
-
+   simple make_deterministic( subsets& sub, const simple& nondet );
 }
 
 #endif

@@ -37,11 +37,12 @@
 %sources
    stateset.cpp
    simple.cpp
-   algorithms.cpp
+   nondeterminism.cpp
    builder.cpp
    selector.cpp
    convresult.cpp
-   cluster.cpp
+   translator.cpp
+   evaluator.cpp
 
 %dir Source/interpreter
 %sources
