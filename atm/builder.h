@@ -59,13 +59,12 @@ namespace atm
 
       void addlinear( const std::vector< state > & symset, size_t nr );
          // If nr == 0, nothing changes.
-         // nr == 1 will add one copy, etc.
+         // If nr == 1, we will add one copy of *this, etc.
 
       void addcircular( const std::vector< state > & symset, size_t nr );
-         // If nr == 0, then add circular will not add a copy, but
+         // If nr == 0, then addcircular will not add a copy of *this, but
          // it will still add a circle with length 1.
 
- 
       void printstate( std::ostream& out, size_t s ) const;
       void print( std::ostream& out ) const;
 

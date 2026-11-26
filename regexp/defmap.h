@@ -14,14 +14,11 @@ namespace regexp
 {
    using defmap = identifier::map< expr > ; 
 
-   inline std::ostream& operator << ( std::ostream& out,
-                                      const defmap& mp ) 
+   inline std::ostream& operator << ( std::ostream& out, const defmap& mp ) 
    {
-      out << "Definition Map:\n";
+      out << "Regular Expression Map:\n";
       for( const auto& def : mp )
-      {
          out << "   " << def. first << " : " << def. second << "\n";
-      }
       return out; 
    }
 

@@ -70,6 +70,11 @@ public:
       std::unordered_map< identifier, T,
                           identifier::hash, identifier::equal_to > ;
 
+   template< typename T >
+   using multimap =
+      std::unordered_multimap< identifier, T,
+                               identifier::hash, identifier::equal_to > ;
+
 };
 
 inline identifier operator + ( identifier id, const std::string& s ) 

@@ -11,10 +11,7 @@
 
 namespace interpreter
 {
-   enum flavour
-   {
-      flav_val, flav_constval, flav_ref, flav_constref 
-   };
+   enum flavour { flav_val, flav_constval, flav_ref, flav_constref };
 
    const char* getcstring( flavour );
 
@@ -32,10 +29,14 @@ namespace interpreter
          // it's not owning.
    };
 
+
    struct property
    {
       identifier maintype;
       identifier subtype;
+
+      void print( std::ostream& out ) const
+         { out << maintype << " @ " << subtype; } 
    };
 
 

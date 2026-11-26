@@ -277,7 +277,7 @@ intermediate::function tests::arrayconv( )
 }
 
 
-void tests::add_nat( regexp::defmap& defs, fieldmap& flds )
+void tests::add_nat( regexp::defmap& defs )
 {
    std::cout << "Constructing Natural Numbers:\n";
 
@@ -302,17 +302,11 @@ void tests::add_nat( regexp::defmap& defs, fieldmap& flds )
    auto odd = identifier( ) + "odd";
    defs. insert( { odd, succ } );
 
-   flds. insert( identifier( ) + "op", 
-                     fielddef( fld_scalar, 
-                        expr( ref_ident, identifier( ) + "nat" ), 0 ));
 }
 
 
-void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
+void tests::add_fol( regexp::defmap& defs, interpreter::program& prog )
 {
-   std::cout << "\n";
-   std::cout << "Constructing regular expression of simply typed first-order logic:\n\n";
-
    using namespace regexp;
  
    auto fol = identifier( ) + "fol"; 
@@ -321,6 +315,9 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
    auto term = fol + "term";
 
    {
+      auto db = tuple( { selectors( { usel( "?debruijn" ) } ), 
+                                      any_u64( ) } );
+
       auto appl = 
          tuple( { selectors( { usel( "?appl" ) } ),
                   expr( ref_ident, fol + "variable" ),
@@ -328,10 +325,11 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
                 } 
            );
 
-      auto db = tuple( { selectors( { usel( "?debruijn" ) } ), 
-                                      any_u64( ) } );
+      defs. emplace( term + "debruijn", std::move( db ));
+      defs. emplace( term + "appl", std::move( appl ));
 
-      defs. insert( { term, expr( log_or, { appl, db } ) } ); 
+      defs. emplace( term, expr( log_or, { expr( ref_ident, term + "debruijn" ),
+                                           expr( ref_ident, term + "appl" ) } )); 
    } 
 
    {
@@ -351,6 +349,10 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
                expr( ref_ident, fol + "variable" ), 
                regexp::forall( { expr( ref_ident, fol + "term" ) } ) } ) } );
 
+   defs. insert( { fol + "unary",
+      tuple( { selectors( { usel( "?not" ) } ),
+               expr( ref_ident, fol + "form" ) } ) } );
+
    defs. insert( { fol + "binary",
       tuple( { selectors( { usel( "?implies" ), usel( "?equiv" ) } ),
                expr( ref_ident, fol + "form" ),
@@ -360,7 +362,7 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
       tuple( { selectors( { usel( "?and" ), usel( "?or" ) } ),
                regexp::forall( { expr( ref_ident, fol + "form" ) } ) } ) } );
 
-   defs. insert( { fol + "equals",
+   defs. insert( { fol + "equality",
       tuple( { selectors( { usel( "?equals" ) } ),
                expr( ref_ident, fol + "term" ),
                expr( ref_ident, fol + "term" ) } ) } );
@@ -375,36 +377,41 @@ void tests::add_fol( regexp::defmap& defs, fieldmap& flds )
 
    defs. insert( { fol + "form",
       expr( log_or, { expr( ref_ident, fol + "atom" ),
-                      expr( ref_ident, fol + "equals" ),
+                      expr( ref_ident, fol + "equality" ),
+                      expr( ref_ident, fol + "unary" ),
                       expr( ref_ident, fol + "binary" ),
                       expr( ref_ident, fol + "nary" ),
                       expr( ref_ident, fol + "quant" ) } ) } );
 
-   flds. insert( identifier( ) + "sub1",
-      fielddef( fld_scalar, expr( regexp::ref_ident, fol + "binary" ), 1 ));
+   using namespace interpreter;
 
-   flds. insert( identifier( ) + "sub2",
-      fielddef( fld_scalar, expr( regexp::ref_ident, fol + "binary" ), 2 ));
+   // Term:
 
+   prog. fields. emplace( identifier( ) + "sel", fielddef( fld_scalar, 0, fol + "term", fol + "term" ));
+   prog. fields. emplace( identifier( ) + "index", fielddef( fld_scalar, 1, fol + "term", fol + "term" + "debruijn" ));
+   prog. fields. emplace( identifier( ) + "func", fielddef( fld_scalar, 1, fol + "term", fol + "term" + "appl" ));
+   prog. fields. emplace( identifier( ) + "sub", fielddef( fld_repeated, 2, fol + "term", fol + "term" + "appl" ));
+
+   // Form:
+
+   prog. fields. emplace( identifier( ) + "sel", fielddef( fld_scalar, 0, fol + "form", fol + "form" ));
+
+   prog. fields. emplace( identifier( ) + "pred", fielddef( fld_scalar, 1, fol + "form", fol + "term" + "atom" ));
+   prog. fields. emplace( identifier( ) + "sub", fielddef( fld_repeated, 2, fol + "form", fol + "term" + "atom" ));
+
+   prog. fields. emplace( identifier( ) + "sub1", fielddef( fld_scalar, 1, fol + "form", fol + "equality" ));
+   prog. fields. emplace( identifier( ) + "sub2", fielddef( fld_scalar, 2, fol + "form", fol + "equality" ));
+
+   prog. fields. emplace( identifier( ) + "sub", fielddef( fld_scalar, 1, fol + "form", fol + "unary" ));
+
+   prog. fields. emplace( identifier( ) + "sub1", fielddef( fld_scalar, 1, fol + "form", fol + "binary" ));
+   prog. fields. emplace( identifier( ) + "sub2", fielddef( fld_scalar, 2, fol + "form", fol + "binary" ));
+
+   prog. fields. emplace( identifier( ) + "sub", fielddef( fld_repeated, 2, fol + "form", fol + "term" + "nary" ));
 }
 
 
-
-
-data::tree
-tests::nat( unsigned int n )
-{
-   auto res = data::usel( "?zero" );
-   // res = data::tuple( { res } ); 
-   while( n != 0 )
-   {
-      res = data::tuple( { data::usel( "?succ" ), res } ); 
-      -- n;
-   }
-   return res;
-}
-
-void modaladjectives( regexp::defmap& defs, fieldmap& flds )
+void tests::add_modal( regexp::defmap& defs )
 {
 #if 0
    std::cout << "Adding adjectives on modal formula:\n";
@@ -420,6 +427,31 @@ void modaladjectives( regexp::defmap& defs, fieldmap& flds )
                   adj::def( decldef( -1, 0, vis_global ),
                             new type::fullident( "modal" ), tr ) } );
 #endif 
+}
+
+
+void tests::add_basictypes( regexp::defmap& defs )
+{
+   using namespace regexp;
+
+   auto standard = identifier( ) + "std";
+   defs. insert( { standard + "u64", any_u64( ) } );
+   defs. insert( { standard + "char", any_char( ) } ); 
+
+}
+
+
+data::tree
+tests::nat( unsigned int n )
+{
+   auto res = data::usel( "?zero" );
+   // res = data::tuple( { res } ); 
+   while( n != 0 )
+   {
+      res = data::tuple( { data::usel( "?succ" ), res } ); 
+      -- n;
+   }
+   return res;
 }
 
 data::tree tests::formula( )
@@ -459,7 +491,7 @@ data::tree tests::formula( )
 }
 
 
-void tests::add_isfree( interpreter::program& prog )
+void tests::add_subst( interpreter::program& prog )
 {
       
 

@@ -3,6 +3,7 @@
 #define INTERPRETER_FUNCDEF_
 
 #include <vector>
+#include <iostream>
 #include <map>
 
 #include "identifier.h"
@@ -22,6 +23,7 @@ namespace interpreter
 
       std::map< label, block > body;
 
+      void print( std::ostream& out ) const;
    };
 
 }

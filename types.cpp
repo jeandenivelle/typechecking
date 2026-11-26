@@ -51,7 +51,7 @@ int main( int argc, char* arcgv[] )
    {
       regexp::defmap defs;
       defs. insert( { identifier( ) + "tuple", ex } );  
-
+      
       atm::translator trans;
       trans. insert( defs );
 
@@ -122,25 +122,30 @@ int main( int argc, char* arcgv[] )
  
    // std::cout << atm::disjunction( { bld1, bld2, bld3 } ) << "\n";
 #endif
-  
-   fieldmap flds;
-   regexp::defmap defs;
 
-   tests::add_nat( defs, flds );
-   tests::add_fol( defs, flds );
+   interpreter::program prog;
+ 
+   regexp::defmap fol; 
+   tests::add_fol( fol, prog );
+   std::cout << fol << "\n";
+   std::cout << prog << "\n";
 
-   std::cout << defs << "\n";
+   regexp::defmap standard;
+   tests::add_basictypes( standard );
+   std::cout << standard << "\n"; 
+   return 0;
 
-   atm::translator trans;
-   trans. insert( defs );
+   atm::translator fol_trans;
+   fol_trans. insert( fol );
+   
    std::cout << "NONDETERMINISTIC:\n";
-   std::cout << trans << "\n";
+   std::cout << fol_trans << "\n";
 
-   auto eval = make_evaluator( trans ); 
+   auto eval = make_evaluator( fol_trans ); 
    std::cout << "EVALUATOR:\n";
    std::cout << eval << "\n";
 
-   std::cout << "nondet: " << run( trans. shared, tests::formula( )) << "\n";
+   std::cout << "nondet: " << run( fol_trans. shared, tests::formula( )) << "\n";
    std::cout << "det:    " << eval. run( tests::formula( )) << "\n";
 
    return 0;

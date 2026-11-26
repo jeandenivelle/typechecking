@@ -49,6 +49,7 @@
    label.cpp
    instruction.cpp
    program.cpp
+   fielddef.cpp
 
 %dir Source/intermediate
 %sources
