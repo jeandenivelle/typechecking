@@ -10,7 +10,6 @@
 #include "finfunc.h"
 
 #include "tests.h"
-#include "overloadmap.h"
 
 #include "atm/nondeterminism.h"
 #include "atm/evaluator.h"
@@ -64,7 +63,6 @@ int main( int argc, char* arcgv[] )
 
       std::cout << run( trans. shared, tr ) << "\n";
       std::cout << eval. run( tr ) << "\n";
-      return 0;
    }
 
 #if 0
@@ -137,16 +135,13 @@ int main( int argc, char* arcgv[] )
    trans. insert( defs );
    std::cout << "NONDETERMINISTIC:\n";
    std::cout << trans << "\n";
-#if 0
-   auto det = make_deterministic( clust ); 
-   std::cout << "DETERMINISTIC:\n";
-   std::cout << det << "\n";
 
-#endif
+   auto eval = make_evaluator( trans ); 
+   std::cout << "EVALUATOR:\n";
+   std::cout << eval << "\n";
+
    std::cout << "nondet: " << run( trans. shared, tests::formula( )) << "\n";
-#if 0
-   std::cout << "det:    " << run( det. first, tests::formula( )) << "\n";
-   std::cout << "        " << run_det( det. first, tests::formula( )) << "\n";
+   std::cout << "det:    " << eval. run( tests::formula( )) << "\n";
 
    return 0;
 #if 0
@@ -155,7 +150,6 @@ int main( int argc, char* arcgv[] )
    std::cout << f << "\n";
    f = tests::arrayconv( );
    std::cout << f << "\n";
-#endif
 #endif
    return 0;
 

@@ -6,8 +6,8 @@
 #include <string>
 #include <iostream>
 
+#include "identifier.h"
 #include "data/tree.h"
-#include "atm/stateset.h"
 
 namespace interpreter
 {
@@ -26,22 +26,28 @@ namespace interpreter
    struct value
    {
       flavour flav;
-      std::optional< data::tree > val;
+      std::optional< data::tree > val;     // Exists when we are flav_val. 
       data::tree* pntr; 
          // We don't bother to put pntr in an optional, because
          // it's not owning.
    };
 
+   struct property
+   {
+      identifier maintype;
+      identifier subtype;
+   };
+
 
    struct declaration
    {
-      std::string name; 
+      std::string var;
       flavour flav;
       bool isfixed;
-      atm::stateset props;
+      property precond; 
    };
 
-    
+
 }
 
 #endif

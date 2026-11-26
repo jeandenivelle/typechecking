@@ -14,11 +14,10 @@ namespace interpreter
 
    struct funcdef
    {
-
-      std::vector< declaration > parameters;
+      std::vector< std::pair< std::string, declaration >> parameters;
 
       flavour resultflav;
-      atm::stateset resultprops;
+      property resultprop; 
          // Not really needed.
 
       std::map< label, block > body;

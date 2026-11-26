@@ -15,8 +15,6 @@
 %sources
    types.cpp
    identifier.cpp
-   overloadmap.cpp
-   fieldmap.cpp
    tests.cpp
 
 %dir Source/data
@@ -50,6 +48,7 @@
    basictypes.cpp
    label.cpp
    instruction.cpp
+   program.cpp
 
 %dir Source/intermediate
 %sources

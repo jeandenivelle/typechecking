@@ -2,7 +2,6 @@
 #ifndef TESTS_
 #define TESTS_
 
-#include "fieldmap.h"
 #include "regexp/defmap.h"
 #include "data/tree.h"
 #include "atm/simple.h"
