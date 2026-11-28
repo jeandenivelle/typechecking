@@ -13,7 +13,6 @@ const char* interpreter::getcstring( fieldcategory cat )
    return "???"; 
 }
 
-
 void interpreter::fielddef::print( std::ostream& out ) const
 {
    out << cat << "( #" << index << " : " << precond << " )";

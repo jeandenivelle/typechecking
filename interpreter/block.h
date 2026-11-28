@@ -23,10 +23,7 @@ namespace interpreter
       const instruction& at( size_t i ) const
          { return instr. at(i); }
 
-      instruction& at( size_t i )
-         { return instr. at(i); }
-
-      void append( instruction&& ins )
+      void append( instruction ins )
          { instr. push_back( std::move( ins )); }
 
       void print( std::ostream& out ) const;

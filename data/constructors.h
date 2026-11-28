@@ -9,7 +9,6 @@
 namespace data
 {
    tree usel( const char* c );
-
    tree u64( size_t ind );
 
    tree tuple( const std::vector< tree > & sub );

@@ -19,6 +19,8 @@
 #include "interpreter/basictypes.h"
 #include "interpreter/varmap.h"
 #include "interpreter/funcdef.h"
+#include "interpreter/configuration.h"
+
 
 int main( int argc, char* arcgv[] ) 
 {
@@ -128,26 +130,41 @@ int main( int argc, char* arcgv[] )
    regexp::defmap fol; 
    tests::add_fol( fol, prog );
    std::cout << fol << "\n";
+   tests::add_subst( prog );
    std::cout << prog << "\n";
+
+   std::vector< interpreter::value > values;
+   values. push_back( tests::formula( ));
+   values. push_back( data::u64(2));
+   values. push_back( data::u64(3));
+
+   prog. exec( prog. functions. equal_range( identifier( ) + "lift" ). first -> second, std::move( values ));
+
+   return 0;
 
    regexp::defmap standard;
    tests::add_basictypes( standard );
    std::cout << standard << "\n"; 
-   return 0;
+
+   std::cout << tests::formula( ) << "\n";
 
    atm::translator fol_trans;
    fol_trans. insert( fol );
    
+#if 0
    std::cout << "NONDETERMINISTIC:\n";
    std::cout << fol_trans << "\n";
 
    auto eval = make_evaluator( fol_trans ); 
    std::cout << "EVALUATOR:\n";
    std::cout << eval << "\n";
-
+#endif
+   std::cout << fol_trans << "\n";
    std::cout << "nondet: " << run( fol_trans. shared, tests::formula( )) << "\n";
+#if 0
    std::cout << "det:    " << eval. run( tests::formula( )) << "\n";
-
+#endif
+   
    return 0;
 #if 0
    auto f = tests::mixing( );

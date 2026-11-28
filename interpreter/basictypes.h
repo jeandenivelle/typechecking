@@ -9,10 +9,11 @@
 #include "identifier.h"
 #include "data/tree.h"
 
+#include "atm/state.h"
+
 namespace interpreter
 {
    enum flavour { flav_val, flav_constval, flav_ref, flav_constref };
-
    const char* getcstring( flavour );
 
    inline 
@@ -27,6 +28,18 @@ namespace interpreter
       data::tree* pntr; 
          // We don't bother to put pntr in an optional, because
          // it's not owning.
+
+      identifier::map< atm::state > properties;
+         // If we run an automaton on the value, we keep the resulting
+         // state, for the case we need it again. 
+
+      value( data::tree tr )
+         : flav( flav_val ),
+           val( std::move( tr )),
+           pntr( nullptr )
+      { }
+
+      void print( std::ostream& out ) const;
    };
 
 
@@ -42,12 +55,12 @@ namespace interpreter
 
    struct declaration
    {
-      std::string var;
       flavour flav;
       bool isfixed;
       property precond; 
-   };
 
+      void print( std::ostream& out ) const;
+   };
 
 }
 

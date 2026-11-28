@@ -48,8 +48,10 @@
    basictypes.cpp
    label.cpp
    instruction.cpp
+   term.cpp
    program.cpp
    fielddef.cpp
+   funcdef.cpp
 
 %dir Source/intermediate
 %sources
@@ -114,10 +116,10 @@
 %out
    selector.h
    selector.cpp
+   term.h
+   term.cpp
    instruction.h
    instruction.cpp
-   expr.h
-   expr.cpp
 
 %preproc $(Treegen)/treegen intermediate/treedefs.rec
 %dir Source/intermediate

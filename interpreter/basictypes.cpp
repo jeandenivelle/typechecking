@@ -16,3 +16,16 @@ const char* interpreter::getcstring( flavour flav )
    return "???";
 }
 
+
+void 
+interpreter::declaration::print( std::ostream& out ) const
+{ 
+   out << flav; 
+   if( isfixed ) 
+      out << " (fixed), ";
+   else
+      out << ", ";
+   out << precond; 
+}
+
+

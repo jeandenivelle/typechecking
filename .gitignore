@@ -30,8 +30,8 @@ atm/convresult.cpp
 
 interpreter/selector.h
 interpreter/selector.cpp
-interpreter/expression.h
-interpreter/expression.cpp
+interpreter/term.h
+interpreter/term.cpp
 interpreter/instruction.h
 interpreter/instruction.cpp
 

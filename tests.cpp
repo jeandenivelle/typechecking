@@ -310,7 +310,7 @@ void tests::add_fol( regexp::defmap& defs, interpreter::program& prog )
    using namespace regexp;
  
    auto fol = identifier( ) + "fol"; 
-   defs. insert( { fol + "variable", regexp::forall( { any_char( ) } ) } );
+   defs. emplace( fol + "variable", regexp::forall( { any_char( ) } ));
 
    auto term = fol + "term";
 
@@ -333,21 +333,29 @@ void tests::add_fol( regexp::defmap& defs, interpreter::program& prog )
    } 
 
    {
-      auto prim = expr( log_or, 
-      {
-         selectors( { usel( "?prop" ) } ), 
-         tuple( { selectors( { usel( "?def" ) } ), 
-                  expr( ref_ident, fol + "variable" ) } ) 
-      });
+      auto sort = fol + "sort";
 
-      auto sort = tuple( { prim, regexp::forall( { prim } ) } );
-      defs. insert( { fol + "sort", std::move( sort ) } );
+      defs. emplace( sort + "prop", selectors( { usel( "?prop" ) } ));
+      defs. emplace( sort + "def", 
+         tuple( { selectors( { usel( "?def" ) } ),  
+                  expr( ref_ident, fol + "variable" ) } ));
+
+      defs. emplace( sort + "prim",  
+         expr( log_or, 
+         {
+            expr( ref_ident, sort + "prop" ),
+            expr( ref_ident, sort + "def" )
+         } )); 
+ 
+      defs. emplace( sort, 
+         tuple( { expr( ref_ident, sort + "prim" ),
+                  regexp::forall( { expr( ref_ident, sort + "prim" ) } ) } ));
    } 
 
-   defs. insert( { fol + "atom", 
+   defs. emplace( fol + "atom", 
       tuple( { selectors( { usel( "?atom" ) } ), 
                expr( ref_ident, fol + "variable" ), 
-               regexp::forall( { expr( ref_ident, fol + "term" ) } ) } ) } );
+               regexp::forall( { expr( ref_ident, fol + "term" ) } ) } ));
 
    defs. insert( { fol + "unary",
       tuple( { selectors( { usel( "?not" ) } ),
@@ -360,19 +368,21 @@ void tests::add_fol( regexp::defmap& defs, interpreter::program& prog )
 
    defs. insert( { fol + "nary",
       tuple( { selectors( { usel( "?and" ), usel( "?or" ) } ),
-               regexp::forall( { expr( ref_ident, fol + "form" ) } ) } ) } );
+               forall( { expr( ref_ident, fol + "form" ) } ) } ) } );
 
    defs. insert( { fol + "equality",
       tuple( { selectors( { usel( "?equals" ) } ),
                expr( ref_ident, fol + "term" ),
                expr( ref_ident, fol + "term" ) } ) } );
 
-   auto vartype = tuple( { expr( ref_ident, fol + "variable" ),
+   auto varsort = tuple( { expr( ref_ident, fol + "variable" ),
                            expr( ref_ident, fol + "sort" ) } );
+
+   defs. emplace( fol + "varsort", std::move( varsort ));
 
    defs. insert( { fol + "quant",
       tuple( { selectors( { usel( "?forall" ), usel( "?exists" ) } ),
-               regexp::forall( { vartype } ), 
+               forall( { expr( ref_ident, fol + "varsort" ) } ), 
                expr( ref_ident, fol + "form" ) } ) } );
 
    defs. insert( { fol + "form",
@@ -485,17 +495,44 @@ data::tree tests::formula( )
    auto vt = data::tuple( { data::string( "x" ), s } );
 
    return data::tuple( 
-      { data::usel( "?forall" ),
-        data::array( { vt } ), 
-        p } );
+      { data::usel( "?forall" ), data::array( { vt } ), p } );
 }
 
 
 void tests::add_subst( interpreter::program& prog )
 {
-      
+   using namespace interpreter;
 
+   auto folid = identifier( ) + "fol";
+   auto standid = identifier( ) + "std";
 
+   interpreter::funcdef lift( flav_val, { folid + "form", folid + "form" } );
 
+   lift. parameters. push_back( { "fm", { flav_val, true, 
+      { folid + "form", folid + "form" }}} );
+
+   lift. parameters. push_back( { "depth", { flav_val, true,
+      { standid + "u64", standid + "u64" }}} );
+
+   lift. parameters. push_back( { "dist ", { flav_val, true,
+      { standid + "u64", standid + "u64" }}} );
+
+   {
+      block init; 
+      auto br = instruction(
+         ins_branch, 
+         term( tm_fieldof,
+            term( tm_variable, std::string( "fm" )), 
+            identifier( ) + "sel" ),
+            { { property( folid, folid + "aa" ), 1 },
+              { property( folid, folid + "bb" ), 2 }} );
+      init. append( std::move( br ));
+
+      lift. emplace( 0, std::move( init ));
+   }
+ 
+   std::cout << lift << "\n";
+   prog. functions. emplace( identifier( ) + "lift", std::move( lift ));
+ 
 }
 

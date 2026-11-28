@@ -3,18 +3,36 @@
 
 %namespace interpreter
 
-%define expression ( expr_u64 )
+%define term          ( tm_u64 )
 
-%option u64           { expr_u64 } => # u : uint64_t 
-%option double        { expr_double } => # d : double 
+%option variable      { tm_variable } => # var : std::string
+%option u64           { tm_u64 } => # u : uint64_t 
+%option double        { tm_double } => # d : double 
+%option fieldof       { tm_fieldof } => tm : term, # fld : identifier
+%h_incl {
+   #include "tvm/includes.h"
+   #include "identifier.h"
+}
+
+%h_methods {
+      void print( std::ostream& ) const;
+}
 
 %define instruction   ( ins_nop )
 
 %option nop           { ins_nop } =>
 %option assignment    { ins_assign } =>  
+%option branch        { ins_branch } =>
+   arg : term, [ prop : property, target : size_t ]
 
 %h_incl {
    #include "tvm/includes.h"
    #include "label.h"
+   #include "basictypes.h"
+   #include "term.h"
+}
+
+%h_methods {
+      void print( std::ostream& ) const;
 }
 
